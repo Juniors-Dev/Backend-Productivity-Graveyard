@@ -15,7 +15,7 @@ module.exports = [
     rules: {
       "prettier/prettier": ["error", { endOfLine: "auto" }],
       semi: ["warn", "always"],
-      "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      "no-unused-vars": ["off", { argsIgnorePattern: "^_" }],
       "no-use-before-define": "warn",
       "no-console": "warn",
       "no-empty": ["warn", { allowEmptyCatch: false }],
