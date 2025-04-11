@@ -1,4 +1,4 @@
 module.exports = {
-  UserServices: require("./UserServices"),
+  UserService: require("./UserService"),
   ProjectServices: require("./ProjectServices"),
 };
