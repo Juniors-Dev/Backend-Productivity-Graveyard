@@ -27,6 +27,9 @@ module.exports = (sequelize, Sequelize) => {
         validate: {
           len: [3, 30],
         },
+        set(value) {
+          this.setDataValue("username", value.toLowerCase().trim());
+        },
       },
       email: {
         type: DataTypes.STRING,
@@ -34,6 +37,9 @@ module.exports = (sequelize, Sequelize) => {
         unique: true,
         validate: {
           isEmail: true,
+        },
+        set(value) {
+          this.setDataValue("email", value.toLowerCase().trim());
         },
       },
       hashedPassword: {
@@ -43,6 +49,8 @@ module.exports = (sequelize, Sequelize) => {
       },
       avatarUrl: {
         type: DataTypes.STRING,
+        allowNull: true,
+        validate: { isUrl: true },
         comment: "Optional user profile image URL",
       },
       bio: {
@@ -58,6 +66,7 @@ module.exports = (sequelize, Sequelize) => {
     {
       timestamps: true,
       tableName: "Users",
+      indexese: [{ fields: ["roleId"] }],
     }
   );
 
@@ -72,11 +81,11 @@ module.exports = (sequelize, Sequelize) => {
     });
     User.hasMany(models.Comment, {
       foreignKey: "userId",
-      onDelete: "CASCADE",
+      onDelete: "SET NULL",
     });
     User.hasMany(models.Upvote, {
       foreignKey: "userId",
-      onDelete: "SET NULL", // Keep upvote stats if user is deleted
+      onDelete: "SET NULL",
     });
     User.belongsToMany(models.Achievement, {
       through: "UserAchievements",

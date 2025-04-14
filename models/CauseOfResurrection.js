@@ -4,14 +4,9 @@
  * Optional feature.
  * Tracks when a project has been revived after being "buried".
  *
- * @note Currently uses Sequelize's paranoid (soft-delete) feature.
- * @question Do we want soft-deletion here to preserve the resurrection history even if
- * a resurrection record is "deleted" by a user? Might be useful for maintaining
- * the complete lifecycle history of projects that have gone through multiple
- * resurrection attempts?
- *
  * @note No unique constraint on projectId, assuming a project might be
  * buried and resurrected multiple times.
+ * @question Change model name to something more descriptive? (eg. ResurrectionEvent)
  */
 
 module.exports = (sequelize, Sequelize) => {
@@ -29,6 +24,7 @@ module.exports = (sequelize, Sequelize) => {
         type: DataTypes.UUID,
         allowNull: false,
       },
+      // QUESTION: What does name represent here?
       name: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -39,9 +35,10 @@ module.exports = (sequelize, Sequelize) => {
       },
       buriedAgain: {
         type: DataTypes.DATE,
-        allowNull: true, // Only set if a resurrected project is buried again
+        allowNull: true,
       },
       resurrectedAt: {
+        // QUESTION: would this end up being the same as createdAt from timestamp?
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
@@ -50,7 +47,6 @@ module.exports = (sequelize, Sequelize) => {
     {
       timestamps: true,
       tableName: "CausesOfResurrection",
-      paranoid: true,
     }
   );
 

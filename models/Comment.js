@@ -29,7 +29,7 @@ module.exports = (sequelize, Sequelize) => {
         type: DataTypes.TEXT, // NOTE: Diagram says STRING. Use TEXT for lengthy comments
         allowNull: false,
       },
-      parentID: {
+      parentId: {
         type: DataTypes.INTEGER,
         allowNull: true,
         comment: "Self-reference to parent comment for threading (if this is a reply)",
@@ -43,7 +43,14 @@ module.exports = (sequelize, Sequelize) => {
     {
       timestamps: true,
       tableName: "Comments",
-      // TODO: Consider adding an index on isDeleted, projectId etc. for faster queries
+      indexes: [
+        {
+          fields: ["projectId"],
+        },
+        {
+          fields: ["parentId"],
+        },
+      ],
     }
   );
 
@@ -58,12 +65,12 @@ module.exports = (sequelize, Sequelize) => {
     });
     // Threaded replies (self-referential relationship)
     Comment.belongsTo(models.Comment, {
-      foreignKey: "parentID",
+      foreignKey: "parentId",
       as: "parent",
       constraints: true,
     });
     Comment.hasMany(models.Comment, {
-      foreignKey: "parentID",
+      foreignKey: "parentId",
       as: "replies",
       constraints: true,
     });
