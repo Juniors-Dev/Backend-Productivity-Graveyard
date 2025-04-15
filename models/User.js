@@ -16,9 +16,19 @@ module.exports = (sequelize, Sequelize) => {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-      name: {
+      firstName: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      lastName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      fullName: {
+        type: DataTypes.VIRTUAL,
+        get() {
+          return `${this.firstName} ${this.lastName || ""}`;
+        },
       },
       username: {
         type: DataTypes.STRING,
@@ -30,6 +40,10 @@ module.exports = (sequelize, Sequelize) => {
         set(value) {
           this.setDataValue("username", value.toLowerCase().trim());
         },
+      },
+      displayName: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       email: {
         type: DataTypes.STRING,
@@ -59,21 +73,21 @@ module.exports = (sequelize, Sequelize) => {
       },
       roleId: {
         type: DataTypes.INTEGER,
-        allowNull: true, // Allow role to be removed without deleting the user
-        defaultValue: 1, // Assuming 1 will be a default user role
+        allowNull: false,
+        defaultValue: 1,
       },
     },
     {
       timestamps: true,
       tableName: "Users",
-      indexese: [{ fields: ["roleId"] }],
+      indexese: [{ fields: ["roleId"] }, { fields: ["email"] }],
     }
   );
 
   User.associate = (models) => {
     User.belongsTo(models.Role, {
       foreignKey: "roleId",
-      onDelete: "SET NULL",
+      onDelete: "RESTRICT",
     });
     User.hasMany(models.Project, {
       foreignKey: "userId",
@@ -85,7 +99,7 @@ module.exports = (sequelize, Sequelize) => {
     });
     User.hasMany(models.Upvote, {
       foreignKey: "userId",
-      onDelete: "SET NULL",
+      onDelete: "CASCADE",
     });
     User.belongsToMany(models.Achievement, {
       through: "UserAchievements",

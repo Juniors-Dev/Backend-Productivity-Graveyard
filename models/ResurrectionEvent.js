@@ -1,19 +1,14 @@
 /**
- * CauseOfResurrection Model
+ * ResurrectionEvent Model
  *
- * Optional feature.
  * Tracks when a project has been revived after being "buried".
- *
- * @note No unique constraint on projectId, assuming a project might be
- * buried and resurrected multiple times.
- * @question Change model name to something more descriptive? (eg. ResurrectionEvent)
  */
 
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 
-  const CauseOfResurrection = sequelize.define(
-    "CauseOfResurrection",
+  const ResurrectionEvent = sequelize.define(
+    "ResurrectionEvent",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -24,8 +19,7 @@ module.exports = (sequelize, Sequelize) => {
         type: DataTypes.UUID,
         allowNull: false,
       },
-      // QUESTION: What does name represent here?
-      name: {
+      reason: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -38,7 +32,6 @@ module.exports = (sequelize, Sequelize) => {
         allowNull: true,
       },
       resurrectedAt: {
-        // QUESTION: would this end up being the same as createdAt from timestamp?
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
@@ -46,16 +39,16 @@ module.exports = (sequelize, Sequelize) => {
     },
     {
       timestamps: true,
-      tableName: "CausesOfResurrection",
+      tableName: "ResurrectionEvents",
     }
   );
 
-  CauseOfResurrection.associate = (models) => {
-    CauseOfResurrection.belongsTo(models.Project, {
+  ResurrectionEvent.associate = (models) => {
+    ResurrectionEvent.belongsTo(models.Project, {
       foreignKey: "projectId",
       as: "project",
       onDelete: "CASCADE",
     });
   };
-  return CauseOfResurrection;
+  return ResurrectionEvent;
 };

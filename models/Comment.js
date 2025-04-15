@@ -2,8 +2,6 @@
  * Comment Model
  *
  * Stores user comments on projects, with support-ish for threaded replies.
- * Uses custom `isDeleted` flag so that deleted comments/users can still show up (e.g. "[deleted]")
- * and keep their reply structure intact.
  */
 
 module.exports = (sequelize, Sequelize) => {
@@ -19,15 +17,19 @@ module.exports = (sequelize, Sequelize) => {
       },
       userId: {
         type: DataTypes.UUID,
-        allowNull: true, // Allows for soft deletion
+        allowNull: true,
       },
       projectId: {
         type: DataTypes.UUID,
         allowNull: false,
       },
       message: {
-        type: DataTypes.TEXT, // NOTE: Diagram says STRING. Use TEXT for lengthy comments
+        type: DataTypes.TEXT,
         allowNull: false,
+        get() {
+          const rawValue = this.getDataValue("message");
+          return this.getDataValue("isDeleted") ? "[deleted]" : rawValue;
+        },
       },
       parentId: {
         type: DataTypes.INTEGER,
@@ -63,7 +65,7 @@ module.exports = (sequelize, Sequelize) => {
       foreignKey: "projectId",
       onDelete: "CASCADE",
     });
-    // Threaded replies (self-referential relationship)
+    // Threaded replies
     Comment.belongsTo(models.Comment, {
       foreignKey: "parentId",
       as: "parent",

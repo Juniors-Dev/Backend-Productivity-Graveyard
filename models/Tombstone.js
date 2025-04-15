@@ -1,7 +1,6 @@
 /**
  * Tombstone Model
  *
- * Optional feature.
  * Represents a visual or template style for a project's memorial/burial.
  */
 
@@ -15,6 +14,7 @@ module.exports = (sequelize, Sequelize) => {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+        unique: true,
       },
       name: {
         type: DataTypes.STRING,
@@ -23,6 +23,8 @@ module.exports = (sequelize, Sequelize) => {
       imageUrl: {
         type: DataTypes.STRING,
         comment: "URL to the tombstone image asset",
+        allowNull: false,
+        validate: { isUrl: true },
       },
     },
     {

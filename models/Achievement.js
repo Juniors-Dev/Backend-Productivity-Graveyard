@@ -20,10 +20,14 @@ module.exports = (sequelize, Sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
       requirements: {
         type: DataTypes.TEXT,
       },
-      iconUrl: {
+      imageUrl: {
         type: DataTypes.STRING,
       },
     },

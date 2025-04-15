@@ -21,6 +21,7 @@ module.exports = (sequelize, Sequelize) => {
         references: {
           model: "Users",
           key: "id",
+          onDelete: "CASCADE",
         },
       },
       achievementId: {
@@ -29,6 +30,7 @@ module.exports = (sequelize, Sequelize) => {
         references: {
           model: "Achievements",
           key: "id",
+          onDelete: "CASCADE",
         },
       },
       earnedAt: {

@@ -19,7 +19,7 @@ module.exports = (sequelize, Sequelize) => {
       },
       userId: {
         type: DataTypes.UUID,
-        allowNull: true, // Preserve upvotes if user is deleted
+        allowNull: false,
       },
       projectId: {
         type: DataTypes.UUID,

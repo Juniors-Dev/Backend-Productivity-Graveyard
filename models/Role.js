@@ -1,7 +1,7 @@
 /**
  * Role Model
  *
- * Defines different roles a user can have (e.g., admin, user, moderator(graveyard keepers)).
+ * Defines different roles a user can have (e.g., admin, user, moderator(graveyard keeper)).
  */
 
 module.exports = (sequelize, Sequelize) => {
@@ -37,7 +37,7 @@ module.exports = (sequelize, Sequelize) => {
     Role.hasMany(models.User, {
       foreignKey: "roleId",
       as: "users",
-      onDelete: "SET NULL",
+      onDelete: "RESTRICT",
     });
   };
   return Role;

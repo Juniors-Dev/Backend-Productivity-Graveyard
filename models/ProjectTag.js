@@ -3,8 +3,6 @@
  *
  * Junction Table for Project.js and Type.js
  * Each project can have one or more "types"(e.g: "burnout", “Dog ate my keyboard”, etc).
- *
- * @note Removed ID field — using a composite primary key [projectId + typeId] instead.
  */
 
 module.exports = (sequelize, Sequelize) => {

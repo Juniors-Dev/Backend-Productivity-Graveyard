@@ -2,8 +2,6 @@
  * Type Model
  *
  * Represents categories/death types for projects (classifies why projects were abandoned/buried).
- *
- * @note Could add `iconUrl` field if that's something frontend wants.
  */
 
 module.exports = (sequelize, Sequelize) => {
@@ -36,7 +34,7 @@ module.exports = (sequelize, Sequelize) => {
       foreignKey: "typeId",
       otherKey: "projectId",
       as: "projects",
-      onDelete: "CASCADE",
+      onDelete: "RESTRICT",
     });
   };
   return Type;
