@@ -112,6 +112,52 @@ Make sure to set a JWT_SECRET in your .env file.
   or CRLF as needed.
 
 ---
+## File Naming Conventions
+
+**Models:** Singular, PascalCase *(eg. User.js, Project.js)*
+**Routes:** Plural, lowercase *(eg. users.js, projects.js)*
+**Controllers:** Singular, camelCase    *(eg. userController.js, projectController.js)*
+**Services:** Singular, PascalCase *(eg. UserService.js, ProjectService.js)*
+**Middleware:** camelCase, action-named *(eg.authentication.js, validateSchema.js, asyncHandler.js)*
+**Schema:**    camelCase, singular    *(eg. userSchema.js, projectSchema.js)*
+
+So our file structure is like this
+```
+src/
+├── models/
+│   ├── User.js
+│   └── Project.js
+│
+├── services/
+│   ├── UserService.js
+│   └── ProjectService.js
+│
+├── controllers/
+│   ├── userController.js
+│   └── projectController.js
+│
+├── routes/
+│   ├── users.js
+│   └── projects.js
+│
+├── middleware/
+│   ├── authentication.js
+│   ├── validateSchema.js
+│   └── asyncHandler.js
+│
+├── schema/
+│   ├── userSchema.js
+│   └── projectSchema.js
+│
+├── seeder/
+│   ├── roles.json
+│   ├── types.json
+│   └── seed.js
+│
+└── app.js
+```
+
+---
 
 ## 👥 Contributing
 
