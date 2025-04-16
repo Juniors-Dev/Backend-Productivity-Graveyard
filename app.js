@@ -3,6 +3,10 @@ var express = require("express");
 var path = require("path");
 var cors = require("cors");
 const logger = require("morgan");
+const dotenv = require("dotenv");
+dotenv.config();
+
+const seed = require("./seeder/seed.js");
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerFile = require("./swagger-output.json");
@@ -12,16 +16,16 @@ var { indexRouter, usersRouter, projectsRouter, authRouter } = require("./routes
 var { db } = require("./models");
 
 // Check if the database connection is successful
-db.sequelize
-  .authenticate()
-  .then(() => console.log("✅ Connected to PostgreSQL"))
-  .catch((err) => {
-    console.error("❌ Unable to connect to the database:", err);
-    process.exit(1); // stop app from starting
-  });
+db.sequelize.authenticate();
 
 // can add the seeder here if needed
-db.sequelize.sync({ force: false }).then(async () => {});
+db.sequelize.sync({ force: false }).then(async () => {
+  try {
+    await seed();
+  } catch (error) {
+    console.error("Error seeding database:", error);
+  }
+});
 
 var app = express();
 
@@ -35,6 +39,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
+app.use("/", indexRouter);
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/projects", projectsRouter);
