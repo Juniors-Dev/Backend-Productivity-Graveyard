@@ -8,7 +8,7 @@
     "test": "jest",
     "swagger": "node --watch swagger",
     "start": "npm run swagger && node ./bin/www",
-    "dev": "npm run swagger && node --watch ./bin/www",
+    "dev": "node --watch swagger",
     "prepare": "husky install",
     "lint": "eslint . --ext .js",
     "lint:fix": "eslint . --ext .js --fix",
