@@ -43,12 +43,11 @@ class UserService {
       firstname,
       lastname,
       username,
+      displayName: username,
       email,
       encryptedPassword,
       salt,
-      address,
-      phone,
-      roleId,
+      roleId: roleId,
     });
   }
 

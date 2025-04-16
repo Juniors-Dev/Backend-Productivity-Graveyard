@@ -11,7 +11,7 @@ class RoleService {
   getOneRole(rName) {
     return this.Role.findOne({
       where: {
-        name: rname,
+        name: rName,
       },
     });
   }
