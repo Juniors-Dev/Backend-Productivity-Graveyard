@@ -114,12 +114,12 @@ Make sure to set a JWT_SECRET in your .env file.
 ---
 ## File Naming Conventions
 
-**Models:** Singular, PascalCase *(eg. User.js, Project.js)*
-**Routes:** Plural, lowercase *(eg. users.js, projects.js)*
-**Controllers:** Singular, camelCase    *(eg. userController.js, projectController.js)*
-**Services:** Singular, PascalCase *(eg. UserService.js, ProjectService.js)*
-**Middleware:** camelCase, action-named *(eg.authentication.js, validateSchema.js, asyncHandler.js)*
-**Schema:**    camelCase, singular    *(eg. userSchema.js, projectSchema.js)*
+- **Models:** Singular, PascalCase *(eg. User.js, Project.js)*
+- **Routes:** Plural, lowercase *(eg. users.js, projects.js)*
+- **Controllers:** Singular, camelCase    *(eg. userController.js, projectController.js)*
+- **Services:** Singular, PascalCase *(eg. UserService.js, ProjectService.js)*
+- **Middleware:** camelCase, action-named *(eg.authentication.js, validateSchema.js, asyncHandler.js)*
+- **Schema:** camelCase, singular *(eg. userSchema.js, projectSchema.js)*
 
 So our file structure is like this
 ```
