@@ -1,15 +1,13 @@
-const { UserServices, ProjectServices } = require("../services/index");
 const { db } = require("../models");
 const UserService = require("../services/UserService");
 const userService = new UserService(db);
-const projectServices = new ProjectServices(db);
 const { hashPassword, verifyPassword } = require("../utilities/hashing");
 const RoleService = require("../services/RoleServices");
 const roleService = new RoleService(db);
 const { generateToken } = require("../utilities/jwt");
 
 async function register(req, res) {
-  const { firstname, lastname, username, email, password } = req.body;
+  const { firstName, lastName, username, email, password } = req.body;
   const { salt, hashedPassword } = await hashPassword(password);
 
   //Created a samll RoleService.
@@ -17,14 +15,14 @@ async function register(req, res) {
 
   //creating the inital user
   const user = await userService.create({
-    firstname,
-    lastname,
+    firstName: firstName,
+    lastName: lastName,
     username,
     displayName: username,
     email,
-    encryptedPassword: hashPassword,
+    hashedPassword,
     salt,
-    roleId: role,
+    roleId: role.id,
   });
 
   if (!user) {
@@ -34,18 +32,18 @@ async function register(req, res) {
 }
 
 async function login(req, res) {
-  //retriving input
+  // retrieving input
   const { email, password } = req.body;
 
-  //finding the user
-  const user = await userServices.getOneEmail(email, false);
+  // finding the user - note we pass false to include the password fields
+  const user = await userService.getOneEmail(email, false);
 
   if (!user) {
     throw new Error("No user with this Email exist");
   }
 
-  //verfying the user
-  const verifyUser = await verifyPassword(password, user.salt, user.encryptedPassword);
+  // verifying the user - use hashedPassword instead of encryptedPassword
+  const verifyUser = await verifyPassword(password, user.salt, user.hashedPassword);
 
   if (!verifyUser) {
     return res.status(401).json({

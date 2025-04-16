@@ -17,7 +17,8 @@ class UserService {
       where: { email },
       include: [{ model: this.Role }],
       attributes: {
-        exclude: exclude ? ["encryptedPassword", "salt", "roleId"] : [],
+        // eslint-disable-next-line max-len
+        exclude: exclude ? ["hashedPassword", "salt", "roleId"] : [], // Changed from encryptedPassword to hashedPassword
       },
     });
   }
@@ -38,14 +39,14 @@ class UserService {
     });
   }
 
-  async create({ firstname, lastname, username, email, encryptedPassword, salt, roleId }) {
+  async create({ firstName, lastName, username, email, hashedPassword, salt, roleId }) {
     return this.User.create({
-      firstname,
-      lastname,
+      firstName,
+      lastName,
       username,
       displayName: username,
       email,
-      encryptedPassword,
+      hashedPassword,
       salt,
       roleId: roleId,
     });
