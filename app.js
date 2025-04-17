@@ -5,7 +5,7 @@ var cors = require("cors");
 const logger = require("morgan");
 const dotenv = require("dotenv");
 dotenv.config();
-var { errorResponse } = require("./utilities/responseHandler");
+var { errorResponse } = require("./utilities/response");
 
 //swagger
 const swaggerUi = require("swagger-ui-express");

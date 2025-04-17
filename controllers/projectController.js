@@ -1,4 +1,4 @@
-var db = require("../models");
+var { db } = require("../models");
 var ProjectService = require("../services/ProjectService");
 var projectService = new ProjectService(db);
 var { successResponse, errorResponse } = require("../utilities/response.js");
@@ -40,13 +40,14 @@ async function create(req, res) {
     description,
     eulogy,
     causeOfDeath,
+    userId,
     startDate,
     endDate,
-    userId,
     types = [],
     tombstoneId = null,
     status = "buried",
   } = req.body;
+  //const userId = req.user.id;
 
   try {
     const project = await projectService.create({

@@ -9,7 +9,7 @@ var {
   addType,
   removeType,
 } = require("../controllers/projectController");
-var asyncHandler = require("../middlewares/asyncHandler");
+var asyncHandler = require("../middleware/asyncHandler");
 
 router.get("/", asyncHandler(getAll));
 
@@ -21,7 +21,7 @@ router.put("/:id", asyncHandler(update));
 
 router.delete("/:id", asyncHandler(deleteProject));
 
-router.post("/:id/type", asyncHandler(addType));
+router.put("/:id/type", asyncHandler(addType));
 
 router.delete("/:id/type", asyncHandler(removeType));
 
