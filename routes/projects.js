@@ -11,7 +11,7 @@ var {
   removeType,
 } = require("../controllers/projectController");
 var asyncHandler = require("../middleware/asyncHandler");
-var { authenticate, hasRole, validateSchema, ownEntity } = require("../middleware");
+var { authenticate, hasRole, validateSchema, ownsEntity } = require("../middleware");
 var { ProjectService } = require("../services");
 var { db } = require("../models");
 var projectService = new ProjectService(db);
@@ -28,7 +28,7 @@ router.put(
   "/:id",
   authenticate,
   asyncHandler(hasRole("user")),
-  asyncHandler(ownEntity(projectService)),
+  asyncHandler(ownsEntity(projectService)),
   asyncHandler(update)
 );
 
@@ -36,7 +36,7 @@ router.delete(
   "/:id",
   authenticate,
   asyncHandler(hasRole("user")),
-  asyncHandler(ownEntity(projectService)),
+  asyncHandler(ownsEntity(projectService)),
   asyncHandler(deleteProject)
 );
 
@@ -44,7 +44,7 @@ router.put(
   "/:id/type",
   authenticate,
   asyncHandler(hasRole("user")),
-  asyncHandler(ownEntity(projectService)),
+  asyncHandler(ownsEntity(projectService)),
   asyncHandler(addType)
 );
 
@@ -52,7 +52,7 @@ router.delete(
   "/:id/type",
   authenticate,
   asyncHandler(hasRole("user")),
-  asyncHandler(ownEntity(projectService)),
+  asyncHandler(ownsEntity(projectService)),
   asyncHandler(removeType)
 );
 

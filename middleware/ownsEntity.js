@@ -5,7 +5,7 @@
  * @description Middleware to check if the user owns the entity
  * @note This middleware assumes that the request object contains a user object with an id property
  */
-const ownEntity = (service) => async (req, res, next) => {
+const ownsEntity = (service) => async (req, res, next) => {
   const { id } = req.params;
   const entity = await service.getOneId(id);
   if (!entity) {
@@ -25,4 +25,4 @@ const ownEntity = (service) => async (req, res, next) => {
   next();
 };
 
-module.exports = ownEntity;
+module.exports = ownsEntity;
