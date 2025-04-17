@@ -1,0 +1,272 @@
+{
+  "info": {
+    "_postman_id": "e5bd12e5-e962-4614-99e5-97a55630acb9",
+    "name": "Productivity Graveyard",
+    "description": "Welcome to the official API for **Productivity Graveyard** — the final resting place for your abandoned side projects, half-baked ideas, and over-scoped ambitions.\n\nThis collection provides all endpoints needed to:\n\n- Bury (create) a dead project\n    \n- Upvote hilariously tragic eulogies & Projects\n    \n- View global stats like _Dev Hope Half-Life_ and _Funerals Today_\n    \n- Resurrect a project (if you dare)\n    \n- Comment, roast, or leave fake flowers\n    \n- Handle user authentication with JWT\n    \n\nAll requests and responses follow a consistent structure for easy parsing and validation. Authenticated routes require a valid JWT in the `Authorization` header (`Bearer token`).\n\n####   \n**Response Formats**  \n  \nSuccessful response:\n\n``` javascript\n{ \n  \"success\": true,\n  \"status\": \"success\",\n  \"statusCode\": 200,\n  \"message\": \"Project found\",\n  \"data\": [ { \"id\": 1, \"title\": \"Project 1\" }, { \"id\": 2, \"title\": \"Project 2\" } ],\n  \"meta\": \n    { \"total\": 200, \n      \"offset\": 20, \n      \"limit\": 10 \n      \"hasNext\": true \n    } \n}\n\n ```\n\n#### For validation errors:\n\n``` javascript\n{\n \"success\": false,\n  \"status\": \"bad request\",\n  \"statusCode\": 400,\n  \"message\": \"Validation failed\",\n  \"errors\": [\n    {\n      \"field\": \"title\",\n      \"type\": \"required\",\n      \"message\": \"Title is a required field\"\n    },\n    {\n      \"field\": \"eulogy\",\n      \"type\": \"max\",\n      \"message\": \"Eulogy must be 300 characters or fewer\"\n    }\n  ]\n}\n\n ```\n\nFrontend can map errors\\[n\\].field to form input names for validation rendering.\n\n####   \nFor other errors\n\n``` javascript\n{\n  \"success\": false,\n  \"status\": \"error\",\n  \"statusCode\": 404,\n  \"message\": \"Project not found\"\n}\n\n ```",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "19439664"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n     \"firstName\": \"Bob\",\r\n     \"lastName\": \"Builder\",\r\n     \"username\": \"Bob_Builder\",\r\n     \"email\": \"bob_builder@builder.com\",\r\n     \"password\": \"builder\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n     \"email\": \"bob_builder@builder.com\",\r\n     \"password\": \"builder\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Projects",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/projects",
+              "host": ["{{base_url}}"],
+              "path": ["projects"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Project",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/projects/:id",
+              "host": ["{{base_url}}"],
+              "path": ["projects", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Types",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "Create Project",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"userId\": \"d3078562-3ad2-4eb9-8535-ad88c53dcf99\",\r\n    \"name\": \"Productivity Graveyard\",\r\n    \"description\": \"A humorous app to memorialize abandoned dev projects.\",\r\n    \"status\": \"archived\",\r\n    \"startDate\": \"2024-10-01\",\r\n    \"endDate\": \"2025-01-15\",\r\n    \"eulogy\": \"Laid to rest after haunting VS Code for too long. Survived by hundreds of unused TODOs.\",\r\n    \"types\": [2, 3]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/projects",
+              "host": ["{{base_url}}"],
+              "path": ["projects"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update Project",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Feature Creeper Codex\",\r\n    \"description\": \"A parody app showing how simple ideas spiral into feature-bloated chaos.\",\r\n    \"status\": \"active\",\r\n    \"startDate\": \"2023-02-01\",\r\n    \"endDate\": \"2025-01-15\",\r\n    \"eulogy\": \"Laid to rest after haunting VS Code for too long. Survived by hundreds of unused TODOs.\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/projects/:id",
+              "host": ["{{base_url}}"],
+              "path": ["projects", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Type",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"typeId\": \"1\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/projects/:id/type",
+              "host": ["{{base_url}}"],
+              "path": ["projects", ":id", "type"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "5a4d131c-c29e-4887-a5d4-b64b02f928ea"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Type",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"typeId\": \"1\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/projects/:id/type",
+              "host": ["{{base_url}}"],
+              "path": ["projects", ":id", "type"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "5a4d131c-c29e-4887-a5d4-b64b02f928ea"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "index",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "check seeder",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/check",
+          "host": ["{{base_url}}"],
+          "path": ["check"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "token",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "base_url",
+      "value": "localhost:3000",
+      "type": "string"
+    }
+  ]
+}
