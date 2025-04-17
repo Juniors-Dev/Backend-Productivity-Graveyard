@@ -2,8 +2,8 @@ class ProjectService {
   constructor(db) {
     this.client = db.sequelize;
     this.Project = db.Project;
-    this.ProjectTag = db.ProjectTag;
     this.Type = db.Type;
+    this.User = db.User;
   }
 
   async getAll() {
@@ -13,6 +13,10 @@ class ProjectService {
           model: this.Type,
           as: "types",
           through: { attributes: [] },
+        },
+        {
+          model: this.User,
+          attributes: ["id", "username", "avatarUrl"],
         },
       ],
     });
@@ -25,6 +29,10 @@ class ProjectService {
           model: this.Type,
           as: "types",
           through: { attributes: [] },
+        },
+        {
+          model: this.User,
+          attributes: ["id", "username"],
         },
       ],
     });

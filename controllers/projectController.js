@@ -41,14 +41,13 @@ async function create(req, res) {
     description,
     eulogy,
     causeOfDeath,
-    userId,
     startDate,
     endDate,
     types = [],
     tombstoneId = null,
     status = "buried",
   } = req.body;
-  //const userId = req.user.id;
+  const userId = req.user.id;
 
   try {
     const project = await projectService.create({

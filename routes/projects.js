@@ -11,6 +11,7 @@ var {
   removeType,
 } = require("../controllers/projectController");
 var asyncHandler = require("../middleware/asyncHandler");
+var { authenticate, hasRole, validateSchema } = require("../middleware");
 
 router.get("/", asyncHandler(getAll));
 
@@ -18,14 +19,14 @@ router.get("/types", asyncHandler(getAllTypes));
 
 router.get("/:id", asyncHandler(getOneId));
 
-router.post("/", asyncHandler(create));
+router.post("/", authenticate, asyncHandler(hasRole("user")), asyncHandler(create));
 
-router.put("/:id", asyncHandler(update));
+router.put("/:id", authenticate, asyncHandler(hasRole("user")), asyncHandler(update));
 
-router.delete("/:id", asyncHandler(deleteProject));
+router.delete("/:id", authenticate, asyncHandler(hasRole("user")), asyncHandler(deleteProject));
 
-router.put("/:id/type", asyncHandler(addType));
+router.put("/:id/type", authenticate, asyncHandler(hasRole("user")), asyncHandler(addType));
 
-router.delete("/:id/type", asyncHandler(removeType));
+router.delete("/:id/type", authenticate, asyncHandler(hasRole("user")), asyncHandler(removeType));
 
 module.exports = router;
