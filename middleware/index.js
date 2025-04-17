@@ -8,4 +8,5 @@ module.exports = {
   validateSchema: require("./validateSchema"),
   validateParamSchema: require("./validateParamSchema"),
   validateCredentials: require("./validateCredentials"),
+  ownEntity: require("./ownsEntity"),
 };
