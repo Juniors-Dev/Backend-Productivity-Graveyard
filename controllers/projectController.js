@@ -1,6 +1,7 @@
 var { db } = require("../models");
-var ProjectService = require("../services/ProjectService");
+var { ProjectService, TypeService } = require("../services");
 var projectService = new ProjectService(db);
+var typeService = new TypeService(db);
 var { successResponse, errorResponse } = require("../utilities/response.js");
 
 async function getAll(req, res) {
@@ -146,6 +147,27 @@ async function removeType(req, res) {
   }
 }
 
+async function getAllTypes(req, res) {
+  try {
+    const types = await typeService.getAll();
+    res.status(200).json(
+      successResponse({
+        message: "Success",
+        data: types,
+        statusCode: 200,
+      })
+    );
+  } catch (error) {
+    res.status(500).json(
+      errorResponse({
+        message: "Error fetching types",
+        statusCode: 500,
+        errors: error.message,
+      })
+    );
+  }
+}
+
 async function addType(req, res) {
   const { id } = req.params;
   const { typeId } = req.body;
@@ -213,6 +235,7 @@ module.exports = {
   getOneId,
   create,
   update,
+  getAllTypes,
   removeType,
   addType,
   deleteProject,

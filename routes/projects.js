@@ -6,12 +6,15 @@ var {
   create,
   update,
   deleteProject,
+  getAllTypes,
   addType,
   removeType,
 } = require("../controllers/projectController");
 var asyncHandler = require("../middleware/asyncHandler");
 
 router.get("/", asyncHandler(getAll));
+
+router.get("/types", asyncHandler(getAllTypes));
 
 router.get("/:id", asyncHandler(getOneId));
 
