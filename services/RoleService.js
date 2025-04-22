@@ -8,10 +8,10 @@ class RoleService {
   getAllRoles() {
     return this.Role.findAll();
   }
-  getOneRole(rName) {
+  getOneRole(name) {
     return this.Role.findOne({
       where: {
-        name: rName,
+        name: name,
       },
     });
   }

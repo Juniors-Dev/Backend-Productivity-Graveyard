@@ -15,8 +15,8 @@ async function register(req, res) {
 
   //creating the inital user
   const user = await userService.create({
-    firstName: firstName,
-    lastName: lastName,
+    firstName,
+    lastName,
     username,
     displayName: username,
     email,
