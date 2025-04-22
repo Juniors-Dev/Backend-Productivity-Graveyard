@@ -2,7 +2,7 @@ const { db } = require("../models");
 const UserService = require("../services/UserService");
 const userService = new UserService(db);
 const { hashPassword, verifyPassword } = require("../utilities/hashing");
-const RoleService = require("../services/RoleServices");
+const RoleService = require("../services/RoleService");
 const roleService = new RoleService(db);
 const { generateToken } = require("../utilities/jwt");
 

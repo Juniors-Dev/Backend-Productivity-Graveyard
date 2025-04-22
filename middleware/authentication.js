@@ -2,7 +2,7 @@ var { verifyToken } = require("../utilities/jwt");
 var { db } = require("../models");
 var UserService = require("../services/UserService");
 var userService = new UserService(db);
-var RoleService = require("../services/RoleServices");
+var RoleService = require("../services/RoleService");
 var roleService = new RoleService(db);
 
 async function authenticate(req, res, next) {
@@ -135,4 +135,4 @@ const isSelfOrAdmin = async (req, res, next) => {
   }
 };
 
-module.exports = { authenticate, hasRole, isAdmin };
+module.exports = { authenticate, hasRole, isAdmin, isSelfOrAdmin };
