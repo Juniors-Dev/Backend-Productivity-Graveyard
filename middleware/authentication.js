@@ -112,4 +112,25 @@ async function isAdmin(req, res, next) {
   }
 }
 
-module.exports = { authenticate, hasRole, isAdmin };
+//Check if the visited user is itsself or Admin
+const isSelfOrAdmin = async (req, res, next) => {
+  try {
+    const targetUser = req.params.id;
+    const user = req.user;
+
+    if (targetUser === user.id || user.Role.role === "admin") {
+      return next();
+    }
+
+    return res.status(403).json({
+      status: "forbidden",
+      statusCode: 403,
+      data: { result: "Forbidden, must be self or admin." },
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ status: "error", statusCode: 500, data: { result: e.message } });
+  }
+};
+
+module.exports = { authenticate, hasRole, isAdmin, isSelfOrAdmin };
