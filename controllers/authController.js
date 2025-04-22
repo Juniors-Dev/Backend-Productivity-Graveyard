@@ -2,7 +2,7 @@ const { db } = require("../models");
 const UserService = require("../services/UserService");
 const userService = new UserService(db);
 const { hashPassword, verifyPassword } = require("../utilities/hashing");
-const RoleService = require("../services/RoleServices");
+const RoleService = require("../services/RoleService");
 const roleService = new RoleService(db);
 const { generateToken } = require("../utilities/jwt");
 
@@ -15,8 +15,8 @@ async function register(req, res) {
 
   //creating the inital user
   const user = await userService.create({
-    firstName: firstName,
-    lastName: lastName,
+    firstName,
+    lastName,
     username,
     displayName: username,
     email,
