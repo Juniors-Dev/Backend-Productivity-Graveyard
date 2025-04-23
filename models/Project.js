@@ -43,12 +43,17 @@ module.exports = (sequelize, Sequelize) => {
       },
       startDate: {
         type: DataTypes.DATE,
-        allowNull: true,
+        allowNull: false,
         comment: "When the project was started",
+      },
+      endDate: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        comment: "When the project was abandoned",
       },
       status: {
         type: DataTypes.STRING,
-        defaultValue: "inactive",
+        defaultValue: "buried",
         validate: { isIn: [["inactive", "active", "buried", "resurrected", "completed", "archived"]] },
       },
     },
