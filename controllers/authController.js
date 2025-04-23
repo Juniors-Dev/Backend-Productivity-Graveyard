@@ -4,7 +4,7 @@ const userService = new UserService(db);
 const { hashPassword, verifyPassword } = require("../utilities/hashing");
 const RoleService = require("../services/RoleService");
 const roleService = new RoleService(db);
-const { generateToken } = require("../utilities/jwt");
+const { generateToken, verifyToken } = require("../utilities/jwt");
 
 async function register(req, res) {
   const { firstName, lastName, username, email, password } = req.body;
@@ -36,10 +36,20 @@ async function login(req, res) {
   const { email, password } = req.body;
 
   // finding the user - note we pass false to include the password fields
-  const user = await userService.getOneEmail(email, false);
+  const user = await userService.getOneEmail(email, false, false);
 
+  //Cheking if the user exist
   if (!user) {
     throw new Error("No user with this Email exist");
+  }
+
+  //cheking if the user is soft deleted
+  if (user.deletedAt) {
+    return res.status(403).json({
+      status: "forbidden",
+      statusCode: 403,
+      data: { result: "This account has been deleted or deactivated." },
+    });
   }
 
   // verifying the user - use hashedPassword instead of encryptedPassword
