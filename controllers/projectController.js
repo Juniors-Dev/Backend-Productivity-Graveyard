@@ -3,14 +3,24 @@ var { ProjectService, TypeService } = require("../services");
 var projectService = new ProjectService(db);
 var typeService = new TypeService(db);
 var { successResponse, errorResponse } = require("../utilities/response.js");
+var { getLimitOffset } = require("../utilities/getPagination.js");
 
 async function getAll(req, res) {
-  const projects = await projectService.getAll();
+  const { limit, offset } = getLimitOffset(req);
+
+  const { count, rows } = await projectService.getAll(limit, offset);
+
   res.status(200).json(
     successResponse({
       message: "Success",
-      data: projects,
+      data: rows,
       statusCode: 200,
+      meta: {
+        total: count,
+        limit,
+        offset,
+        hasNext: count > limit + offset,
+      },
     })
   );
 }

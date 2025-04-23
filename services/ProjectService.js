@@ -6,8 +6,8 @@ class ProjectService {
     this.User = db.User;
   }
 
-  async getAll() {
-    return this.Project.findAll({
+  async getAll(limit = 100, offset = 0, options = {}) {
+    return this.Project.findAndCountAll({
       include: [
         {
           model: this.Type,
@@ -19,6 +19,9 @@ class ProjectService {
           attributes: ["id", "username", "avatarUrl"],
         },
       ],
+      limit,
+      offset,
+      distinct: true,
     });
   }
 
