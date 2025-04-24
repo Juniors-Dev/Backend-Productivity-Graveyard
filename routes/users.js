@@ -18,7 +18,7 @@ router.get("/deleted", asyncHandler(authenticate), asyncHandler(getAllSoftDelete
 router.get("/:id", asyncHandler(getUser));
 
 //Update user info.
-router.put("/:id", asyncHandler(authenticate), asyncHandler(updateMe));
+router.put("/me", asyncHandler(authenticate), asyncHandler(updateMe));
 
 router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
 
