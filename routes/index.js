@@ -3,4 +3,5 @@ module.exports = {
   projectsRouter: require("./projects"),
   usersRouter: require("./users"),
   indexRouter: require("./home"),
+  upvotesRouter: require("./upvote"),
 };
