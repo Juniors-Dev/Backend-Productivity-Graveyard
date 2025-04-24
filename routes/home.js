@@ -12,8 +12,8 @@ router.get("/check", async function (req, res, next) {
     const types = await db.Type.findAll();
     const users = await db.User.findAll();
     const projects = await db.Project.findAll();
-
-    res.status(200).json({ status: "ok", roles, types, users, projects });
+    const achievements = await db.Achievement.findAll();
+    res.status(200).json({ status: "ok", roles, types, users, projects, achievements });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ status: "error", message: "Internal Server Error" });
