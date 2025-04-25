@@ -80,9 +80,7 @@ class ProjectService {
 
     return {
       count: parseInt(count[0].count),
-      rows: projects.map((project) => ({
-        ...project,
-      })),
+      rows: projects,
     };
   }
 
