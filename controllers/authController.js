@@ -6,7 +6,7 @@ const RoleService = require("../services/RoleService");
 const roleService = new RoleService(db);
 const { generateToken, verifyToken } = require("../utilities/jwt");
 const { generateEmailVerificationToken } = require("../utilities/emailToken");
-const { sendVerificationEmail } = require("../services/emailService");
+const { loginLimiter } = require("../middleware/rateLimiters");
 
 async function verifyEmail(req, res, next) {
   const token = req.query.token;

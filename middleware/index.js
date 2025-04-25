@@ -8,4 +8,7 @@ module.exports = {
   validateSchema: require("./validateSchema"),
   validateParamSchema: require("./validateParamSchema"),
   validateCredentials: require("./validateCredentials"),
+  loginLimiter: require("./rateLimiters"),
+  passwordResetLimiter: require("./rateLimiters"),
+  emailResetLimiter: require("./rateLimiters"),
 };

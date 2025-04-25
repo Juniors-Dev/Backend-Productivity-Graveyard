@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
 var { login, register, verifyEmail } = require("../controllers/authController");
-var { validateSchema, asyncHandler, validateCredentials } = require("../middleware");
+var { validateSchema, asyncHandler, validateCredentials, loginLimiter } = require("../middleware");
 
 //Get Welcome
 router.get("/", function (req, res, next) {
@@ -14,6 +14,6 @@ router.get("/verify-email", asyncHandler(verifyEmail));
 //Regitser
 router.post("/register", asyncHandler(validateCredentials), asyncHandler(register));
 //Login
-router.post("/login", asyncHandler(login));
+router.post("/login", loginLimiter, asyncHandler(login));
 
 module.exports = router;

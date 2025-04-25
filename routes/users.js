@@ -11,25 +11,28 @@ const {
   requestEmailReset,
   resetEmail,
 } = require("../controllers/userController");
-const { authenticate, hasRole, isAdmin, isSelfOrAdmin } = require("../middleware/authentication");
-const asyncHandler = require("../middleware/asyncHandler");
+
+const { authenticate, asyncHandler, passwordResetLimiter, emailResetLimiter } = require("../middleware");
 
 router.get("/", function (req, res, next) {
   res.status(200).json({ message: "Welcome to the API" });
 });
 
-//GET USER/ME
+// GET USER/ME
 router.get("/me", asyncHandler(authenticate), asyncHandler(getMe));
 router.put("/me", asyncHandler(authenticate), asyncHandler(updateMe));
 router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
 
-//ADMIN
+// ADMIN
 router.get("/deleted", asyncHandler(authenticate), asyncHandler(getAllSoftDeleted));
 
 // Email flows
-router.post("/request-email-reset", asyncHandler(authenticate), asyncHandler(requestEmailReset));
+router.post("/request-email-reset", asyncHandler(authenticate), emailResetLimiter, asyncHandler(requestEmailReset));
+
 router.post("/verify-new-email", asyncHandler(resetEmail));
-router.post("/request-password-reset", requestPasswordReset);
+
+router.post("/request-password-reset", passwordResetLimiter, asyncHandler(requestPasswordReset));
+
 router.post("/reset-password", asyncHandler(resetPassword));
 
 // Dynamic route
