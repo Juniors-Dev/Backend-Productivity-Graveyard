@@ -7,12 +7,22 @@ class ProjectService {
   }
 
   async getAll(limit = 100, offset = 0, options = {}) {
+    const { userId, status, orderBy, order, types = [] } = options;
     return this.Project.findAndCountAll({
+      where: {
+        ...(orderBy ? { [orderBy]: order } : {}),
+        ...(orderBy === "createdAt" ? { createdAt: order } : {}),
+        ...(userId ? { userId } : {}),
+        ...(status ? { status } : {}),
+        ...(types.length ? { "$types.id$": types } : {}),
+      },
       include: [
         {
           model: this.Type,
           as: "types",
-          through: { attributes: [] },
+          through: { attributes: [id] },
+          //required: !!types.length,
+          // ...(types.length ? { where: { id: types } } : {}),
         },
         {
           model: this.User,
@@ -35,7 +45,7 @@ class ProjectService {
         },
         {
           model: this.User,
-          attributes: ["id", "username"],
+          attributes: ["id", "username", "avatarUrl"],
         },
       ],
     });
@@ -83,6 +93,10 @@ class ProjectService {
             model: this.Type,
             as: "types",
             through: { attributes: [] },
+          },
+          {
+            model: this.User,
+            attributes: ["id", "username", "avatarUrl"],
           },
         ],
       });
