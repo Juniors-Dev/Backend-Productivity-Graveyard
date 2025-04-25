@@ -12,7 +12,7 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerFile = require("./swagger-output.json");
 
 // routers
-var { indexRouter, usersRouter, projectsRouter, authRouter, upvotesRouter } = require("./routes/index");
+var { indexRouter, usersRouter, projectsRouter, authRouter, votesRouter } = require("./routes/index");
 
 // database and seeder
 var { db } = require("./models");
@@ -46,7 +46,7 @@ app.use("/", indexRouter);
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/projects", projectsRouter);
-app.use("/upvotes", upvotesRouter);
+app.use("/votes", votesRouter);
 
 // Swagger
 app.use("/doc", swaggerUi.serve, swaggerUi.setup(swaggerFile));

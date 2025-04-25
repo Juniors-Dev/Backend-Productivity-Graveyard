@@ -1,9 +1,6 @@
 /**
- * ResurrectionEvent Model
- *
  * Tracks when a project has been revived after being "buried".
  */
-
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 

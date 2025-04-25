@@ -1,10 +1,10 @@
 {
   "info": {
-    "_postman_id": "e5bd12e5-e962-4614-99e5-97a55630acb9",
+    "_postman_id": "23f2dd92-5f48-45d2-8d27-540823de0438",
     "name": "Productivity Graveyard",
     "description": "Welcome to the official API for **Productivity Graveyard** — the final resting place for your abandoned side projects, half-baked ideas, and over-scoped ambitions.\n\nThis collection provides all endpoints needed to:\n\n- Bury (create) a dead project\n    \n- Upvote hilariously tragic eulogies & Projects\n    \n- View global stats like _Dev Hope Half-Life_ and _Funerals Today_\n    \n- Resurrect a project (if you dare)\n    \n- Comment, roast, or leave fake flowers\n    \n- Handle user authentication with JWT\n    \n\nAll requests and responses follow a consistent structure for easy parsing and validation. Authenticated routes require a valid JWT in the `Authorization` header (`Bearer token`).\n\n####   \n**Response Formats**  \n  \nSuccessful response:\n\n``` javascript\n{ \n  \"success\": true,\n  \"status\": \"success\",\n  \"statusCode\": 200,\n  \"message\": \"Project found\",\n  \"data\": [ { \"id\": 1, \"title\": \"Project 1\" }, { \"id\": 2, \"title\": \"Project 2\" } ],\n  \"meta\": \n    { \"total\": 200, \n      \"offset\": 20, \n      \"limit\": 10 \n      \"hasNext\": true \n    } \n}\n\n ```\n\n#### For validation errors:\n\n``` javascript\n{\n \"success\": false,\n  \"status\": \"bad request\",\n  \"statusCode\": 400,\n  \"message\": \"Validation failed\",\n  \"errors\": [\n    {\n      \"field\": \"title\",\n      \"type\": \"required\",\n      \"message\": \"Title is a required field\"\n    },\n    {\n      \"field\": \"eulogy\",\n      \"type\": \"max\",\n      \"message\": \"Eulogy must be 300 characters or fewer\"\n    }\n  ]\n}\n\n ```\n\nFrontend can map errors\\[n\\].field to form input names for validation rendering.\n\n####   \nFor other errors\n\n``` javascript\n{\n  \"success\": false,\n  \"status\": \"error\",\n  \"statusCode\": 404,\n  \"message\": \"Project not found\"\n}\n\n ```",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "19439664"
+    "_exporter_id": "34014473"
   },
   "item": [
     {
@@ -95,7 +95,10 @@
           "name": "Types",
           "request": {
             "method": "GET",
-            "header": []
+            "header": [],
+            "url": {
+              "raw": ""
+            }
           },
           "response": []
         },
@@ -208,10 +211,58 @@
       ]
     },
     {
+      "name": "Upvotes",
+      "item": [
+        {
+          "name": "Upvote Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/votes/:projectId/status",
+              "host": ["{{base_url}}"],
+              "path": ["votes", ":projectId", "status"],
+              "variable": [
+                {
+                  "key": "projectId",
+                  "value": "",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle Upvote",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/votes/:projectId/toggle",
+              "host": ["{{base_url}}"],
+              "path": ["votes", ":projectId", "toggle"],
+              "variable": [
+                {
+                  "key": "projectId",
+                  "value": "",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "index",
       "request": {
         "method": "GET",
-        "header": []
+        "header": [],
+        "url": {
+          "raw": ""
+        }
       },
       "response": []
     },

@@ -1,13 +1,13 @@
-var { db } = require("../models");
-var { UpvoteService } = require("../services");
-var upvoteService = new UpvoteService(db);
+var { db } = require("../models/index.js");
+var { VoteService } = require("../services/index.js");
+var voteService = new VoteService(db);
 var { successResponse } = require("../utilities/response.js");
 
 async function toggleUpvote(req, res) {
   const { projectId } = req.params;
   const { id: userId } = req.user;
 
-  const { voted, count } = await upvoteService.toggleUpvote(userId, projectId);
+  const { voted, count } = await voteService.toggleUpvote(userId, projectId);
 
   res.status(200).json(
     successResponse({
@@ -25,7 +25,7 @@ async function getUserUpvoteStatus(req, res) {
   const { projectId } = req.params;
   const { id: userId } = req.user;
 
-  const { voted, count } = await upvoteService.getUserUpvoteStatus(userId, projectId);
+  const { voted, count } = await voteService.getUserUpvoteStatus(userId, projectId);
 
   res.status(200).json(
     successResponse({

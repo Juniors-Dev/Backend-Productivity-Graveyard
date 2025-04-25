@@ -1,4 +1,4 @@
-class UpvoteService {
+class VoteService {
   constructor(db) {
     this.client = db.sequelize;
     this.Upvote = db.Upvote;
@@ -43,7 +43,7 @@ class UpvoteService {
    * Toggles (add/remove) the user's upvote on a project.
    * @param {string} userId - UUID of the user toggling the upvote.
    * @param {string} projectId - UUID of the project.
-   * @returns {Promise<{voted: boolean, count: number}>} - Object with the new vote status and count.
+   * @returns {Promise<{voted: boolean, count: number}>}
    */
   async toggleUpvote(userId, projectId) {
     await this._ensureProjectExists(projectId);
@@ -74,4 +74,4 @@ class UpvoteService {
   }
 }
 
-module.exports = UpvoteService;
+module.exports = VoteService;
