@@ -1,6 +1,16 @@
 var express = require("express");
 var router = express.Router();
-const { getUser, updateMe, getMe, softDeletedUser, getAllSoftDeleted } = require("../controllers/userController");
+const {
+  getUser,
+  updateMe,
+  getMe,
+  softDeletedUser,
+  getAllSoftDeleted,
+  requestPasswordReset,
+  resetPassword,
+  requestEmailReset,
+  resetEmail,
+} = require("../controllers/userController");
 const { authenticate, hasRole, isAdmin, isSelfOrAdmin } = require("../middleware/authentication");
 const asyncHandler = require("../middleware/asyncHandler");
 
@@ -10,16 +20,19 @@ router.get("/", function (req, res, next) {
 
 //GET USER/ME
 router.get("/me", asyncHandler(authenticate), asyncHandler(getMe));
+router.put("/me", asyncHandler(authenticate), asyncHandler(updateMe));
+router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
 
-//this should be added to the AdminController
+//ADMIN
 router.get("/deleted", asyncHandler(authenticate), asyncHandler(getAllSoftDeleted));
 
-//GET USER/ID
+// Email flows
+router.post("/request-email-reset", asyncHandler(authenticate), asyncHandler(requestEmailReset));
+router.post("/verify-new-email", asyncHandler(resetEmail));
+router.post("/request-password-reset", requestPasswordReset);
+router.post("/reset-password", asyncHandler(resetPassword));
+
+// Dynamic route
 router.get("/:id", asyncHandler(getUser));
-
-//Update user info.
-router.put("/me", asyncHandler(authenticate), asyncHandler(updateMe));
-
-router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
 
 module.exports = router;

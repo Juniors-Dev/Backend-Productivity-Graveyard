@@ -1,4 +1,6 @@
 const { Op } = require("sequelize");
+const { generateEmailToken } = require("../utilities/emailToken");
+const { sendVerificationEmail, sendPasswordResetEmail, sendEmailChangeVerification } = require("./emailService");
 
 class UserService {
   constructor(db) {
@@ -42,7 +44,9 @@ class UserService {
   }
 
   async create({ firstName, lastName, username, email, hashedPassword, salt, roleId }) {
-    return this.User.create({
+    const { token, expires } = generateEmailToken();
+
+    const user = await this.User.create({
       firstName,
       lastName,
       username,
@@ -50,8 +54,15 @@ class UserService {
       email,
       hashedPassword,
       salt,
-      roleId: roleId,
+      roleId,
+      emailVerificationToken: token,
+      emailVerificationExpires: expires,
+      isEmailVerified: false,
     });
+
+    await sendVerificationEmail(user.email, token);
+
+    return user;
   }
 
   async update(id, args) {
@@ -83,6 +94,104 @@ class UserService {
 
   async restore(id) {
     return this.User.restore({ where: { id } });
+  }
+
+  async verifyEmailToken(token) {
+    const user = await this.User.findOne({
+      where: { emailVerificationToken: token },
+    });
+
+    if (!user || user.emailVerificationExpires < new Date()) {
+      return null;
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = null;
+    user.emailVerificationExpires = null;
+    await user.save();
+
+    return user;
+  }
+
+  async verifyPasswordToken(token) {
+    const user = await this.User.findOne({
+      where: { passwordResetToken: token },
+    });
+
+    if (!user || user.passwordResetExpires < new Date()) {
+      return null;
+    }
+
+    return user; // Just return — let the next step update password
+  }
+
+  async resetPassword(token, hashedPassword, salt) {
+    const user = await this.User.findOne({
+      where: { passwordResetToken: token },
+    });
+
+    if (!user || user.passwordResetExpires < new Date()) {
+      throw new Error("Invalid or expired reset token");
+    }
+
+    user.hashedPassword = hashedPassword;
+    user.salt = salt;
+    user.passwordResetToken = null;
+    user.passwordResetExpires = null;
+
+    await user.save();
+    return user;
+  }
+
+  async requestPasswordReset(email) {
+    const user = await this.User.findOne({ where: { email } });
+
+    if (user) {
+      const { token, expires } = generateEmailToken();
+      user.passwordResetToken = token;
+      user.passwordResetExpires = expires;
+      await user.save();
+      await sendPasswordResetEmail(user.email, token);
+    }
+
+    // Always return silently to avoid revealing if user exists
+    return true;
+  }
+
+  async resetEmail(token) {
+    const user = await this.User.findOne({
+      where: { emailChangeToken: token },
+    });
+
+    if (!user || user.emailChangeExpires < new Date()) {
+      throw new Error("Invalid or expired email change token");
+    }
+
+    user.email = user.pendingEmail;
+    user.pendingEmail = null;
+    user.emailChangeToken = null;
+    user.emailChangeExpires = null;
+
+    await user.save();
+    return user;
+  }
+
+  async requestEmailChange(userId, newEmail) {
+    const user = await this.User.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const { token, expires } = generateEmailToken();
+
+    user.pendingEmail = newEmail;
+    user.emailChangeToken = token;
+    user.emailChangeExpires = expires;
+
+    await user.save();
+
+    await sendEmailChangeVerification(newEmail, token);
   }
 }
 

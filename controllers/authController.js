@@ -5,6 +5,24 @@ const { hashPassword, verifyPassword } = require("../utilities/hashing");
 const RoleService = require("../services/RoleService");
 const roleService = new RoleService(db);
 const { generateToken, verifyToken } = require("../utilities/jwt");
+const { generateEmailVerificationToken } = require("../utilities/emailToken");
+const { sendVerificationEmail } = require("../services/emailService");
+
+async function verifyEmail(req, res, next) {
+  const token = req.query.token;
+
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const user = await userService.verifyEmailToken(token);
+
+  if (!user) {
+    throw new Error("Invalid or expired token");
+  }
+
+  res.status(200).json({ status: "success", message: "Email verified successfully." });
+}
 
 async function register(req, res) {
   const { firstName, lastName, username, email, password } = req.body;
@@ -28,6 +46,7 @@ async function register(req, res) {
   if (!user) {
     throw new Error("Failed to create user");
   }
+
   res.status(201).json({ status: "success", statusCode: 201, data: { result: "Account created." } });
 }
 
@@ -38,9 +57,13 @@ async function login(req, res) {
   // finding the user - note we pass false to include the password fields
   const user = await userService.getOneEmail(email, false, false);
 
-  //Cheking if the user exist
+  //checking if the user exist
   if (!user) {
-    throw new Error("No user with this Email exist");
+    throw new Error("No user with this email exists.");
+  }
+
+  if (!user.isEmailVerified) {
+    throw new Error("Email not verified. Please verify your email before logging in.");
   }
 
   // verifying the user - use hashedPassword instead of encryptedPassword
@@ -75,4 +98,4 @@ async function login(req, res) {
   });
 }
 
-module.exports = { register, login };
+module.exports = { register, login, verifyEmail };

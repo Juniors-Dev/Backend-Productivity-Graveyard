@@ -1,12 +1,15 @@
 var express = require("express");
 var router = express.Router();
-var { login, register } = require("../controllers/authController");
+var { login, register, verifyEmail } = require("../controllers/authController");
 var { validateSchema, asyncHandler, validateCredentials } = require("../middleware");
 
 //Get Welcome
 router.get("/", function (req, res, next) {
   res.status(200).json({ message: "Welcome to the API" });
 });
+
+//verify email
+router.get("/verify-email", asyncHandler(verifyEmail));
 
 //Regitser
 router.post("/register", asyncHandler(validateCredentials), asyncHandler(register));
