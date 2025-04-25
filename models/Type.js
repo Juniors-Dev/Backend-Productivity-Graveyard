@@ -1,9 +1,6 @@
 /**
- * Type Model
- *
  * Represents categories/death types for projects (classifies why projects were abandoned/buried).
  */
-
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 

@@ -1,10 +1,6 @@
 /**
- * Project Model
- *
  * Represents a user-submitted project in the graveyard.
- * @note Linked to ProjectTags for category (Type) tagging.
  */
-
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 
