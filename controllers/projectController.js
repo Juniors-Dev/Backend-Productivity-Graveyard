@@ -14,6 +14,7 @@ async function getAll(req, res) {
     order,
     userId,
     types: types ? types.split(",") : [],
+    currentUserId: req.user?.id,
   };
 
   const { count, rows } = await projectService.getAll(limit, offset, options);

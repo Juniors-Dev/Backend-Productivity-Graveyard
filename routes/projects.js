@@ -17,11 +17,11 @@ var { ProjectService } = require("../services");
 var { db } = require("../models");
 var projectService = new ProjectService(db);
 
-router.get("/", asyncHandler(getAll));
+router.get("/", authenticate, asyncHandler(getAll));
 
 router.get("/types", asyncHandler(getAllTypes));
 
-router.get("/:id", asyncHandler(getOneId));
+router.get("/:id", authenticate, asyncHandler(getOneId));
 
 router.post("/", authenticate, validateSchema(projectSchema), asyncHandler(hasRole("user")), asyncHandler(create));
 

@@ -7,32 +7,83 @@ class ProjectService {
   }
 
   async getAll(limit = 100, offset = 0, options = {}) {
-    const { userId, status, orderBy, order, types = [] } = options;
-    return this.Project.findAndCountAll({
-      where: {
-        ...(orderBy ? { [orderBy]: order } : {}),
-        ...(orderBy === "createdAt" ? { createdAt: order } : {}),
-        ...(userId ? { userId } : {}),
-        ...(status ? { status } : {}),
-        ...(types.length ? { "$types.id$": types } : {}),
-      },
-      include: [
-        {
-          model: this.Type,
-          as: "types",
-          through: { attributes: [id] },
-          //required: !!types.length,
-          // ...(types.length ? { where: { id: types } } : {}),
+    const { userId = null, currentUserId = null, status, orderBy, order, types = [] } = options;
+    // return this.Project.findAndCountAll({
+    //   where: {
+    //     ...(orderBy === "createdAt" ? { createdAt: order } : {}),
+    //     ...(userId ? { userId } : {}),
+    //     ...(status ? { status } : {}),
+    //     ...(types.length ? { "$types.id$": types } : {}),
+    //   },
+    //   include: [
+    //     {
+    //       model: this.Type,
+    //       as: "types",
+    //       through: { attributes: [id] },
+    //       //required: !!types.length,
+    //       // ...(types.length ? { where: { id: types } } : {}),
+    //     },
+    //     {
+    //       model: this.User,
+    //       attributes: ["id", "username", "avatarUrl"],
+    //     },
+    //   ],
+    //   limit,
+    //   offset,
+    //   distinct: true,
+    // });
+    const projects = await this.client.query(
+      `
+      SELECT 
+        p."id",
+        p."name",
+        p."description",
+        p."createdAt",
+        p."updatedAt",
+        COUNT(DISTINCT uv."id") AS "upvoteCount",
+        COUNT(uv."userId") FILTER (WHERE uv."userId" = :currentUserId) AS "userHasVoted",
+        MAX(CASE WHEN uv."userId" = :currentUserId THEN 1 ELSE 0 END) > 0 AS "userHasVoted",
+        u."username",
+        u."avatarUrl",
+        u."id" AS "userId"        
+      FROM "Projects" p
+      LEFT JOIN "Upvotes" uv ON p."id" = uv."projectId"
+      LEFT JOIN "ProjectTags" pt ON p."id" = pt."projectId"
+      LEFT JOIN "Types" t ON pt."typeId" = t."id"
+      LEFT JOIN "Users" u ON p."userId" = u."id"
+      GROUP BY p."id", p."name", p."description", p."createdAt", p."updatedAt", u."username", u."avatarUrl", u."id"
+      ORDER BY p."createdAt" DESC
+      LIMIT :limit OFFSET :offset
+      `,
+      {
+        replacements: {
+          currentUserId,
+          limit,
+          offset,
         },
-        {
-          model: this.User,
-          attributes: ["id", "username", "avatarUrl"],
-        },
-      ],
-      limit,
-      offset,
-      distinct: true,
-    });
+        type: this.client.QueryTypes.SELECT,
+      }
+    );
+
+    const count = await this.client.query(
+      `
+      SELECT COUNT(*) AS count FROM "Projects" p
+      LEFT JOIN "Upvotes" uv ON p."id" = uv."projectId"
+      LEFT JOIN "ProjectTags" pt ON p."id" = pt."projectId"
+      LEFT JOIN "Types" t ON pt."typeId" = t."id"
+      LEFT JOIN "Users" u ON p."userId" = u."id"
+      `,
+      {
+        type: this.client.QueryTypes.SELECT,
+      }
+    );
+
+    return {
+      count: parseInt(count[0].count),
+      rows: projects.map((project) => ({
+        ...project,
+      })),
+    };
   }
 
   async getOneId(id) {
