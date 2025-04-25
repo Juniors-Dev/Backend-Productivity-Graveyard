@@ -47,7 +47,7 @@ class VoteService {
    */
   async toggleUpvote(userId, projectId) {
     await this._ensureProjectExists(projectId);
-
+    // Transaction Time !!!
     const result = await this.client.transaction(async (t) => {
       const existingUpvote = await this.Upvote.findOne({
         where: { userId, projectId },
