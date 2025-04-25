@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const { generateEmailToken } = require("../utilities/emailToken");
 const { sendVerificationEmail, sendPasswordResetEmail, sendEmailChangeVerification } = require("./emailService");
+const { isEmailRateLimited } = require("../utilities/emailRateLimiter");
 
 class UserService {
   constructor(db) {
@@ -60,6 +61,9 @@ class UserService {
       isEmailVerified: false,
     });
 
+    if (isEmailRateLimited(email)) {
+      return true;
+    }
     await sendVerificationEmail(user.email, token);
 
     return user;
@@ -144,6 +148,10 @@ class UserService {
   }
 
   async requestPasswordReset(email) {
+    //So that the email dosent get spammed
+    if (isEmailRateLimited(email)) {
+      return true;
+    }
     const user = await this.User.findOne({ where: { email } });
 
     if (user) {
@@ -177,6 +185,9 @@ class UserService {
   }
 
   async requestEmailChange(userId, newEmail) {
+    if (isEmailRateLimited(email)) {
+      return true;
+    }
     const user = await this.User.findOne({ where: { id: userId } });
 
     if (!user) {
