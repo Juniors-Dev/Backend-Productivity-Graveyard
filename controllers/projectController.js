@@ -35,7 +35,7 @@ async function getAll(req, res) {
 }
 
 async function getOneId(req, res) {
-  const project = await projectService.getOneId(req.params.id);
+  const project = await projectService.getOneId(req.params.id, req.user?.id);
   if (!project) {
     res.status(404).json(
       errorResponse({

@@ -1,3 +1,4 @@
+const ProjectQueryBuilder = require("./queries/ProjectQueryBuilder");
 class ProjectService {
   constructor(db) {
     this.client = db.sequelize;
@@ -7,117 +8,59 @@ class ProjectService {
   }
 
   async getAll(limit = 100, offset = 0, options = {}) {
-    const { userId = null, currentUserId = null, status, orderBy, order, types = [] } = options;
-    const conditions = [];
+    const { userId, currentUserId, status, orderBy, order, types } = options;
 
-    if (userId) conditions.push(`p."userId" = :userId`);
-    if (status) conditions.push(`p."status" = :status`);
-    if (types.length) conditions.push(`t."id" IN (:types)`);
+    const queryBuilder = new ProjectQueryBuilder()
+      .withVotes()
+      .withTypes()
+      .withUser()
+      .filterByUser(userId)
+      .filterByStatus(status)
+      .filterByTypes(types)
+      .orderByField(orderBy || "createdAt", order || "DESC");
 
-    const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+    const projects = await this.client.query(queryBuilder.buildListQuery(), {
+      replacements: {
+        currentUserId,
+        limit,
+        offset,
+        userId,
+        status,
+        types,
+      },
+      type: this.client.QueryTypes.SELECT,
+    });
 
-    const projects = await this.client.query(
-      `
-      SELECT 
-        p."id",
-        p."name",
-        p."description",
-        p."eulogy",
-        p."causeOfDeath",
-        p."tombstoneId",
-        p."startDate",
-        p."endDate",
-        p."status",
-        ARRAY_AGG(DISTINCT t."name") AS "types",
-        COUNT(DISTINCT uv."id")::INT AS "upvoteCount",
-        MAX(CASE WHEN uv."userId" = :currentUserId THEN 1 ELSE 0 END) > 0 AS "userHasVoted",
-        u."username",
-        u."avatarUrl",
-        u."id" AS "userId"        
-      FROM "Projects" p
-      LEFT JOIN "Upvotes" uv ON p."id" = uv."projectId"
-      LEFT JOIN "ProjectTags" pt ON p."id" = pt."projectId"
-      LEFT JOIN "Types" t ON pt."typeId" = t."id"
-      LEFT JOIN "Users" u ON p."userId" = u."id"
-      ${whereClause}
-      GROUP BY 
-        p."id",
-        p."name",
-        p."description",
-        p."createdAt",
-        p."updatedAt",
-        u."username",
-        u."avatarUrl",
-        u."id",
-        p."eulogy",
-        p."causeOfDeath",
-        p."tombstoneId",
-        p."startDate",
-        p."endDate",
-        p."status"
-      ${orderBy ? `ORDER BY p."${orderBy}" ${order}` : ""}
-      LIMIT :limit OFFSET :offset
-      `,
-      {
-        replacements: {
-          currentUserId,
-          limit,
-          offset,
-          userId,
-          status,
-          types,
-          orderBy,
-          order,
-        },
-        type: this.client.QueryTypes.SELECT,
-      }
-    );
-
-    const count = await this.client.query(
-      `
-      SELECT COUNT(DISTINCT p.id) AS count FROM "Projects" p
-      LEFT JOIN "Upvotes" uv ON p."id" = uv."projectId"
-      LEFT JOIN "ProjectTags" pt ON p."id" = pt."projectId"
-      LEFT JOIN "Types" t ON pt."typeId" = t."id"
-      LEFT JOIN "Users" u ON p."userId" = u."id"
-      ${whereClause}
-      `,
-      {
-        replacements: {
-          currentUserId,
-          userId,
-          status,
-          types,
-        },
-        type: this.client.QueryTypes.SELECT,
-      }
-    );
-
-    console.log(userId, status, orderBy, order, types);
+    const count = await this.client.query(queryBuilder.buildCountQuery(), {
+      replacements: {
+        currentUserId,
+        userId,
+        status,
+        types,
+      },
+      type: this.client.QueryTypes.SELECT,
+    });
     return {
       count: parseInt(count[0].count),
       rows: projects,
     };
   }
 
-  async getOneId(id) {
-    const project = await this.Project.findByPk(id, {
-      include: [
-        {
-          model: this.Type,
-          as: "types",
-          through: { attributes: [] },
-        },
-        {
-          model: this.User,
-          attributes: ["id", "username", "avatarUrl"],
-        },
-      ],
+  async getOneId(id, currentUserId = null) {
+    const queryBuilder = new ProjectQueryBuilder().withVotes().withTypes().withUser().filterById(id);
+
+    const project = await this.client.query(queryBuilder.buildListQuery(), {
+      replacements: {
+        projectId: id,
+        currentUserId,
+        limit: 1,
+        offset: 0,
+      },
+      type: this.client.QueryTypes.SELECT,
     });
-    if (!project) {
-      throw new Error("Project not found");
-    }
-    return project;
+
+    // Since you’re expecting one, not many:
+    return project[0] || null;
   }
 
   async create({
