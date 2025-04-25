@@ -12,7 +12,7 @@ class ProjectService {
 
     if (userId) conditions.push(`p."userId" = :userId`);
     if (status) conditions.push(`p."status" = :status`);
-    if (types.length) conditions.push(`t."id" IN (:...types)`);
+    if (types.length) conditions.push(`t."id" IN (:types)`);
 
     const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
@@ -29,7 +29,7 @@ class ProjectService {
         p."endDate",
         p."status",
         ARRAY_AGG(DISTINCT t."name") AS "types",
-        COUNT(DISTINCT uv."id") AS "upvoteCount",
+        COUNT(DISTINCT uv."id")::INT AS "upvoteCount",
         MAX(CASE WHEN uv."userId" = :currentUserId THEN 1 ELSE 0 END) > 0 AS "userHasVoted",
         u."username",
         u."avatarUrl",
