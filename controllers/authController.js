@@ -43,15 +43,6 @@ async function login(req, res) {
     throw new Error("No user with this Email exist");
   }
 
-  //cheking if the user is soft deleted
-  if (user.deletedAt) {
-    return res.status(403).json({
-      status: "forbidden",
-      statusCode: 403,
-      data: { result: "This account has been deleted or deactivated." },
-    });
-  }
-
   // verifying the user - use hashedPassword instead of encryptedPassword
   const verifyUser = await verifyPassword(password, user.salt, user.hashedPassword);
 
