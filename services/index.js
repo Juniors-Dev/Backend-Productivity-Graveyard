@@ -3,4 +3,5 @@ module.exports = {
   ProjectService: require("./ProjectService"),
   TypeService: require("./TypeService"),
   RoleService: require("./RoleService"),
+  VoteService: require("./VoteService"),
 };

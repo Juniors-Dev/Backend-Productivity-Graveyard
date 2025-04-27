@@ -1,11 +1,8 @@
 /**
- * Upvote Model
- *
  * Records a user's upvote on a project.
  * Each user can only upvote a project once.
  * Upvotes are maintained even if the user is deleted.
  */
-
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 
