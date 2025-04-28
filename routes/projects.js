@@ -11,17 +11,17 @@ var {
   removeType,
 } = require("../controllers/projectController");
 var asyncHandler = require("../middleware/asyncHandler");
-var { authenticate, hasRole, validateSchema, ownsEntity } = require("../middleware");
+var { authenticate, hasRole, validateSchema, ownsEntity, isLoggedIn } = require("../middleware");
 var { projectSchema, projectUpdateSchema, typeIdSchema } = require("../schema/projectSchema");
 var { ProjectService } = require("../services");
 var { db } = require("../models");
 var projectService = new ProjectService(db);
 
-router.get("/", authenticate, asyncHandler(getAll));
+router.get("/", isLoggedIn, asyncHandler(getAll));
 
 router.get("/types", asyncHandler(getAllTypes));
 
-router.get("/:id", authenticate, asyncHandler(getOneId));
+router.get("/:id", isLoggedIn, asyncHandler(getOneId));
 
 router.post("/", authenticate, validateSchema(projectSchema), asyncHandler(hasRole("user")), asyncHandler(create));
 

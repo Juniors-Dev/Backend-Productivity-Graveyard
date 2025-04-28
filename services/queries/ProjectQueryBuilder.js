@@ -60,10 +60,13 @@ class ProjectQueryBuilder {
       `p."startDate"`,
       `p."endDate"`,
       `p."status"`,
+      `COUNT(DISTINCT c."id")::INT AS "commentCount"`,
     ];
 
     if (this.includeTypes) {
-      fields.push(`ARRAY_AGG(DISTINCT t."name") AS "types"`);
+      fields.push(`ARRAY_AGG(jsonb_build_object('name', t."name", 'id', t."id")) AS "types"`);
+      // fields.push(`ARRAY_AGG(DISTINCT t."name") AS "types"`);
+      // fields.push(`ARRAY_AGG(rows(t."name", t."id")) AS "types"`);
     }
 
     if (this.includeVotes) {
@@ -72,14 +75,15 @@ class ProjectQueryBuilder {
     }
 
     if (this.includeUserInfo) {
-      fields.push(`u."username"`, `u."avatarUrl"`, `u."id" AS "userId"`);
+      fields.push(`  jsonb_build_object('id', u."id",'username', u."username",'avatarUrl', u."avatarUrl") AS user`);
+      // fields.push(`u."username"`, `u."avatarUrl"`, `u."id" AS "userId"`);
     }
 
     return fields.join(",\n");
   }
 
   buildJoins() {
-    const joins = [];
+    const joins = [`LEFT JOIN "Comments" c ON p."id" = c."projectId"`];
 
     if (this.includeVotes) {
       joins.push(`LEFT JOIN "Upvotes" uv ON p."id" = uv."projectId"`);
