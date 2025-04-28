@@ -6,8 +6,8 @@
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 
-  const ProjectTag = sequelize.define(
-    "ProjectTag",
+  const ProjectType = sequelize.define(
+    "ProjectType",
     {
       projectId: {
         type: DataTypes.UUID,
@@ -28,7 +28,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     {
       timestamps: true,
-      tableName: "ProjectTags",
+      tableName: "ProjectType",
       indexes: [
         {
           name: "project_type_unique",

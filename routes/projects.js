@@ -12,6 +12,7 @@ var {
 } = require("../controllers/projectController");
 var asyncHandler = require("../middleware/asyncHandler");
 var { authenticate, hasRole, validateSchema, ownsEntity } = require("../middleware");
+var projectComments = require("./projectComments");
 var { ProjectService } = require("../services");
 var { db } = require("../models");
 var projectService = new ProjectService(db);
@@ -55,5 +56,7 @@ router.delete(
   asyncHandler(ownsEntity(projectService)),
   asyncHandler(removeType)
 );
+
+router.use("/", projectComments);
 
 module.exports = router;
