@@ -21,25 +21,6 @@ async function toggleUpvote(req, res) {
   );
 }
 
-async function getUserUpvoteStatus(req, res) {
-  const { projectId } = req.params;
-  const { id: userId } = req.user;
-
-  const { voted, count } = await voteService.getUserUpvoteStatus(userId, projectId);
-
-  res.status(200).json(
-    successResponse({
-      message: "Upvote status retrieved successfully",
-      data: {
-        upvoted: voted,
-        count: count,
-      },
-      statusCode: 200,
-    })
-  );
-}
-
 module.exports = {
   toggleUpvote,
-  getUserUpvoteStatus,
 };

@@ -214,26 +214,6 @@
       "name": "Upvotes",
       "item": [
         {
-          "name": "Upvote Status",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/votes/:projectId/status",
-              "host": ["{{base_url}}"],
-              "path": ["votes", ":projectId", "status"],
-              "variable": [
-                {
-                  "key": "projectId",
-                  "value": "",
-                  "type": "string"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
           "name": "Toggle Upvote",
           "request": {
             "method": "POST",
