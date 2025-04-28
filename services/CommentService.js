@@ -91,13 +91,22 @@ class CommentService {
 
     const processedComments = rows.map((comment) => {
       const commentJSON = comment.toJSON();
+      const user = commentJSON.isDeleted ? null : commentJSON.User;
+
+      const processedReplies = (commentJSON.replies || []).map((reply) => {
+        const replyUser = reply.isDeleted ? null : reply.User;
+        return {
+          ...reply,
+          User: replyUser,
+          edited: !reply.isDeleted && reply.createdAt.getTime() !== reply.updatedAt.getTime(),
+        };
+      });
+
       return {
         ...commentJSON,
-        edited: commentJSON.createdAt.getTime() !== commentJSON.updatedAt.getTime(),
-        replies: commentJSON.replies.map((reply) => ({
-          ...reply,
-          edited: reply.createdAt.getTime() !== reply.updatedAt.getTime(),
-        })),
+        User: user,
+        replies: processedReplies,
+        edited: !commentJSON.isDeleted && commentJSON.createdAt.getTime() !== commentJSON.updatedAt.getTime(),
       };
     });
 
