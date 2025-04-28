@@ -1,0 +1,39 @@
+[
+  {
+    "firstName": "admin",
+    "username": "admin_user",
+    "displayName": "Admin User",
+    "email": "admin@example.com",
+    "password": "admin123",
+    "bio": "Administrator with full permissions",
+    "roleId": 3
+  },
+  {
+    "firstName": "user1",
+    "username": "user1",
+    "displayName": "user1",
+    "email": "user@example.com",
+    "password": "user123",
+    "bio": "Regular user account",
+    "roleId": 1
+  },
+  {
+    "firstName": "user2",
+    "username": "user2",
+    "displayName": "user2",
+    "email": "user2@example.com",
+    "password": "user123",
+    "bio": "Regular user account",
+    "roleId": 1
+  },
+  {
+    "firstName": "mod1",
+    "lastName": "",
+    "username": "moderator",
+    "displayName": "moderator user",
+    "email": "alice.smith@example.com",
+    "password": "mod123",
+    "bio": "Moderator account with limited permissions",
+    "roleId": 2
+  }
+]
