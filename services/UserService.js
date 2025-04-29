@@ -1,4 +1,5 @@
 const { Op } = require("sequelize");
+const sanitizeUser = require("../utilities/sanitizeUser");
 
 class UserService {
   constructor(db) {
@@ -33,12 +34,16 @@ class UserService {
     });
   }
 
-  async getOneId(id) {
-    return this.User.findOne({
-      where: { id },
+  async getOneId(userId, options = {}) {
+    const user = await this.User.findOne({
+      where: { id: userId },
       include: [{ model: this.Role }],
       attributes: { exclude: ["hashedPassword", "salt", "roleId"] },
     });
+
+    if (!user) return null;
+
+    return sanitizeUser(user, options);
   }
 
   async create({ firstName, lastName, username, email, hashedPassword, salt, roleId }) {

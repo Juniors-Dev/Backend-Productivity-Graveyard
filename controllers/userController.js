@@ -16,7 +16,7 @@ async function getUser(req, res, next) {
   res.status(200).json({
     status: "success",
     statusCode: 200,
-    data: sanitizeUser(user),
+    data: user,
   });
 }
 

@@ -4,7 +4,7 @@ const userService = new UserService(db);
 const { hashPassword, verifyPassword } = require("../utilities/hashing");
 const RoleService = require("../services/RoleService");
 const roleService = new RoleService(db);
-const { generateToken, verifyToken } = require("../utilities/jwt");
+const { generateToken } = require("../utilities/jwt");
 
 async function register(req, res) {
   const { firstName, lastName, username, email, password } = req.body;
