@@ -27,7 +27,7 @@ describe("Auth Routes Tests", () => {
         email,
         password,
       })
-      .expect(201); // <-- now this should succeed 🎯
+      .expect(201);
 
     expect(res.body.status).toBe("success");
     expect(res.body.data.result).toBe("Account created.");
