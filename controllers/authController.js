@@ -36,8 +36,9 @@ async function login(req, res) {
   const { email, password } = req.body;
 
   // finding the user - note we pass false to include the password fields
-  const user = await userService.getOneEmail(email, false);
+  const user = await userService.getOneEmail(email, false, false);
 
+  //Cheking if the user exist
   if (!user) {
     throw new Error("No user with this Email exist");
   }
