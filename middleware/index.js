@@ -3,6 +3,7 @@ const auth = require("./authentication");
 module.exports = {
   asyncHandler: require("./asyncHandler"),
   authenticate: auth.authenticate,
+  isLoggedIn: auth.isLoggedIn,
   hasRole: auth.hasRole,
   isAdmin: auth.isAdmin,
   validateSchema: require("./validateSchema"),

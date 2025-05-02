@@ -1,3 +1,4 @@
+const ProjectQueryBuilder = require("./queries/ProjectQueryBuilder");
 class ProjectService {
   constructor(db) {
     this.client = db.sequelize;
@@ -6,40 +7,60 @@ class ProjectService {
     this.User = db.User;
   }
 
-  async getAll() {
-    return this.Project.findAll({
-      include: [
-        {
-          model: this.Type,
-          as: "types",
-          through: { attributes: [] },
-        },
-        {
-          model: this.User,
-          attributes: ["id", "username", "avatarUrl"],
-        },
-      ],
+  async getAll(limit = 100, offset = 0, options = {}) {
+    const { userId, currentUserId, status, orderBy, order, types } = options;
+
+    const queryBuilder = new ProjectQueryBuilder()
+      .withVotes()
+      .withTypes()
+      .withUser()
+      .filterByUser(userId)
+      .filterByStatus(status)
+      .filterByTypes(types)
+      .orderByField(orderBy || "createdAt", order || "DESC");
+
+    const projects = await this.client.query(queryBuilder.buildListQuery(), {
+      replacements: {
+        currentUserId,
+        limit,
+        offset,
+        userId,
+        status,
+        types,
+      },
+      type: this.client.QueryTypes.SELECT,
     });
+
+    const count = await this.client.query(queryBuilder.buildCountQuery(), {
+      replacements: {
+        currentUserId,
+        userId,
+        status,
+        types,
+      },
+      type: this.client.QueryTypes.SELECT,
+    });
+    return {
+      count: parseInt(count[0].count),
+      rows: projects,
+    };
   }
 
-  async getOneId(id) {
-    const project = await this.Project.findByPk(id, {
-      include: [
-        {
-          model: this.Type,
-          as: "types",
-          through: { attributes: [] },
-        },
-        {
-          model: this.User,
-          attributes: ["id", "username"],
-        },
-      ],
+  async getOneId(id, currentUserId = null) {
+    const queryBuilder = new ProjectQueryBuilder().withVotes().withTypes().withUser().filterById(id);
+
+    const project = await this.client.query(queryBuilder.buildListQuery(), {
+      replacements: {
+        projectId: id,
+        currentUserId,
+        limit: 1,
+        offset: 0,
+      },
+      type: this.client.QueryTypes.SELECT,
     });
-    if (!project) {
-      throw new Error("Project not found");
-    }
-    return project;
+
+    // Since you’re expecting one, not many:
+    return project[0] || null;
   }
 
   async create({
@@ -80,6 +101,10 @@ class ProjectService {
             model: this.Type,
             as: "types",
             through: { attributes: [] },
+          },
+          {
+            model: this.User,
+            attributes: ["id", "username", "avatarUrl"],
           },
         ],
       });
