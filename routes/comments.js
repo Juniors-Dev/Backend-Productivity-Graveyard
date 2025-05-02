@@ -13,7 +13,7 @@ router.put(
   authenticate,
   validateParamSchema(commentIdSchema),
   asyncHandler(ownsEntity(commentService)),
-  //validateSchema(updateCommentSchema),
+  validateSchema(updateCommentSchema),
   asyncHandler(updateComment)
 );
 

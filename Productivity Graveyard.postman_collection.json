@@ -355,7 +355,7 @@
               },
               {
                 "key": "Content-Length",
-                "value": "0",
+                "value": "<calculated when request is sent>",
                 "name": "content-length",
                 "type": "text"
               },
@@ -405,7 +405,7 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/comments/44",
+              "raw": "{{base_url}}/comments/:id",
               "host": ["{{base_url}}"],
               "path": ["comments", "44"]
             }

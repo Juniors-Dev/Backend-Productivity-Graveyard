@@ -47,11 +47,12 @@ class CommentService {
 
   /**
    * Get top-level comments for a project with pagination.
+   * Handles deleted states for messages (via model getter) and users.
    * @param {string} projectId
    * @param {Object} pagination
    * @param {number} pagination.limit
    * @param {number} pagination.offset
-   * @returns {Promise<Object>}
+   * @returns {Promise<Object>} - Object containing comments array and pagination metadata
    */
   async getProjectComments(projectId, { limit, offset }) {
     const projectExists = await this.Project.findByPk(projectId, { attributes: ["id"] });
@@ -61,25 +62,15 @@ class CommentService {
       throw error;
     }
 
+    // Fetch comments and their counts
     const { count, rows } = await this.Comment.findAndCountAll({
-      where: {
-        projectId,
-        parentId: null,
-      },
+      where: { projectId, parentId: null },
       include: [
-        {
-          model: this.User,
-          attributes: ["id", "username", "avatarUrl"],
-        },
+        { model: this.User, as: "User", attributes: ["id", "username", "avatarUrl"], required: false },
         {
           model: this.Comment,
           as: "replies",
-          include: [
-            {
-              model: this.User,
-              attributes: ["id", "username", "avatarUrl"],
-            },
-          ],
+          include: [{ model: this.User, as: "User", attributes: ["id", "username", "avatarUrl"], required: false }],
           separate: true,
           order: [["createdAt", "ASC"]],
         },
@@ -88,30 +79,11 @@ class CommentService {
       limit,
       offset,
     });
-
-    const processedComments = rows.map((comment) => {
-      const commentJSON = comment.toJSON();
-      const user = commentJSON.isDeleted ? null : commentJSON.User;
-
-      const processedReplies = (commentJSON.replies || []).map((reply) => {
-        const replyUser = reply.isDeleted ? null : reply.User;
-        return {
-          ...reply,
-          User: replyUser,
-          edited: !reply.isDeleted && reply.createdAt.getTime() !== reply.updatedAt.getTime(),
-        };
-      });
-
-      return {
-        ...commentJSON,
-        User: user,
-        replies: processedReplies,
-        edited: !commentJSON.isDeleted && commentJSON.createdAt.getTime() !== commentJSON.updatedAt.getTime(),
-      };
-    });
+    // Convert Sequelize instances to JSON objects
+    const rawComments = rows.map((comment) => comment.toJSON());
 
     return {
-      comments: processedComments,
+      rawComments,
       totalCount: count,
       limit,
       offset,
@@ -145,7 +117,9 @@ class CommentService {
       include: [
         {
           model: this.User,
+          as: "User",
           attributes: ["id", "username", "avatarUrl"],
+          required: false,
         },
         {
           model: this.Comment,
@@ -153,7 +127,9 @@ class CommentService {
           include: [
             {
               model: this.User,
+              as: "User",
               attributes: ["id", "username", "avatarUrl"],
+              required: false,
             },
           ],
           separate: true,
@@ -161,16 +137,7 @@ class CommentService {
         },
       ],
     });
-
-    const commentJSON = updatedComment.toJSON();
-    return {
-      ...commentJSON,
-      edited: commentJSON.createdAt.getTime() !== commentJSON.updatedAt.getTime(),
-      replies: commentJSON.replies.map((reply) => ({
-        ...reply,
-        edited: reply.createdAt.getTime() !== reply.updatedAt.getTime(),
-      })),
-    };
+    return updatedComment.toJSON();
   }
 
   /**
@@ -182,12 +149,12 @@ class CommentService {
     const comment = await this.Comment.findByPk(commentId);
 
     if (!comment) {
-      const error = new Error("Comment not found");
+      const error = new Error("Not found");
       error.status = 404;
       throw error;
     }
 
-    await comment.update({ isDeleted: true });
+    await comment.update({ isDeleted: true, userId: null });
     return true;
   }
 

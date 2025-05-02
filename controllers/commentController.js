@@ -3,6 +3,7 @@ var CommentService = require("../services/CommentService");
 var commentService = new CommentService(db);
 var { successResponse } = require("../utilities/response.js");
 var { getLimitOffset } = require("../utilities/getPagination");
+const serializeComment = require("../utilities/commentSerializer");
 
 async function createComment(req, res) {
   const { message, parentId } = req.body;
@@ -24,16 +25,17 @@ async function getProjectComments(req, res) {
   const { projectId } = req.params;
   const { limit, offset } = getLimitOffset(req);
 
-  const result = await commentService.getProjectComments(projectId, { limit, offset });
+  const serviceResult = await commentService.getProjectComments(projectId, { limit, offset });
+  const comments = serviceResult.rawComments.map(serializeComment);
 
   res.status(200).json(
     successResponse({
       message: "Comments retrieved successfully",
-      data: result.comments,
+      data: comments,
       meta: {
-        totalCount: result.totalCount,
-        limit: result.limit,
-        offset: result.offset,
+        totalCount: serviceResult.totalCount,
+        limit: serviceResult.limit,
+        offset: serviceResult.offset,
       },
       statusCode: 200,
     })
@@ -45,20 +47,19 @@ async function updateComment(req, res) {
   const { message } = req.body;
 
   const updatedComment = await commentService.update(id, message);
+  const serializedComment = serializeComment(updatedComment);
 
   res.status(200).json(
     successResponse({
       message: "Comment updated successfully",
-      data: updatedComment,
+      data: serializedComment,
       statusCode: 200,
     })
   );
 }
 
 async function deleteComment(req, res) {
-  const { id } = req.params;
-
-  await commentService.softDelete(id);
+  await commentService.softDelete(req.params.id);
 
   res.status(200).json(
     successResponse({

@@ -56,6 +56,7 @@ module.exports = (sequelize, Sequelize) => {
   Comment.associate = (models) => {
     Comment.belongsTo(models.User, {
       foreignKey: "userId",
+      as: "User",
       onDelete: "SET NULL",
     });
     Comment.belongsTo(models.Project, {

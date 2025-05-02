@@ -38,5 +38,5 @@ module.exports = (sequelize, Sequelize) => {
       ],
     }
   );
-  return ProjectTag;
+  return ProjectType;
 };

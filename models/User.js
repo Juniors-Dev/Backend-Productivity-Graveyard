@@ -71,7 +71,7 @@ module.exports = (sequelize, Sequelize) => {
     {
       timestamps: true,
       tableName: "Users",
-      indexese: [{ fields: ["roleId"] }, { fields: ["email"] }],
+      indexes: [{ fields: ["roleId"] }, { fields: ["email"] }],
     }
   );
 
@@ -100,5 +100,17 @@ module.exports = (sequelize, Sequelize) => {
       onDelete: "CASCADE",
     });
   };
+  // Anonymize comments when a user is soft-deleted:
+  User.addHook("afterDestroy", async (user, options) => {
+    await sequelize.models.Comment.update(
+      {
+        isDeleted: true,
+      },
+      {
+        where: { userId: user.id },
+        transaction: options.transaction,
+      }
+    );
+  });
   return User;
 };
