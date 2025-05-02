@@ -3,18 +3,21 @@
     "name": "Diet tracker",
     "description": "App to keep track of my diet",
     "causeOfDeath": "Too big of an appetite. Every time I was gonna say or write app, I said appetite.",
-    "userId": 1
+    "userId": 1,
+    "types": [1, 2]
   },
   {
     "name": "Workout Logger",
     "description": "Tracks my daily workout routines and progress",
     "causeOfDeath": "Logged one pushup, felt accomplished, never logged in again.",
-    "userId": 1
+    "userId": 1,
+    "types": [15]
   },
   {
     "name": "Book Reading List",
     "description": "App to track books I want to read and have finished",
     "causeOfDeath": "Kept adding books but never reading them. RIP.",
-    "userId": 2
+    "userId": 2,
+    "types": [1, 3]
   }
 ]

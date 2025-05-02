@@ -15,7 +15,8 @@
     "email": "user@example.com",
     "password": "user123",
     "bio": "Regular user account",
-    "roleId": 1
+    "roleId": 1,
+    "achievement": [1]
   },
   {
     "firstName": "user2",
