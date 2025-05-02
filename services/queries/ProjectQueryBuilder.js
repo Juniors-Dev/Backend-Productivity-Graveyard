@@ -60,6 +60,7 @@ class ProjectQueryBuilder {
       `p."startDate"`,
       `p."endDate"`,
       `p."status"`,
+      `p."userId"`,
       `COUNT(DISTINCT c."id")::INT AS "commentCount"`,
     ];
 

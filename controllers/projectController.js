@@ -135,6 +135,7 @@ async function removeType(req, res) {
 
 async function getAllTypes(req, res) {
   const types = await typeService.getAll();
+  console.log(types);
   res.status(200).json(
     successResponse({
       message: "Success",
