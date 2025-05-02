@@ -1,46 +1,34 @@
-const { ValidationError } = require("sequelize");
-
-const swaggerAutogen = require("swagger-autogen")();
+const swaggerJSDoc = require("swagger-jsdoc");
 require("dotenv").config();
 
 const host = process.env.HOST && process.env.PORT ? `${process.env.HOST}:${process.env.PORT}` : "localhost:3000";
 
-const doc = {
-  info: {
-    version: "1.0.0",
-    title: "Noroff EP e-commerce",
-    description: " Noroff EP e-commerce API documentation",
-  },
-  host: host,
-  schemes: ["http", "https"],
-  security: {
-    bearerAuth: [],
-  },
-
-  components: {
-    securitySchemes: {
-      bearerAuth: {
-        type: "http",
-        in: "header",
-        name: "Authorization",
-        description: "Bearer token to access these api endpoints",
-        scheme: "bearer",
-        bearerFormat: "JWT",
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Noroff EP e-commerce",
+      version: "1.0.0",
+      description: "Productivity Graveyard API documentation",
+    },
+    servers: [
+      {
+        url: `http://${host}`,
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
       },
     },
+    security: [{ bearerAuth: [] }],
   },
-  securityDefinitions: {
-    Bearer: {
-      type: "apiKey",
-      name: "Authorization",
-      in: "header",
-    },
-  },
-  definitions: {},
+  apis: ["./routes/*.js"], // legg inn din path her
 };
 
-const outputFile = "./swagger-output.json";
-const endpointsFiles = ["./app.js"];
-swaggerAutogen(outputFile, endpointsFiles, doc).then(() => {
-  require("./bin/www");
-});
+const swaggerSpec = swaggerJSDoc(options);
+module.exports = swaggerSpec;

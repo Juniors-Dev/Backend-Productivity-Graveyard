@@ -9,7 +9,7 @@ var { errorResponse } = require("./utilities/response");
 
 //swagger
 const swaggerUi = require("swagger-ui-express");
-const swaggerFile = require("./swagger-output.json");
+const swaggerSpec = require("./swagger");
 
 // routers
 var { indexRouter, usersRouter, projectsRouter, authRouter, votesRouter } = require("./routes/index");
@@ -22,7 +22,7 @@ const seed = require("./seeder/seed.js");
 db.sequelize.authenticate();
 
 // can add the seeder here if needed
-db.sequelize.sync({ force: false }).then(async () => {
+db.sequelize.sync({ force: true }).then(async () => {
   try {
     await seed();
   } catch (error) {
@@ -49,7 +49,7 @@ app.use("/projects", projectsRouter);
 app.use("/votes", votesRouter);
 
 // Swagger
-app.use("/doc", swaggerUi.serve, swaggerUi.setup(swaggerFile));
+app.use("/doc", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
