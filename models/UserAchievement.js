@@ -1,14 +1,8 @@
 /**
- * UserAchievement Model
- *
- * Part of optional feature.
- *
  * Junction table for User.js and Achievement.js.
  * Records when a user earns an achievement and prevents duplicate achievements.
- *
  * @note  Removed ID field — using a composite primary key [userId + achievementId] instead.
  */
-
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 

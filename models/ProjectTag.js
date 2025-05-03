@@ -1,6 +1,4 @@
 /**
- * ProjectTag Model
- *
  * Junction Table for Project.js and Type.js
  * Each project can have one or more "types"(e.g: "burnout", “Dog ate my keyboard”, etc).
  */

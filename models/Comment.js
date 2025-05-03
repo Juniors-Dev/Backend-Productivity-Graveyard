@@ -1,9 +1,6 @@
 /**
- * Comment Model
- *
- * Stores user comments on projects, with support-ish for threaded replies.
+ * Stores user comments on projects, with support for threaded replies.
  */
-
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 

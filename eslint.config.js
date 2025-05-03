@@ -23,7 +23,7 @@ module.exports = [
       "no-shadow": "warn",
       "prefer-const": "warn",
       "max-depth": ["warn", 4],
-      complexity: ["warn", 10],
+      complexity: ["warn", 15],
       "max-len": ["warn", { code: 120 }],
       "keyword-spacing": ["error", { before: true, after: true }],
       "security/detect-object-injection": "warn",

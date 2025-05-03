@@ -1,10 +1,3 @@
-/**
- * Achievement Model
- *
- * Optional feature.
- * Represents a possible achievement users can earn.
- */
-
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 

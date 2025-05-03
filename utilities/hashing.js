@@ -3,24 +3,27 @@ var crypto = require("crypto");
 async function hashPassword(password, salt = null) {
   if (!salt) {
     salt = crypto.randomBytes(16);
+  } else if (typeof salt === "string") {
+    salt = Buffer.from(salt, "hex"); // for reuse during verification
   }
+
   const hashedPassword = await new Promise((resolve, reject) => {
-    crypto.pbkdf2(password, salt, 310000, 32, "sha256", (err, hashedPassword) => {
+    crypto.pbkdf2(password, salt, 310000, 32, "sha256", (err, derivedKey) => {
       if (err) reject(err);
-      resolve(hashedPassword);
+      resolve(derivedKey);
     });
   });
 
-  if (!salt) throw new Error("Failed to create salt");
-  if (!hashedPassword) throw new Error("Failed to create hashed password");
-
-  return { salt, hashedPassword };
+  return {
+    hashedPassword: hashedPassword.toString("hex"),
+    salt: salt.toString("hex"),
+  };
 }
 
 async function verifyPassword(inputPassword, storedSalt, storedPassword) {
   try {
     const { hashedPassword } = await hashPassword(inputPassword, storedSalt);
-    if (!crypto.timingSafeEqual(storedPassword, hashedPassword)) {
+    if (!crypto.timingSafeEqual(Buffer.from(storedPassword, "hex"), Buffer.from(hashedPassword, "hex"))) {
       return false;
     }
     return true;

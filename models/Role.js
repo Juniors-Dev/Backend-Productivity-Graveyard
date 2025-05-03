@@ -1,9 +1,3 @@
-/**
- * Role Model
- *
- * Defines different roles a user can have (e.g., admin, user, moderator(graveyard keeper)).
- */
-
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 
