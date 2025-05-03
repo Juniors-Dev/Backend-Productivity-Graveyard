@@ -1,7 +1,7 @@
-const { UserService, ProjectServices } = require("../services/index");
+const { UserService, ProjectService } = require("../services/index");
 const { db } = require("../models");
 const userService = new UserService(db);
-const projectServices = new ProjectServices(db);
+const projectServices = new ProjectService(db);
 const sanitizeUser = require("../utilities/sanitizeUser");
 
 //This for getting the user based of Id.
