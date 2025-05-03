@@ -80,7 +80,7 @@ const hasRole = (role) => async (req, res, next) => {
       });
     }
 
-    if (user.Role.name !== role) {
+    if (user.role !== role) {
       return res.status(403).json({
         status: "forbidden",
         statusCode: 403,
@@ -88,6 +88,7 @@ const hasRole = (role) => async (req, res, next) => {
       });
     }
     req.user = user;
+    console.log("User role: ", req.user);
 
     next();
   } catch (error) {

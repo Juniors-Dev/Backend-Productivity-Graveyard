@@ -2,6 +2,7 @@ function sanitizeUser(user, options = {}) {
   const { isOwner = false, isAdmin = false, includeId = false } = options;
 
   const base = {
+    id: user.id,
     username: user.username,
     displayName: user.displayName,
     bio: user.bio,
