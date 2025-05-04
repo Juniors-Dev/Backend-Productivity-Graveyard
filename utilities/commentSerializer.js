@@ -1,5 +1,5 @@
 /**
- * Formats a raw comment object (post .toJSON()) into the structure needed for API responses.
+ * Formats a raw comment into the structure needed for API responses.
  * @param {object | null} commentJSON - The comment object (result of comment.toJSON()), or null.
  * @returns {object | null} - The formatted comment object for the API, or null if input was null.
  */
