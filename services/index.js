@@ -1,4 +1,7 @@
 module.exports = {
-  UserServices: require("./UserServices"),
-  ProjectServices: require("./ProjectServices"),
+  UserService: require("./UserService"),
+  ProjectService: require("./ProjectService"),
+  TypeService: require("./TypeService"),
+  RoleService: require("./RoleService"),
+  VoteService: require("./VoteService"),
 };

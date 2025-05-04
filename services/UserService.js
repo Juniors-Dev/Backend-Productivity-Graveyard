@@ -1,0 +1,94 @@
+const { Op } = require("sequelize");
+const sanitizeUser = require("../utilities/sanitizeUser");
+
+class UserService {
+  constructor(db) {
+    this.client = db.sequelize;
+    this.User = db.User;
+    this.Role = db.Role;
+  }
+
+  async getAll() {
+    return this.User.findAll({
+      include: [{ model: this.Role }],
+      attributes: { exclude: ["encryptedPassword", "salt", "roleId"] },
+    });
+  }
+
+  async getOneEmail(email, exclude = true, paranoid = true) {
+    return this.User.findOne({
+      where: { email },
+      include: [{ model: this.Role }],
+      attributes: {
+        exclude: exclude ? ["hashedPassword", "salt", "roleId"] : [],
+      },
+      paranoid, // if paranoid is false, deletedAt will be null
+    });
+  }
+
+  async getOneUsername(username) {
+    return this.User.findOne({
+      where: { username },
+      include: [{ model: this.Role }],
+      attributes: { exclude: ["encryptedPassword", "salt", "roleId"] },
+    });
+  }
+
+  async getOneId(userId, options = {}) {
+    const user = await this.User.findOne({
+      where: { id: userId },
+      include: [{ model: this.Role }],
+      attributes: { exclude: ["hashedPassword", "salt", "roleId"] },
+    });
+
+    if (!user) return null;
+
+    return sanitizeUser(user, options);
+  }
+
+  async create({ firstName, lastName, username, email, hashedPassword, salt, roleId }) {
+    return this.User.create({
+      firstName,
+      lastName,
+      username,
+      displayName: username,
+      email,
+      hashedPassword,
+      salt,
+      roleId: roleId,
+    });
+  }
+
+  async update(id, args) {
+    const updated = await this.User.update(
+      { ...args },
+      {
+        where: { id },
+      }
+    );
+
+    const updatedUser = await this.getOneId(id);
+    return updatedUser;
+  }
+
+  async softDelete(id) {
+    return this.User.destroy({ where: { id } });
+  }
+
+  async getAllDeleted() {
+    return this.User.findAll({
+      where: {
+        deletedAt: {
+          [Op.ne]: null,
+        },
+      },
+      paranoid: false,
+    });
+  }
+
+  async restore(id) {
+    return this.User.restore({ where: { id } });
+  }
+}
+
+module.exports = UserService;

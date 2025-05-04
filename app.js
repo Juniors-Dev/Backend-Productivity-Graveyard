@@ -5,15 +5,18 @@ var cors = require("cors");
 const logger = require("morgan");
 const dotenv = require("dotenv");
 dotenv.config();
+var { errorResponse } = require("./utilities/response");
 
-const seed = require("./seeder/seed.js");
-
+//swagger
 const swaggerUi = require("swagger-ui-express");
 const swaggerFile = require("./swagger-output.json");
 
-var { indexRouter, usersRouter, projectsRouter, authRouter } = require("./routes/index");
+// routers
+var { indexRouter, usersRouter, projectsRouter, authRouter, votesRouter } = require("./routes/index");
 
+// database and seeder
 var { db } = require("./models");
+const seed = require("./seeder/seed.js");
 
 // Check if the database connection is successful
 db.sequelize.authenticate();
@@ -43,6 +46,7 @@ app.use("/", indexRouter);
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/projects", projectsRouter);
+app.use("/votes", votesRouter);
 
 // Swagger
 app.use("/doc", swaggerUi.serve, swaggerUi.setup(swaggerFile));
@@ -56,14 +60,15 @@ app.use(function (req, res, next) {
 app.use((err, req, res, next) => {
   console.error("Error:", err);
 
-  res.status(err.status || 500).json({
-    status: "error",
-    statusCode: err.status || 500,
-    data: {
-      result: err.message || "Internal Server Error",
-      error: err,
-    },
+  const statusCode = err.status || 500;
+  const message = err.message || "Internal Server Error";
+  const data = err.data || null;
+  const response = errorResponse({
+    message,
+    statusCode,
+    data,
   });
+  res.status(statusCode).json(response);
 });
 
 module.exports = app;

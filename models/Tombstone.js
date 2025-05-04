@@ -1,9 +1,6 @@
 /**
- * Tombstone Model
- *
  * Represents a visual or template style for a project's memorial/burial.
  */
-
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 

@@ -1,10 +1,6 @@
 /**
- * Project Model
- *
  * Represents a user-submitted project in the graveyard.
- * @note Linked to ProjectTags for category (Type) tagging.
  */
-
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 
@@ -43,12 +39,17 @@ module.exports = (sequelize, Sequelize) => {
       },
       startDate: {
         type: DataTypes.DATE,
-        allowNull: true,
+        allowNull: false,
         comment: "When the project was started",
+      },
+      endDate: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        comment: "When the project was abandoned",
       },
       status: {
         type: DataTypes.STRING,
-        defaultValue: "inactive",
+        defaultValue: "buried",
         validate: { isIn: [["inactive", "active", "buried", "resurrected", "completed", "archived"]] },
       },
     },

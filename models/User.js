@@ -1,10 +1,3 @@
-/**
- * User Model
- *
- * Represents a registered user in the system.
- * Handles identity, access, and relationships to projects, comments, etc.
- */
-
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 
@@ -37,13 +30,6 @@ module.exports = (sequelize, Sequelize) => {
         validate: {
           len: [3, 30],
         },
-        set(value) {
-          this.setDataValue("username", value.toLowerCase().trim());
-        },
-      },
-      displayName: {
-        type: DataTypes.STRING,
-        allowNull: false,
       },
       email: {
         type: DataTypes.STRING,
@@ -60,6 +46,11 @@ module.exports = (sequelize, Sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
         comment: "Bcrypt-hashed password",
+      },
+      salt: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        comment: "Bcrypt salt for password hashing",
       },
       avatarUrl: {
         type: DataTypes.STRING,
@@ -78,6 +69,7 @@ module.exports = (sequelize, Sequelize) => {
       },
     },
     {
+      paranoid: true,
       timestamps: true,
       tableName: "Users",
       indexese: [{ fields: ["roleId"] }, { fields: ["email"] }],
