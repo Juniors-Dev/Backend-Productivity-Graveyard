@@ -4,17 +4,16 @@
   "description": "Productivity graveyard backend application",
   "main": "./bin/www",
   "type": "commonjs",
- "scripts": {
-  "test": "jest",
-  "start": "node ./bin/www",
-  "dev": "node --watch ./bin/www",
-  "prepare": "husky install",
-  "lint": "eslint . --ext .js",
-  "lint:fix": "eslint . --ext .js --fix",
-  "format": "prettier --write .",
-  "docs": "open http://localhost:3000/doc"
-}
-  ,
+  "scripts": {
+    "test": "jest",
+    "start": "node ./bin/www",
+    "dev": "node --watch ./bin/www",
+    "prepare": "husky install",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write .",
+    "docs": "open http://localhost:3000/doc"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"

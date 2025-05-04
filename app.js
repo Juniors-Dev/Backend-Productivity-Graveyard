@@ -22,7 +22,7 @@ const seed = require("./seeder/seed.js");
 db.sequelize.authenticate();
 
 // can add the seeder here if needed
-db.sequelize.sync({ force: true }).then(async () => {
+db.sequelize.sync({ force: false }).then(async () => {
   try {
     await seed();
   } catch (error) {

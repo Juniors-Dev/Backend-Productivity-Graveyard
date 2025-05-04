@@ -3,14 +3,20 @@ const app = require("../app");
 const { db } = require("../models");
 const { registerSchema, loginSchema } = require("../schema");
 
+//Added this function since the date variable would give an longer name than max.
+let rn = (n2) => {
+  const n1 = Math.floor(Math.random() * 10);
+  return n1 * n2;
+};
+
 let email = `john${Date.now()}@example.com`;
-let username = `johnuser${Date.now()}`;
+let username = `johnuser${rn(13)}`;
 let password = "StrongPassword123";
 
 beforeAll(async () => {
-  await db.User.destroy({ where: { email } });
   await db.sequelize.authenticate();
   await db.sequelize.sync({ force: false });
+  await db.User.destroy({ where: { email } });
 });
 
 afterAll(async () => {
@@ -107,6 +113,38 @@ describe("Schema Validation Tests", () => {
     });
   });
 
+  describe("Length schema validation", () => {
+    test("should reject too long lastName of over 15 characters", async () => {
+      const invalidData = {
+        lastName: `DoeVeryLongname${Date.now()}`,
+        username,
+        email,
+        password,
+      };
+      await expect(registerSchema.validate(invalidData)).rejects.toThrow("Last name must be at most 15 characters");
+    });
+
+    test("should reject too long Username of over 15 characters", async () => {
+      const invalidData = {
+        lastName: "Doe",
+        username: `johnuser${Date.now()}`,
+        email,
+        password,
+      };
+      await expect(registerSchema.validate(invalidData)).rejects.toThrow("Username must be at most 15 characters");
+    });
+
+    test("should reject too long password of over 20 characters", async () => {
+      const invalidData = {
+        lastName: "Doe",
+        username,
+        email,
+        password: `ThisisaveryLongPassword13!`,
+      };
+      await expect(registerSchema.validate(invalidData)).rejects.toThrow("Password must be at most 20 characters");
+    });
+  });
+
   describe("Login Schema Validation", () => {
     test("should validate correct login data", async () => {
       const validData = {
@@ -141,8 +179,15 @@ describe("Schema Validation Tests", () => {
 });
 
 describe("Auth Routes Tests", () => {
-  test("1. Register a new user", async () => {
-    const res = await request(app)
+  //Had to add this in order for the tests to use the same email,passoword and username.
+  let email, username, password;
+
+  beforeEach(async () => {
+    email = `john${Date.now()}@example.com`;
+    username = `johnuser${Math.floor(Math.random() * 10000)}`;
+    password = "StrongPassword123";
+
+    await request(app)
       .post("/auth/register")
       .send({
         firstName: "John",
@@ -152,9 +197,13 @@ describe("Auth Routes Tests", () => {
         password,
       })
       .expect(201);
+  });
+
+  test("Login with correct credentials", async () => {
+    const res = await request(app).post("/auth/login").send({ email, password }).expect(200);
 
     expect(res.body.status).toBe("success");
-    expect(res.body.data.result).toBe("Account created.");
+    expect(res.body.data.token).toBeDefined();
   });
 
   test("2. Login with correct credentials", async () => {
