@@ -6,7 +6,8 @@
     "email": "admin@example.com",
     "password": "admin123",
     "bio": "Administrator with full permissions",
-    "roleId": 3
+    "roleId": 3,
+    "achievement": [1]
   },
   {
     "firstName": "user1",
@@ -25,7 +26,8 @@
     "email": "user2@example.com",
     "password": "user123",
     "bio": "Regular user account",
-    "roleId": 1
+    "roleId": 1,
+    "achievement": [1]
   },
   {
     "firstName": "mod1",
@@ -35,6 +37,7 @@
     "email": "alice.smith@example.com",
     "password": "mod123",
     "bio": "Moderator account with limited permissions",
-    "roleId": 2
+    "roleId": 2,
+    "achievement": [1]
   }
 ]

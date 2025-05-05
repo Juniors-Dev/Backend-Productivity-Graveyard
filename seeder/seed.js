@@ -7,6 +7,8 @@ var dummyUsers = require("./users.json");
 var userProjects = require("./projects.json");
 var userComments = require("./comments.json");
 var userVotes = require("./upVote.json");
+var resurrectedProjects = require("./ResurrectionEvent.json");
+var projectTombstones = require("./tombstones.json");
 
 async function basicSeed() {
   let transaction;
@@ -31,7 +33,6 @@ async function basicSeed() {
       throw new Error("Failed to seed roles, types or achevements.");
     }
 
-    console.log(roles, types, achievements);
     await transaction.commit();
     console.log("Roles seeded successfully.");
   } catch (error) {
@@ -72,8 +73,9 @@ async function usersSeed() {
       if (!user) {
         throw new Error("Failed to create user.");
       }
-    }
 
+      await user.setAchievements(dummyUsers[i].achievement, { transaction });
+    }
     await transaction.commit();
     console.log("Users seeded successfully.");
   } catch (error) {
@@ -110,6 +112,7 @@ async function projectsSeed() {
       if (!project) {
         throw new Error("Failed to create project.");
       }
+      await project.setTypes(userProjects[i].types, { transaction });
     }
 
     await transaction.commit();
@@ -168,6 +171,21 @@ async function moreSeed() {
         throw new Error("Failed to create upVote.");
       }
     }
+    for (let i = 0; i < resurrectedProjects.length; i++) {
+      const projectId = projects[resurrectedProjects[i].projectId - 1].id;
+      const resurrected = await db.ResurrectionEvent.create(
+        {
+          ...resurrectedProjects[i],
+          projectId: projectId,
+        },
+        { transaction }
+      );
+      if (!resurrected) {
+        throw new Error("Failed to resurrect.");
+      }
+    }
+
+    await db.Tombstone.bulkCreate(projectTombstones, { transaction });
 
     await transaction.commit();
     console.log("More tables seeded successfully.");
