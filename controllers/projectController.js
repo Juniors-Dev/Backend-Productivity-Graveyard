@@ -3,20 +3,39 @@ var { ProjectService, TypeService } = require("../services");
 var projectService = new ProjectService(db);
 var typeService = new TypeService(db);
 var { successResponse, errorResponse } = require("../utilities/response.js");
+var { getLimitOffset } = require("../utilities/getPagination.js");
 
 async function getAll(req, res) {
-  const projects = await projectService.getAll();
+  const { limit, offset } = getLimitOffset(req);
+  const { status, orderBy, order, userId, types } = req.query;
+  const options = {
+    status,
+    orderBy,
+    order,
+    userId,
+    types: types ? types.split(",") : [],
+    currentUserId: req.user?.id || null,
+  };
+
+  const { count, rows } = await projectService.getAll(limit, offset, options);
+
   res.status(200).json(
     successResponse({
       message: "Success",
-      data: projects,
+      data: rows,
       statusCode: 200,
+      meta: {
+        total: count,
+        limit,
+        offset,
+        hasNext: count > limit + offset,
+      },
     })
   );
 }
 
 async function getOneId(req, res) {
-  const project = await projectService.getOneId(req.params.id);
+  const project = await projectService.getOneId(req.params.id, req.user?.id);
   if (!project) {
     res.status(404).json(
       errorResponse({
@@ -116,6 +135,7 @@ async function removeType(req, res) {
 
 async function getAllTypes(req, res) {
   const types = await typeService.getAll();
+  console.log(types);
   res.status(200).json(
     successResponse({
       message: "Success",
