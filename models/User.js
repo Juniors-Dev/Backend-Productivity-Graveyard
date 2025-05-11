@@ -69,6 +69,7 @@ module.exports = (sequelize, Sequelize) => {
       },
     },
     {
+      paranoid: true,
       timestamps: true,
       tableName: "Users",
       indexes: [{ fields: ["roleId"] }, { fields: ["email"] }],

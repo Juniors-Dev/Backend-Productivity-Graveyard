@@ -1,3 +1,6 @@
+const { Op } = require("sequelize");
+const sanitizeUser = require("../utilities/sanitizeUser");
+
 class UserService {
   constructor(db) {
     this.client = db.sequelize;
@@ -12,14 +15,14 @@ class UserService {
     });
   }
 
-  async getOneEmail(email, exclude = true) {
+  async getOneEmail(email, exclude = true, paranoid = true) {
     return this.User.findOne({
       where: { email },
       include: [{ model: this.Role }],
       attributes: {
-        // eslint-disable-next-line max-len
-        exclude: exclude ? ["hashedPassword", "salt", "roleId"] : [], // Changed from encryptedPassword to hashedPassword
+        exclude: exclude ? ["hashedPassword", "salt", "roleId"] : [],
       },
+      paranoid, // if paranoid is false, deletedAt will be null
     });
   }
 
@@ -31,12 +34,16 @@ class UserService {
     });
   }
 
-  async getOneId(id) {
-    return this.User.findOne({
-      where: { id },
+  async getOneId(userId, options = {}) {
+    const user = await this.User.findOne({
+      where: { id: userId },
       include: [{ model: this.Role }],
-      attributes: { exclude: ["encryptedPassword", "salt", "roleId"] },
+      attributes: { exclude: ["hashedPassword", "salt", "roleId"] },
     });
+
+    if (!user) return null;
+
+    return sanitizeUser(user, options);
   }
 
   async create({ firstName, lastName, username, email, hashedPassword, salt, roleId }) {
@@ -64,8 +71,23 @@ class UserService {
     return updatedUser;
   }
 
-  async delete(id) {
+  async softDelete(id) {
     return this.User.destroy({ where: { id } });
+  }
+
+  async getAllDeleted() {
+    return this.User.findAll({
+      where: {
+        deletedAt: {
+          [Op.ne]: null,
+        },
+      },
+      paranoid: false,
+    });
+  }
+
+  async restore(id) {
+    return this.User.restore({ where: { id } });
   }
 }
 

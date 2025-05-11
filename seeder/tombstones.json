@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Classic Granite",
+    "imageUrl": "https://example.com/images/tombstone-classic.png"
+  },
+  {
+    "name": "Minimalist Slate",
+    "imageUrl": "https://example.com/images/tombstone-minimalist.png"
+  },
+  {
+    "name": "Gothic Marble",
+    "imageUrl": "https://example.com/images/tombstone-gothic.png"
+  }
+]
