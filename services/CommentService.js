@@ -2,67 +2,21 @@ class CommentService {
   constructor(db) {
     this.client = db.sequelize;
     this.Comment = db.Comment;
-    this.Project = db.Project;
     this.User = db.User;
   }
 
-  /**
-   * Create new comment or reply.
-   * @param {Object} params
-   * @param {string} params.projectId
-   * @param {string} params.userId
-   * @param {string} params.message
-   * @param {number} [params.parentId]
-   * @returns {Promise<Comment>}
-   */
-  async create({ projectId, userId, message, parentId = null }) {
-    const projectExists = await this.Project.findByPk(projectId, { attributes: ["id"] });
-    if (!projectExists) {
-      const error = new Error("Project not found");
-      error.status = 404;
-      throw error;
-    }
-
-    if (parentId) {
-      const parentComment = await this.Comment.findByPk(parentId, { attributes: ["id", "projectId"] });
-      if (!parentComment) {
-        const error = new Error("Parent comment not found");
-        error.status = 404;
-        throw error;
-      }
-      if (parentComment.projectId !== projectId) {
-        const error = new Error("Parent comment does not belong to this project");
-        error.status = 400;
-        throw error;
-      }
-    }
-
-    return this.Comment.create({
+  async createComment({ projectId, userId, message, parentId = null }) {
+    const newComment = await this.Comment.create({
       projectId,
       userId,
       message,
       parentId,
     });
+
+    return this.getOneWithDetails(newComment.id);
   }
 
-  /**
-   * Get top-level comments for a project with pagination.
-   * Handles deleted states for messages (via model getter) and users.
-   * @param {string} projectId
-   * @param {Object} pagination
-   * @param {number} pagination.limit
-   * @param {number} pagination.offset
-   * @returns {Promise<Object>} - Object containing comments array and pagination metadata
-   */
   async getProjectComments(projectId, { limit, offset }) {
-    const projectExists = await this.Project.findByPk(projectId, { attributes: ["id"] });
-    if (!projectExists) {
-      const error = new Error("Project not found");
-      error.status = 404;
-      throw error;
-    }
-
-    // Fetch comments and their counts
     const { count, rows } = await this.Comment.findAndCountAll({
       where: { projectId, parentId: null },
       include: [
@@ -79,41 +33,20 @@ class CommentService {
       limit,
       offset,
     });
-    // Convert Sequelize instances to JSON objects
-    const rawComments = rows.map((comment) => comment.toJSON());
+    const commentsAsJSON = rows.map((comment) => comment.toJSON());
 
     return {
-      rawComments,
-      totalCount: count,
-      limit,
-      offset,
+      count: count,
+      rows: commentsAsJSON,
     };
   }
 
-  /**
-   * Update a comment's message.
-   * @param {number} commentId
-   * @param {string} message
-   * @returns {Promise<Object|null>}
-   */
-  async update(commentId, message) {
-    const comment = await this.Comment.findByPk(commentId);
+  async getOneId(commentId) {
+    return this.Comment.findByPk(commentId);
+  }
 
-    if (!comment) {
-      const error = new Error("Comment not found");
-      error.status = 404;
-      throw error;
-    }
-
-    if (comment.isDeleted) {
-      const error = new Error("Cannot update a deleted comment");
-      error.status = 400;
-      throw error;
-    }
-
-    await comment.update({ message });
-
-    const updatedComment = await this.Comment.findByPk(commentId, {
+  async getOneWithDetails(commentId) {
+    const comment = await this.Comment.findByPk(commentId, {
       include: [
         {
           model: this.User,
@@ -137,34 +70,40 @@ class CommentService {
         },
       ],
     });
-    return updatedComment.toJSON();
+
+    return comment ? comment.toJSON() : null;
   }
 
-  /**
-   * Soft delete a comment.
-   * @param {number} commentId
-   * @returns {Promise<boolean>}
-   */
+  async updateComment(commentId, message) {
+    const updated = await this.Comment.update(
+      {
+        message,
+      },
+      {
+        where: {
+          id: commentId,
+          isDeleted: false,
+        },
+      }
+    );
+    return updated[0] === 1 ? this.getOneWithDetails(commentId) : null;
+  }
+
   async softDelete(commentId) {
-    const comment = await this.Comment.findByPk(commentId);
+    const updated = await this.Comment.update(
+      {
+        isDeleted: true,
+        userId: null,
+      },
+      {
+        where: {
+          id: commentId,
+          isDeleted: false,
+        },
+      }
+    );
 
-    if (!comment) {
-      const error = new Error("Not found");
-      error.status = 404;
-      throw error;
-    }
-
-    await comment.update({ isDeleted: true, userId: null });
-    return true;
-  }
-
-  /**
-   * Get a comment by ID (for ownership checking)
-   * @param {number} commentId
-   * @returns {Promise<Comment|null>}
-   */
-  async getOneId(commentId) {
-    return this.Comment.findByPk(commentId);
+    return updated[0] === 1;
   }
 }
 

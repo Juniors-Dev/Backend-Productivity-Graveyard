@@ -1,13 +1,10 @@
-/**
- * Junction Table for Project.js and Type.js
- * Each project can have one or more "types"(e.g: "burnout", “Dog ate my keyboard”, etc).
- */
+// Junction Table for Project.js and Type.js
 
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 
-  const ProjectType = sequelize.define(
-    "ProjectType",
+  const ProjectTag = sequelize.define(
+    "ProjectTag",
     {
       projectId: {
         type: DataTypes.UUID,
@@ -28,7 +25,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     {
       timestamps: true,
-      tableName: "ProjectType",
+      tableName: "ProjectTag",
       indexes: [
         {
           name: "project_type_unique",
@@ -38,5 +35,5 @@ module.exports = (sequelize, Sequelize) => {
       ],
     }
   );
-  return ProjectType;
+  return ProjectTag;
 };

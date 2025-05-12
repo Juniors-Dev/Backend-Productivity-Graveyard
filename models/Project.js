@@ -1,6 +1,3 @@
-/**
- * Represents a user-submitted project in the graveyard.
- */
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 
@@ -82,7 +79,7 @@ module.exports = (sequelize, Sequelize) => {
       onDelete: "CASCADE",
     });
     Project.belongsToMany(models.Type, {
-      through: "ProjectType",
+      through: "ProjectTag ",
       foreignKey: "projectId",
       otherKey: "typeId",
       as: "types",
