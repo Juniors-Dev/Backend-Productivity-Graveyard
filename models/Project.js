@@ -79,7 +79,7 @@ module.exports = (sequelize, Sequelize) => {
       onDelete: "CASCADE",
     });
     Project.belongsToMany(models.Type, {
-      through: "ProjectTag ",
+      through: "ProjectTags",
       foreignKey: "projectId",
       otherKey: "typeId",
       as: "types",

@@ -25,7 +25,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     {
       timestamps: true,
-      tableName: "ProjectTag",
+      tableName: "ProjectTags",
       indexes: [
         {
           name: "project_type_unique",
