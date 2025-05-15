@@ -86,7 +86,7 @@ class UserService {
       await user.destroy({ transaction });
       await transaction.commit();
 
-      return user;
+      return true;
     } catch (error) {
       if (transaction) await transaction.rollback();
       throw error;
