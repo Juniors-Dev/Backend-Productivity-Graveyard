@@ -16,6 +16,7 @@ async function createComment(req, res) {
       return res.status(404).json(
         errorResponse({
           message: "Parent comment not found",
+          status: "fail",
           statusCode: 404,
         })
       );
@@ -25,6 +26,7 @@ async function createComment(req, res) {
       return res.status(400).json(
         errorResponse({
           message: "Cannot reply to a reply",
+          status: "bad request",
           statusCode: 400,
         })
       );
@@ -73,6 +75,7 @@ async function updateComment(req, res) {
     return res.status(404).json(
       errorResponse({
         message: "Comment not found",
+        status: "fail",
         statusCode: 404,
       })
     );
@@ -82,6 +85,7 @@ async function updateComment(req, res) {
     return res.status(400).json(
       errorResponse({
         message: "Cannot update a deleted comment",
+        status: "bad request",
         statusCode: 400,
       })
     );
@@ -106,6 +110,7 @@ async function deleteComment(req, res) {
     return res.status(404).json(
       errorResponse({
         message: "Comment not found",
+        status: "fail",
         statusCode: 404,
       })
     );
