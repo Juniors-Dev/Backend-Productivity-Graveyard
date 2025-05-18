@@ -13,6 +13,7 @@ async function toggleUpvote(req, res) {
   if (!project) {
     throw createError({
       message: "Project not found",
+      status: "not found",
       statusCode: 404,
       errors: { projectId },
     });
