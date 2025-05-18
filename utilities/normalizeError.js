@@ -1,3 +1,9 @@
+/**
+ *
+ * @param {Error} err - The error object to normalize.
+ * @description This function normalizes the error object to a consistent format if it doesn't already have a statusCode and status property.
+ * @returns {Object} The normalized error object.
+ */
 function normalizeError(err) {
   if (err.statusCode && err.status) {
     return err;

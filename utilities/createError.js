@@ -21,6 +21,9 @@ function getStatusFromCode(code) {
  * });
  */
 function createError({ message = "Internal Server Error", status, statusCode = 500, errors = null }) {
+  if (!statusCode || isNaN(statusCode)) {
+    statusCode = 500;
+  }
   const err = new Error(message);
   err.statusCode = statusCode;
   err.status = status || getStatusFromCode(statusCode);
