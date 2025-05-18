@@ -116,7 +116,7 @@ class ProjectService {
         message: "Error creating project",
         status: "error",
         statusCode: 500,
-        data: { result: error.message },
+        errors: { result: error.message },
       });
     }
   }
