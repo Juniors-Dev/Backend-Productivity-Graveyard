@@ -61,7 +61,13 @@ class ProjectService {
     });
 
     // Since you’re expecting one, not many:
-    return project[0] || null;
+    if (project.length === 0) {
+      throw createError({
+        message: "Project not found",
+        statusCode: 404,
+      });
+    }
+    return project[0];
   }
 
   async create({
@@ -122,13 +128,18 @@ class ProjectService {
   }
 
   async update(id, args) {
+    const project = await this.Project.findByPk(id);
+    if (!project) {
+      throw createError({ message: "Project not found", statusCode: 404 });
+    }
+
     const updated = await this.Project.update(
       { ...args },
       {
         where: { id },
       }
     );
-    return updated[0] === 1 ? this.getOneId(id) : null;
+    return this.getOneId(id);
   }
 
   async removeType(id, typeId) {
@@ -150,6 +161,10 @@ class ProjectService {
   }
 
   async delete(id) {
+    const project = await this.Project.findByPk(id);
+    if (!project) {
+      throw createError({ message: "Project not found", statusCode: 404 });
+    }
     return this.Project.destroy({ where: { id } });
   }
 }

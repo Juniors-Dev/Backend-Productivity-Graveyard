@@ -2,7 +2,7 @@ var { db } = require("../models");
 var { ProjectService, TypeService } = require("../services");
 var projectService = new ProjectService(db);
 var typeService = new TypeService(db);
-var { successResponse, errorResponse } = require("../utilities/response.js");
+var { successResponse, errorResponse, createError } = require("../utilities");
 var { getLimitOffset } = require("../utilities/getPagination.js");
 
 async function getAll(req, res) {
@@ -36,14 +36,6 @@ async function getAll(req, res) {
 
 async function getOneId(req, res) {
   const project = await projectService.getOneId(req.params.id, req.user?.id);
-  if (!project) {
-    res.status(404).json(
-      errorResponse({
-        message: "Project not found",
-        statusCode: 404,
-      })
-    );
-  }
 
   res.status(200).json(
     successResponse({
@@ -93,14 +85,6 @@ async function update(req, res) {
   const { id } = req.params;
   const args = req.body;
   const project = await projectService.update(id, args);
-  if (!project) {
-    return res.status(404).json(
-      errorResponse({
-        message: "Project not found",
-        statusCode: 404,
-      })
-    );
-  }
 
   res.status(200).json(
     successResponse({
@@ -115,14 +99,6 @@ async function removeType(req, res) {
   const { id } = req.params;
   const { typeId } = req.body;
   const project = await projectService.removeType(id, typeId);
-  if (!project) {
-    return res.status(404).json(
-      errorResponse({
-        message: "Project not found",
-        statusCode: 404,
-      })
-    );
-  }
 
   res.status(200).json(
     successResponse({
@@ -135,7 +111,6 @@ async function removeType(req, res) {
 
 async function getAllTypes(req, res) {
   const types = await typeService.getAll();
-  console.log(types);
   res.status(200).json(
     successResponse({
       message: "Success",
@@ -149,14 +124,6 @@ async function addType(req, res) {
   const { id } = req.params;
   const { typeId } = req.body;
   const project = await projectService.addType(id, typeId);
-  if (!project) {
-    return res.status(404).json(
-      errorResponse({
-        message: "Project not found",
-        statusCode: 404,
-      })
-    );
-  }
 
   res.status(200).json(
     successResponse({
@@ -170,14 +137,6 @@ async function addType(req, res) {
 async function deleteProject(req, res) {
   const { id } = req.params;
   const deleted = await projectService.delete(id);
-  if (!deleted) {
-    return res.status(404).json(
-      errorResponse({
-        message: "Project not found",
-        statusCode: 404,
-      })
-    );
-  }
 
   res.status(200).json(
     successResponse({
