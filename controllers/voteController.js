@@ -1,11 +1,22 @@
 var { db } = require("../models/index.js");
-var { VoteService } = require("../services/index.js");
+var { VoteService, ProjectService } = require("../services/index.js");
 var voteService = new VoteService(db);
+var projectService = new ProjectService(db);
 var { successResponse } = require("../utilities/response.js");
+var { createError } = require("../utilities/something"); // remember: Add correct file path!
 
 async function toggleUpvote(req, res) {
   const { projectId } = req.params;
   const { id: userId } = req.user;
+
+  const project = await projectService.getOneId(projectId);
+  if (!project) {
+    throw createError({
+      message: "Project not found",
+      statusCode: 404,
+      data: { projectId },
+    });
+  }
 
   const { voted, count } = await voteService.toggleUpvote(userId, projectId);
 
@@ -14,7 +25,7 @@ async function toggleUpvote(req, res) {
       message: voted ? "Project upvoted successfully" : "Upvote removed successfully",
       data: {
         upvoted: voted,
-        count: count,
+        count,
       },
       statusCode: 200,
     })
