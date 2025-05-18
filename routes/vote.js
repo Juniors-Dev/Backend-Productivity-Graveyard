@@ -59,12 +59,17 @@ var { authenticate, hasRole } = require("../middleware");
  *         oneOf:
  *             - type: object
  *               description: Error details for specific fields
+ *               example:
+ *                 projectId: "No project with id:1234" 
  *             - type: array
  *               items:
  *                 type: object
  *               description: List of validation errors
- *           example:
- *             projectId: "No project with id:1234"
+ *               example:
+ *                 - field: "username"
+ *                   message: "Username is required"
+ *                 - field: "email"
+ *                   message: "Email format is invalid"
  */
 
 /**
@@ -144,7 +149,7 @@ var { authenticate, hasRole } = require("../middleware");
  *               statusCode: 404
  *               message: Project not found
  *               errors:
- *                 projectId: "No project with id:1234"
+ *                 projectId: "1234"
  */
 
 router.post("/:projectId/toggle", authenticate, asyncHandler(hasRole("user")), asyncHandler(toggleUpvote));
