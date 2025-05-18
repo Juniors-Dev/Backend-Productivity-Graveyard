@@ -9,22 +9,22 @@ function getStatusFromCode(code) {
  * @param {string} options.message - The error message
  * @param {string} options.status - The error status
  * @param {number} options.statusCode - The HTTP status code
- * @param {any} options.data - Additional error details either as an array or object
+ * @param {any} options.errors - Additional error details either as an array or object
  * @description This function is used to create an error object
  * @returns {Object} The error object
  * @example
  * const error = createError({
- *  message: "Not Found",
+ * message: "Not Found",
  * status: "fail",
  * statusCode: 404,
- * data: { result: "Resource not found" },
+ * errors: { result: "Resource not found" },
  * });
  */
-function createError({ message = "Internal Server Error", status, statusCode = 500, data = null }) {
+function createError({ message = "Internal Server Error", status, statusCode = 500, errors = null }) {
   const err = new Error(message);
   err.statusCode = statusCode;
   err.status = status || getStatusFromCode(statusCode);
-  err.data = data;
+  err.errors = errors;
   return err;
 }
 

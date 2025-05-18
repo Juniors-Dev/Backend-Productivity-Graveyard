@@ -63,12 +63,12 @@ app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const status = err.status || "error";
   const message = err.message || "Internal Server Error";
-  const errors = err.data || null;
+  const errors = err.errors || null;
   const response = errorResponse({
     message,
     status,
     statusCode,
-    errors: process.env.ENVIRONMENT === "development" ? errors : null,
+    errors: errors,
   });
   res.status(statusCode).json(response);
 });
