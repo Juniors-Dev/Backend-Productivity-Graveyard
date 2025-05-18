@@ -1,7 +1,8 @@
 var { db } = require("../models");
 var CommentService = require("../services/CommentService");
 var commentService = new CommentService(db);
-var { successResponse, errorResponse } = require("../utilities/response.js");
+var { successResponse } = require("../utilities/response");
+var createError = require("../utilities/createError");
 var { getLimitOffset } = require("../utilities/getPagination");
 
 async function createComment(req, res) {
@@ -13,23 +14,19 @@ async function createComment(req, res) {
     const parentComment = await commentService.getOneId(parentId);
 
     if (!parentComment) {
-      return res.status(404).json(
-        errorResponse({
-          message: "Parent comment not found",
-          status: "fail",
-          statusCode: 404,
-        })
-      );
+      throw createError({
+        message: "Parent comment not found",
+        statusCode: 404,
+        errors: { parentId }
+      });
     }
 
     if (parentComment.parentId !== null) {
-      return res.status(400).json(
-        errorResponse({
-          message: "Cannot reply to a reply",
-          status: "bad request",
-          statusCode: 400,
-        })
-      );
+      throw createError({
+        message: "Cannot reply to a reply",
+        statusCode: 400,
+        errors: { parentId }
+      });
     }
   }
 
@@ -72,23 +69,19 @@ async function updateComment(req, res) {
   const comment = await commentService.getOneId(id);
 
   if (!comment) {
-    return res.status(404).json(
-      errorResponse({
-        message: "Comment not found",
-        status: "fail",
-        statusCode: 404,
-      })
-    );
+    throw createError({
+      message: "Comment not found",
+      statusCode: 404,
+      errors: { commentId: id }
+    });
   }
 
   if (comment.isDeleted) {
-    return res.status(400).json(
-      errorResponse({
-        message: "Cannot update a deleted comment",
-        status: "bad request",
-        statusCode: 400,
-      })
-    );
+    throw createError({
+      message: "Cannot update a deleted comment", 
+      statusCode: 400,
+      errors: { commentId: id }
+    });
   }
 
   const updatedComment = await commentService.updateComment(id, message);
@@ -107,13 +100,11 @@ async function deleteComment(req, res) {
   const deleted = await commentService.softDelete(id);
 
   if (!deleted) {
-    return res.status(404).json(
-      errorResponse({
-        message: "Comment not found",
-        status: "fail",
-        statusCode: 404,
-      })
-    );
+    throw createError({
+      message: "Comment not found",
+      statusCode: 404,
+      errors: { commentId: id }
+    });
   }
 
   res.status(200).json(
