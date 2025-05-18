@@ -3,7 +3,7 @@ var { VoteService, ProjectService } = require("../services/index.js");
 var voteService = new VoteService(db);
 var projectService = new ProjectService(db);
 var { successResponse } = require("../utilities/response.js");
-var { createError } = require("../utilities/something"); // remember: Add correct file path!
+var createError = require("../utilities/createError");
 
 async function toggleUpvote(req, res) {
   const { projectId } = req.params;
@@ -14,7 +14,7 @@ async function toggleUpvote(req, res) {
     throw createError({
       message: "Project not found",
       statusCode: 404,
-      data: { projectId },
+      errors: { projectId },
     });
   }
 
