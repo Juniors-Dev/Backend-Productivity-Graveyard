@@ -60,13 +60,15 @@ app.use(function (req, res, next) {
 app.use((err, req, res, next) => {
   console.error("Error:", err);
 
-  const statusCode = err.status || 500;
+  const statusCode = err.statusCode || 500;
+  const status = err.status || "error";
   const message = err.message || "Internal Server Error";
-  const data = err.data || null;
+  const errors = err.data || null;
   const response = errorResponse({
     message,
+    status,
     statusCode,
-    data,
+    errors: process.env.ENVIRONMENT === "development" ? errors : null,
   });
   res.status(statusCode).json(response);
 });

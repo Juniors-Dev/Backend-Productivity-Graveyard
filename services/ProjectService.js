@@ -1,4 +1,5 @@
 const ProjectQueryBuilder = require("./queries/ProjectQueryBuilder");
+const createError = require("../utilities/createError");
 class ProjectService {
   constructor(db) {
     this.client = db.sequelize;
@@ -111,7 +112,12 @@ class ProjectService {
     } catch (error) {
       if (transaction) await transaction.rollback();
       console.error("Error starting transaction:", error);
-      throw error;
+      throw createError({
+        message: "Error creating project",
+        status: "error",
+        statusCode: 500,
+        data: { result: error.message },
+      });
     }
   }
 
@@ -128,7 +134,7 @@ class ProjectService {
   async removeType(id, typeId) {
     const project = await this.Project.findByPk(id);
     if (!project) {
-      throw new Error("Project not found");
+      throw createError({ message: "Project not found", statusCode: 404 });
     }
     await project.removeType(typeId);
     return project;
@@ -137,7 +143,7 @@ class ProjectService {
   async addType(id, typeId) {
     const project = await this.Project.findByPk(id);
     if (!project) {
-      throw new Error("Project not found");
+      throw createError({ message: "Project not found", statusCode: 404 });
     }
     await project.addType(typeId);
     return project;
