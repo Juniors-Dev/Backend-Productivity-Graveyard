@@ -18,17 +18,6 @@ class VoteService {
         await existingUpvote.destroy({ transaction: t });
         voted = false;
       } else {
-        const project = await this.Project.findByPk(projectId, {
-          attributes: ["id"],
-          transaction: t,
-        });
-        if (!project) {
-          throw createError({
-            message: "Project not found",
-            status: "not found",
-            statusCode: 404,
-          });
-        }
         await this.Upvote.create({ userId, projectId }, { transaction: t });
         voted = true;
       }
