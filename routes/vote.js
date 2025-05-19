@@ -1,8 +1,7 @@
 var express = require("express");
 var router = express.Router();
 var { toggleUpvote } = require("../controllers/voteController");
-var asyncHandler = require("../middleware/asyncHandler");
-var { authenticate, hasRole } = require("../middleware");
+var { authenticate, hasRole, asyncHandler } = require("../middleware");
 
 /**
  * @swagger
