@@ -9,15 +9,7 @@ async function toggleUpvote(req, res) {
   const { projectId } = req.params;
   const { id: userId } = req.user;
 
-  const project = await projectService.getOneId(projectId);
-  if (!project) {
-    throw createError({
-      message: "Project not found",
-      status: "not found",
-      statusCode: 404,
-      errors: { projectId },
-    });
-  }
+const project = await projectService.getOneId(projectId);
 
   const { voted, count } = await voteService.toggleUpvote(userId, projectId);
 
