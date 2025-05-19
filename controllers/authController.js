@@ -1,10 +1,9 @@
 const { db } = require("../models");
 const UserService = require("../services/UserService");
 const userService = new UserService(db);
-const { hashPassword, verifyPassword } = require("../utilities/hashing");
 const RoleService = require("../services/RoleService");
 const roleService = new RoleService(db);
-const { generateToken } = require("../utilities/jwt");
+const { generateToken, hashPassword, verifyPassword, createError } = require("../utilities");
 
 async function register(req, res) {
   const { firstName, lastName, username, email, password } = req.body;
@@ -26,7 +25,11 @@ async function register(req, res) {
   });
 
   if (!user) {
-    throw new Error("Failed to create user");
+    throw createError({
+      status: "conflict",
+      statusCode: 409,
+      message: "Conflict, user not created.",
+    });
   }
   res.status(201).json({ status: "success", statusCode: 201, data: { result: "Account created." } });
 }
@@ -40,17 +43,21 @@ async function login(req, res) {
 
   //Cheking if the user exist
   if (!user) {
-    throw new Error("No user with this Email exist");
+    throw createError({
+      status: "unauthorized",
+      statusCode: 401,
+      message: "Invalid email or password, please try again.",
+    });
   }
 
   // verifying the user - use hashedPassword instead of encryptedPassword
   const verifyUser = await verifyPassword(password, user.salt, user.hashedPassword);
 
   if (!verifyUser) {
-    return res.status(401).json({
+    throw createError({
       status: "unauthorized",
       statusCode: 401,
-      data: { result: "Invalid password, please try again." },
+      message: "Invalid password, please try again.",
     });
   }
 

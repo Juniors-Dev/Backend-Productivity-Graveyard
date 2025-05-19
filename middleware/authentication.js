@@ -2,43 +2,32 @@ var { verifyToken } = require("../utilities/jwt");
 var { db } = require("../models");
 var UserService = require("../services/UserService");
 var userService = new UserService(db);
+var { createError, normalizeError } = require("../utilities");
 
 async function authenticate(req, res, next) {
   try {
     const auth = req.headers["authorization"];
 
     if (!auth) {
-      return res.status(401).json({
-        status: "unauthorized",
-        statusCode: 401,
-        data: { result: "Unauthorized, token not found." },
-      });
+      throw createError({ statusCode: 401, message: "Unauthorized, token not found." });
     }
 
     const token = auth.split(" ");
 
     if (!token || token[0] !== "Bearer" || token.length !== 2) {
-      return res.status(401).json({
-        status: "unauthorized",
-        statusCode: 401,
-        data: { result: "Unauthorized, invalid token." },
-      });
+      throw createError({ statusCode: 401, message: "Unauthorized, invalid token format." });
     }
 
     const decoded = verifyToken(token[1]);
     if (!decoded) {
-      return res.status(401).json({
-        status: "unauthorized",
-        statusCode: 401,
-        data: { result: "Unauthorized, invalid or expired token." },
-      });
+      const err = createError({ statusCode: 401, message: "Unauthorized, invalid or expired token." });
+      throw err;
     }
 
     req.user = decoded;
     next();
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ status: "error", statusCode: 500, data: { result: error.message } });
+    next(normalizeError(error));
   }
 }
 
@@ -53,47 +42,31 @@ async function isLoggedIn(req, res, next) {
       return next();
     }
 
-    authenticate(req, res, next);
+    return authenticate(req, res, next);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ status: "error", statusCode: 500, data: { result: error.message } });
+    next(normalizeError(error));
   }
 }
 
 const hasRole = (role) => async (req, res, next) => {
   try {
     if (!req.user) {
-      return res.status(401).json({
-        status: "unauthorized",
-        statusCode: 401,
-        data: { result: "Unauthorized, token not found." },
-      });
+      throw createError({ statusCode: 401, message: "Unauthorized, token not found." });
     }
 
     const user = await userService.getOneId(req.user.id);
 
     if (!user) {
-      return res.status(401).json({
-        status: "unauthorized",
-        statusCode: 401,
-        data: { result: "Unauthorized, invalid user." },
-      });
+      throw createError({ statusCode: 401, message: "Unauthorized, user not found." });
     }
 
     if (user.role !== role) {
-      return res.status(403).json({
-        status: "forbidden",
-        statusCode: 403,
-        data: { result: "Forbidden, invalid role." },
-      });
+      throw createError({ statusCode: 403, message: "Forbidden, insufficient permissions." });
     }
     req.user = user;
-    console.log("User role: ", req.user);
-
     next();
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ status: "error", statusCode: 500, data: { result: error.message } });
+    next(normalizeError(error));
   }
 };
 
@@ -126,8 +99,7 @@ async function isAdmin(req, res, next) {
     req.user = user;
     next();
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ status: "error", statusCode: 500, data: { result: error.message } });
+    next(normalizeError(error));
   }
 }
 
@@ -141,14 +113,12 @@ const isSelfOrAdmin = async (req, res, next) => {
       return next();
     }
 
-    return res.status(403).json({
-      status: "forbidden",
+    throw createError({
       statusCode: 403,
-      data: { result: "Forbidden, must be self or admin." },
+      message: "Forbidden, you don't have permission to access this resource.",
     });
-  } catch (e) {
-    console.log(e);
-    res.status(500).json({ status: "error", statusCode: 500, data: { result: e.message } });
+  } catch (error) {
+    next(normalizeError(error));
   }
 };
 

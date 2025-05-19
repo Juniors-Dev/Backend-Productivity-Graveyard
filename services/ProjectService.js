@@ -1,4 +1,5 @@
 const ProjectQueryBuilder = require("./queries/ProjectQueryBuilder");
+const createError = require("../utilities/createError");
 class ProjectService {
   constructor(db) {
     this.client = db.sequelize;
@@ -60,7 +61,13 @@ class ProjectService {
     });
 
     // Since you’re expecting one, not many:
-    return project[0] || null;
+    if (project.length === 0) {
+      throw createError({
+        message: "Project not found",
+        statusCode: 404,
+      });
+    }
+    return project[0];
   }
 
   async create({
@@ -111,24 +118,34 @@ class ProjectService {
     } catch (error) {
       if (transaction) await transaction.rollback();
       console.error("Error starting transaction:", error);
-      throw error;
+      throw createError({
+        message: "Error creating project",
+        status: "error",
+        statusCode: 500,
+        errors: { result: error.message },
+      });
     }
   }
 
   async update(id, args) {
+    const project = await this.Project.findByPk(id);
+    if (!project) {
+      throw createError({ message: "Project not found", statusCode: 404 });
+    }
+
     const updated = await this.Project.update(
       { ...args },
       {
         where: { id },
       }
     );
-    return updated[0] === 1 ? this.getOneId(id) : null;
+    return this.getOneId(id);
   }
 
   async removeType(id, typeId) {
     const project = await this.Project.findByPk(id);
     if (!project) {
-      throw new Error("Project not found");
+      throw createError({ message: "Project not found", statusCode: 404 });
     }
     await project.removeType(typeId);
     return project;
@@ -137,13 +154,17 @@ class ProjectService {
   async addType(id, typeId) {
     const project = await this.Project.findByPk(id);
     if (!project) {
-      throw new Error("Project not found");
+      throw createError({ message: "Project not found", statusCode: 404 });
     }
     await project.addType(typeId);
     return project;
   }
 
   async delete(id) {
+    const project = await this.Project.findByPk(id);
+    if (!project) {
+      throw createError({ message: "Project not found", statusCode: 404 });
+    }
     return this.Project.destroy({ where: { id } });
   }
 }
