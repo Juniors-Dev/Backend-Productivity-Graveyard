@@ -16,6 +16,7 @@ var { projectSchema, projectUpdateSchema, typeIdSchema } = require("../schema/pr
 var { ProjectService } = require("../services");
 var { db } = require("../models");
 var projectService = new ProjectService(db);
+var projectComments = require("./projectComments");
 
 router.get("/", isLoggedIn, asyncHandler(getAll));
 
@@ -59,5 +60,7 @@ router.delete(
   asyncHandler(ownsEntity(projectService)),
   asyncHandler(removeType)
 );
+
+router.use("/", projectComments);
 
 module.exports = router;

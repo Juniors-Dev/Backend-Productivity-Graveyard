@@ -12,7 +12,7 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./swagger");
 
 // routers
-var { indexRouter, usersRouter, projectsRouter, authRouter, votesRouter } = require("./routes/index");
+var { indexRouter, usersRouter, projectsRouter, authRouter, votesRouter, commentsRouter } = require("./routes/index");
 
 // database and seeder
 var { db } = require("./models");
@@ -46,6 +46,7 @@ app.use("/", indexRouter);
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/projects", projectsRouter);
+app.use("/comments", commentsRouter);
 app.use("/votes", votesRouter);
 
 // Swagger
@@ -60,13 +61,15 @@ app.use(function (req, res, next) {
 app.use((err, req, res, next) => {
   console.error("Error:", err);
 
-  const statusCode = err.status || 500;
+  const statusCode = err.statusCode || 500;
+  const status = err.status || "error";
   const message = err.message || "Internal Server Error";
-  const data = err.data || null;
+  const errors = err.errors || null;
   const response = errorResponse({
     message,
+    status,
     statusCode,
-    data,
+    errors: errors,
   });
   res.status(statusCode).json(response);
 });

@@ -1,3 +1,5 @@
+var { createError, normalizeError } = require("../utilities");
+
 /**
  *
  * @param {Object} service - The service object that contains the method to get the entity by ID
@@ -9,17 +11,15 @@ const ownsEntity = (service) => async (req, res, next) => {
   const { id } = req.params;
   const entity = await service.getOneId(id);
   if (!entity) {
-    return res.status(404).json({
-      status: "not found",
+    throw createError({
       statusCode: 404,
-      data: { result: "Entity not found" },
+      message: "Not Found, entity not found.",
     });
   }
   if (entity.userId !== req.user.id) {
-    return res.status(403).json({
-      status: "forbidden",
+    throw createError({
       statusCode: 403,
-      data: { result: "Forbidden, you don't own this entity" },
+      message: "Forbidden, you do not own this entity.",
     });
   }
   next();

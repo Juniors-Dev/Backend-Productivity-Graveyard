@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
 var { toggleUpvote } = require("../controllers/voteController");
-var { authenticate, hasRole, asyncHandler } = require("../middleware");
+var { authenticate, asyncHandler } = require("../middleware");
 
 /**
  * @swagger
@@ -44,7 +44,7 @@ var { authenticate, hasRole, asyncHandler } = require("../middleware");
  *           description: Always false for error responses
  *         status:
  *           type: string
- *           enum: [fail, error, unauthorized, forbidden, bad request]
+ *           enum: [fail, error, unauthorized, bad request]
  *           description: Indicates the type of error that occurred
  *           example: error
  *         statusCode:
@@ -59,7 +59,7 @@ var { authenticate, hasRole, asyncHandler } = require("../middleware");
  *             - type: object
  *               description: Error details for specific fields
  *               example:
- *                 projectId: "No project with id:1234" 
+ *                 projectId: "No project with id:1234"
  *             - type: array
  *               items:
  *                 type: object
@@ -115,7 +115,7 @@ var { authenticate, hasRole, asyncHandler } = require("../middleware");
  *                     upvoted: false
  *                     count: 21
  *       401:
- *         description: Unauthorized - authentication issues
+ *         description: Unauthorized - authentication required
  *         content:
  *           application/json:
  *             schema:
@@ -124,18 +124,7 @@ var { authenticate, hasRole, asyncHandler } = require("../middleware");
  *               success: false
  *               status: unauthorized
  *               statusCode: 401
- *               message: "Unauthorized, invalid token."
- *       403:
- *         description: Forbidden - user does not have required role
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example:
- *               success: false
- *               status: forbidden
- *               statusCode: 403
- *               message: "Forbidden, invalid role."
+ *               message: "Unauthorized, invalid or expired token."
  *       404:
  *         description: Project not found
  *         content:
@@ -151,6 +140,6 @@ var { authenticate, hasRole, asyncHandler } = require("../middleware");
  *                 projectId: "1234"
  */
 
-router.post("/:projectId/toggle", authenticate, asyncHandler(hasRole("user")), asyncHandler(toggleUpvote));
+router.post("/:projectId/toggle", authenticate, asyncHandler(toggleUpvote));
 
 module.exports = router;

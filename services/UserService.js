@@ -72,7 +72,25 @@ class UserService {
   }
 
   async softDelete(id) {
-    return this.User.destroy({ where: { id } });
+    const user = await this.User.findByPk(id, {
+      include: [{ model: this.Role }],
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    let transaction;
+    try {
+      transaction = await this.client.transaction();
+      await user.destroy({ transaction });
+      await transaction.commit();
+
+      return true;
+    } catch (error) {
+      if (transaction) await transaction.rollback();
+      throw error;
+    }
   }
 
   async getAllDeleted() {

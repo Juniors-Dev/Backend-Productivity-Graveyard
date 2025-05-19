@@ -1,3 +1,4 @@
+var { createError } = require("../utilities");
 class VoteService {
   constructor(db) {
     this.client = db.sequelize;
@@ -17,15 +18,6 @@ class VoteService {
         await existingUpvote.destroy({ transaction: t });
         voted = false;
       } else {
-        const project = await this.Project.findByPk(projectId, {
-          attributes: ["id"],
-          transaction: t,
-        });
-        if (!project) {
-          const err = new Error("Project not found");
-          err.status = 404;
-          throw err;
-        }
         await this.Upvote.create({ userId, projectId }, { transaction: t });
         voted = true;
       }

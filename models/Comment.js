@@ -1,6 +1,3 @@
-/**
- * Stores user comments on projects, with support for threaded replies.
- */
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 
@@ -49,6 +46,9 @@ module.exports = (sequelize, Sequelize) => {
         {
           fields: ["parentId"],
         },
+        {
+          fields: ["projectId", "parentId"],
+        },
       ],
     }
   );
@@ -56,13 +56,13 @@ module.exports = (sequelize, Sequelize) => {
   Comment.associate = (models) => {
     Comment.belongsTo(models.User, {
       foreignKey: "userId",
+      as: "User",
       onDelete: "SET NULL",
     });
     Comment.belongsTo(models.Project, {
       foreignKey: "projectId",
       onDelete: "CASCADE",
     });
-    // Threaded replies
     Comment.belongsTo(models.Comment, {
       foreignKey: "parentId",
       as: "parent",
