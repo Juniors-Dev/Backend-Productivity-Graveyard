@@ -1,4 +1,4 @@
-const { UserService} = require("../services/index");
+const { UserService } = require("../services/index");
 const { db } = require("../models");
 const userService = new UserService(db);
 const sanitizeUser = require("../utilities/sanitizeUser");
@@ -64,7 +64,7 @@ async function softDeletedUser(req, res, next) {
     res.status(200).json({
       status: "success",
       statusCode: 200,
-      data: deletedUser,
+      message: "User successfully deleted",
     });
   } catch (error) {
     next(error);

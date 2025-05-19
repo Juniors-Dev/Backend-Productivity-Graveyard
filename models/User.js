@@ -101,5 +101,19 @@ module.exports = (sequelize, Sequelize) => {
       onDelete: "CASCADE",
     });
   };
+
+  User.addHook("afterDestroy", async (user, options) => {
+    await sequelize.models.Comment.update(
+      {
+        isDeleted: true,
+        userId: null,
+      },
+      {
+        where: { userId: user.id },
+        transaction: options.transaction,
+      }
+    );
+  });
+
   return User;
 };
