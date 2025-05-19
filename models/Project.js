@@ -1,6 +1,3 @@
-/**
- * Represents a user-submitted project in the graveyard.
- */
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 
