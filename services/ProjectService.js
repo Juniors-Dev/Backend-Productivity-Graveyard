@@ -9,8 +9,7 @@ class ProjectService {
   }
 
   async getAll(limit = 100, offset = 0, options = {}) {
-    const { userId, currentUserId, status, orderBy, order, types } = options;
-
+    const { userId, currentUserId, status, orderBy, order, types, query } = options;
     const queryBuilder = new ProjectQueryBuilder()
       .withVotes()
       .withTypes()
@@ -19,6 +18,9 @@ class ProjectService {
       .filterByStatus(status)
       .filterByTypes(types)
       .orderByField(orderBy || "createdAt", order || "DESC");
+    if (query) {
+      queryBuilder.queryByName(query);
+    }
 
     const projects = await this.client.query(queryBuilder.buildListQuery(), {
       replacements: {
@@ -28,6 +30,7 @@ class ProjectService {
         userId,
         status,
         types,
+        query: query,
       },
       type: this.client.QueryTypes.SELECT,
     });
@@ -38,6 +41,7 @@ class ProjectService {
         userId,
         status,
         types,
+        query: query,
       },
       type: this.client.QueryTypes.SELECT,
     });
