@@ -103,6 +103,60 @@ var projectComments = require("./projectComments");
  */
 router.get("/", isLoggedIn, asyncHandler(getAll));
 
+/**
+ * @swagger
+ * /projects/types:
+ *   get:
+ *     summary: Get all project types
+ *     description: Returns a list of all predefined reasons a project was discontinued. Useful for building dropdown menus in forms.
+ *     tags: [Projects]
+ *     responses:
+ *       200:
+ *         description: List of project types
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 statusCode:
+ *                   type: integer
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                   example: Success
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 6
+ *                       name:
+ *                         type: string
+ *                         example: Feature Creep
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2025-05-07T20:30:17.974Z"
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2025-05-07T20:30:17.974Z"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+
 router.get("/types", asyncHandler(getAllTypes));
 
 /**
