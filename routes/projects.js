@@ -22,17 +22,85 @@ var projectComments = require("./projectComments");
  * @swagger
  * /projects:
  *   get:
- *     summary: Get all projects (with optional filters)
+ *     summary: Retrieve a list of buried projects
+ *     description: >
+ *       Returns a paginated list of all projects in the graveyard.
+ *       Supports filtering by status, type, user, and supports sorting and search queries.
+ *       This endpoint is publicly accessible and returns metadata for pagination.
+ *       A logged in user, it will return true for the userHasVoted field if the user has voted on the project.
  *     tags: [Projects]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         description: Number of projects to return
+ *         schema:
+ *           type: integer
+ *           default: 100
+ *       - in: query
+ *         name: offset
+ *         required: false
+ *         description: Number of projects to skip (for pagination)
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *       - in: query
+ *         name: status
+ *         required: false
+ *         description: Filter projects by status
+ *         schema:
+ *           type: string
+ *           enum: [inactive, active, buried, resurrected, completed, archived]
+ *       - in: query
+ *         name: orderBy
+ *         required: false
+ *         description: Field to sort by
+ *         schema:
+ *           type: string
+ *           enum: [status, createdAt, updatedAt, name, etc..]
+ *           default: createdAt
+ *       - in: query
+ *         name: order
+ *         required: false
+ *         description: Sort direction (asc or desc)
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *       - in: query
+ *         name: userId
+ *         required: false
+ *         description: Filter projects by user ID
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: query
+ *         name: types
+ *         required: false
+ *         description: Comma-separated list of type IDs to filter by (e.g., 1,2,3)
+ *         schema:
+ *           type: string
+ *           example: "1,2,3"
+ *       - in: query
+ *         name: query
+ *         required: false
+ *         description: Search by project name
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: List of projects
+ *         description: List of filtered projects
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ProjectResponse'
+ *               $ref: '#/components/schemas/ProjectArrayResponse'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UnauthorizedResponse'
  */
-
 router.get("/", isLoggedIn, asyncHandler(getAll));
 
 router.get("/types", asyncHandler(getAllTypes));
@@ -41,14 +109,14 @@ router.get("/types", asyncHandler(getAllTypes));
  * @swagger
  * /projects/{id}:
  *   get:
- *     summary: Get a single project by ID
+ *     summary: Get project by ID
  *     tags: [Projects]
  *     parameters:
  *       - in: path
  *         name: id
- *         required: true
  *         schema:
  *           type: string
+ *         required: true
  *         description: UUID of the project
  *     responses:
  *       200:
@@ -56,7 +124,19 @@ router.get("/types", asyncHandler(getAllTypes));
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Project'
+ *               $ref: '#/components/schemas/ProjectSingleResponse'
+ *       401:
+ *         description: Unauthorized or bad token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UnauthorizedResponse'
+ *       404:
+ *         description: Project not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundResponse'
  */
 
 router.get("/:id", isLoggedIn, asyncHandler(getOneId));
@@ -74,8 +154,18 @@ router.get("/:id", isLoggedIn, asyncHandler(getOneId));
  *           schema:
  *             $ref: '#/components/schemas/Project'
  *     responses:
- *       201:
- *         description: Project created
+ *       200:
+ *         description: Project created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectSingleResponse'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
  */
 
 router.post("/", authenticate, validateSchema(projectSchema), asyncHandler(hasRole("user")), asyncHandler(create));
@@ -214,57 +304,90 @@ module.exports = router;
  *         - name
  *         - description
  *         - types
+ *         - userId
+ *         - eulogy
  *         - causeOfDeath
  *         - startDate
  *         - endDate
  *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
  *         name:
  *           type: string
- *           example: Productivity Graveyard
+ *           example: "Feature Creeper Codex"
  *         description:
  *           type: string
- *           example: A humorous app to memorialize abandoned dev projects.
- *         causeOfDeath:
- *           type: string
- *           example: Dog puked on the server
+ *           example: "A parody app showing how simple ideas spiral into feature-bloated chaos."
  *         eulogy:
  *           type: string
- *           example: Laid to rest after haunting VS Code for too long.
+ *           example: "Laid to rest after haunting VS Code for too long."
+ *         causeOfDeath:
+ *           type: string
+ *           example: "Dog Puked on the server"
  *         status:
  *           type: string
- *           enum: [active, buried, archived]
- *           example: archived
+ *           enum: [inactive, active, buried, resurrected, completed, archived]
+ *           example: "archived"
  *         startDate:
  *           type: string
  *           format: date
- *           example: 2024-10-01
+ *           example: "2024-10-01"
  *         endDate:
  *           type: string
  *           format: date
- *           example: 2025-01-15
+ *           example: "2025-01-15"
  *         tombstoneId:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *         userId:
  *           type: string
  *           format: uuid
  *         types:
  *           type: array
  *           items:
  *             type: integer
- *           example: [2, 3]
+ *             example: 1
+ *         user:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *               format: uuid
+ *             username:
+ *               type: string
+ *             avatarUrl:
+ *               type: string
+ *               nullable: true
+ *         commentCount:
+ *           type: integer
+ *         upvoteCount:
+ *           type: integer
+ *         userHasVoted:
+ *           type: boolean
+ *           nullable: true
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
  *
- *     ProjectResponse:
+ *     ProjectArrayResponse:
  *       type: object
  *       properties:
  *         success:
  *           type: boolean
  *         status:
  *           type: string
- *           example: success
+ *           example: "success"
  *         statusCode:
  *           type: integer
  *           example: 200
  *         message:
  *           type: string
- *           example: Success
+ *           example: "Success"
  *         data:
  *           type: array
  *           items:
@@ -274,37 +397,76 @@ module.exports = router;
  *           properties:
  *             total:
  *               type: integer
- *             limit:
- *               type: integer
  *             offset:
+ *               type: integer
+ *             limit:
  *               type: integer
  *             hasNext:
  *               type: boolean
  *
- *     ProjectUpdateBody:
+ *     ProjectSingleResponse:
  *       type: object
  *       properties:
- *         name:
- *           type: string
- *         description:
- *           type: string
+ *         success:
+ *           type: boolean
  *         status:
  *           type: string
- *         startDate:
- *           type: string
- *           format: date
- *         endDate:
- *           type: string
- *           format: date
- *         eulogy:
- *           type: string
- *
- *     TypeId:
- *       type: object
- *       required:
- *         - typeId
- *       properties:
- *         typeId:
+ *         statusCode:
  *           type: integer
- *           example: 1
+ *         message:
+ *           type: string
+ *         data:
+ *           $ref: '#/components/schemas/Project'
+ *
+ *     NotFoundResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "fail"
+ *         statusCode:
+ *           type: integer
+ *           example: 404
+ *         message:
+ *           type: string
+ *           example: "Project not found"
+ *
+ *     UnauthorizedResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "fail"
+ *         statusCode:
+ *           type: integer
+ *           example: 401
+ *         message:
+ *           type: string
+ *           example: "Unauthorized, invalid or expired token."
+ *
+ *     ValidationErrorResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "bad request"
+ *         statusCode:
+ *           type: integer
+ *           example: 400
+ *         message:
+ *           type: string
+ *           example: "Validation Error: X errors occurred"
+ *         errors:
+ *           type: array
+ *           items:
+ *             type: string
  */
