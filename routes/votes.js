@@ -35,7 +35,7 @@ var { authenticate, asyncHandler } = require("../middleware");
  *               type: number
  *               description: Projects total number of upvotes after toggling
  *               example: 22
- *     ErrorResponse:
+ *     VoteErrorResponse:
  *       type: object
  *       properties:
  *         success:
@@ -119,7 +119,7 @@ var { authenticate, asyncHandler } = require("../middleware");
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/VoteErrorResponse'
  *             example:
  *               success: false
  *               status: unauthorized
@@ -130,7 +130,7 @@ var { authenticate, asyncHandler } = require("../middleware");
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/VoteErrorResponse'
  *             example:
  *               success: false
  *               status: fail
