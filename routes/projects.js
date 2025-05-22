@@ -281,6 +281,38 @@ var projectComments = require("./projectComments");
  *           type: array
  *           items:
  *             type: string
+ *
+ *     UnauthorizedResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "fail"
+ *         statusCode:
+ *           type: integer
+ *           example: 401
+ *         message:
+ *           type: string
+ *           example: "Unauthorized, invalid or expired token."
+ *
+ *     ForbiddenResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "fail"
+ *         statusCode:
+ *           type: integer
+ *           example: 403
+ *         message:
+ *           type: string
+ *           example: "Forbidden, you do not own this entity."
  */
 
 /**
@@ -574,8 +606,51 @@ router.put(
  *         schema:
  *           type: string
  *     responses:
- *       204:
+ *       200:
  *         description: Project deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                  success:
+ *                    type: boolean
+ *                    example: true
+ *                  status:
+ *                    type: string
+ *                    example: success
+ *                  statusCode:
+ *                    type: integer
+ *                    example: 200
+ *                  message:
+ *                    type: string
+ *                    example: Project deleted successfully
+ *                  data:
+ *                    type: null
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UnauthorizedResponse'
+ *       403:
+ *         description: Forbidden
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ForbiddenResponse'
+ *       404:
+ *         description: Project not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.delete(
