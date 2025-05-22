@@ -20,6 +20,271 @@ var projectComments = require("./projectComments");
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     Project:
+ *       type: object
+ *       required:
+ *         - name
+ *         - description
+ *         - types
+ *         - userId
+ *         - eulogy
+ *         - causeOfDeath
+ *         - startDate
+ *         - endDate
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         name:
+ *           type: string
+ *           example: "Feature Creeper Codex"
+ *         description:
+ *           type: string
+ *           example: "A parody app showing how simple ideas spiral into feature-bloated chaos."
+ *         eulogy:
+ *           type: string
+ *           example: "Laid to rest after haunting VS Code for too long."
+ *         causeOfDeath:
+ *           type: string
+ *           example: "Dog Puked on the server"
+ *         status:
+ *           type: string
+ *           enum: [inactive, active, buried, resurrected, completed, archived]
+ *           example: "archived"
+ *         startDate:
+ *           type: string
+ *           format: date
+ *           example: "2024-10-01"
+ *         endDate:
+ *           type: string
+ *           format: date
+ *           example: "2025-01-15"
+ *         tombstoneId:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *         userId:
+ *           type: string
+ *           format: uuid
+ *         types:
+ *           type: array
+ *           items:
+ *             type: integer
+ *             example: 1
+ *         user:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *               format: uuid
+ *             username:
+ *               type: string
+ *             avatarUrl:
+ *               type: string
+ *               nullable: true
+ *         commentCount:
+ *           type: integer
+ *         upvoteCount:
+ *           type: integer
+ *         userHasVoted:
+ *           type: boolean
+ *           nullable: true
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *
+ *     ProjectArrayResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         statusCode:
+ *           type: integer
+ *           example: 200
+ *         message:
+ *           type: string
+ *           example: "Success"
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Project'
+ *         meta:
+ *           type: object
+ *           properties:
+ *             total:
+ *               type: integer
+ *             offset:
+ *               type: integer
+ *             limit:
+ *               type: integer
+ *             hasNext:
+ *               type: boolean
+ *
+ *     ProjectSingleResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *         status:
+ *           type: string
+ *         statusCode:
+ *           type: integer
+ *         message:
+ *           type: string
+ *         data:
+ *           $ref: '#/components/schemas/Project'
+ *
+ *     ProjectErrorResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "fail"
+ *         statusCode:
+ *           type: integer
+ *           example: 409
+ *         message:
+ *           type: string
+ *           example: "Type already exists in project"
+ *         errors:
+ *           type: array
+ *           items:
+ *             type: string
+ *
+ *     ProjectValidationErrorResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "bad request"
+ *         statusCode:
+ *           type: integer
+ *           example: 400
+ *         message:
+ *           type: string
+ *           example: "Validation Error: X errors occurred"
+ *         errors:
+ *           type: array
+ *           items:
+ *             type: string
+ *
+ *     ProjectNotFoundResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "fail"
+ *         statusCode:
+ *           type: integer
+ *           example: 404
+ *         message:
+ *           type: string
+ *           example: "Project not found"
+ *         errors:
+ *           type: array
+ *           items:
+ *             type: string
+ *
+ *     ProjectServerErrorResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "error"
+ *         statusCode:
+ *           type: integer
+ *           example: 500
+ *         message:
+ *           type: string
+ *           example: "Error adding type to project"
+ *         errors:
+ *           type: array
+ *           items:
+ *             type: string
+ *
+ *     ValidationErrorResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "bad request"
+ *         statusCode:
+ *           type: integer
+ *           example: 400
+ *         message:
+ *           type: string
+ *           example: "Validation Error: X errors occurred"
+ *         errors:
+ *           type: array
+ *           items:
+ *             type: string
+ *
+ *     NotFoundResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "fail"
+ *         statusCode:
+ *           type: integer
+ *           example: 404
+ *         message:
+ *           type: string
+ *           example: "Project not found"
+ *         errors:
+ *           type: array
+ *           items:
+ *             type: string
+ *
+ *     InternalErrorResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "error"
+ *         statusCode:
+ *           type: integer
+ *           example: 500
+ *         message:
+ *           type: string
+ *           example: "Server error"
+ *         errors:
+ *           type: array
+ *           items:
+ *             type: string
+ */
+
+/**
+ * @swagger
  * /projects:
  *   get:
  *     summary: Retrieve a list of buried projects
@@ -154,7 +419,7 @@ router.get("/", isLoggedIn, asyncHandler(getAll));
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.get("/types", asyncHandler(getAllTypes));
@@ -220,6 +485,12 @@ router.get("/:id", isLoggedIn, asyncHandler(getOneId));
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UnauthorizedResponse'
  */
 
 router.post("/", authenticate, validateSchema(projectSchema), asyncHandler(hasRole("user")), asyncHandler(create));
@@ -244,7 +515,41 @@ router.post("/", authenticate, validateSchema(projectSchema), asyncHandler(hasRo
  *             $ref: '#/components/schemas/ProjectUpdateBody'
  *     responses:
  *       200:
- *         description: Project updated
+ *         description: Project created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectSingleResponse'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UnauthorizedResponse'
+ *       403:
+ *         description: Forbidden
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ForbiddenResponse'
+ *       404:
+ *         description: Project not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.put(
@@ -286,11 +591,15 @@ router.delete(
  * /projects/{id}/type:
  *   put:
  *     summary: Add a type (tag) to a project
+ *     description: >
+ *       Adds a type (tag) to the specified project. The type should be provided in the request body as a type ID.
+ *       Only the project owner or users with the appropriate role can add a type to a project.
  *     tags: [Projects]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: UUID of the project
  *         schema:
  *           type: string
  *     requestBody:
@@ -302,27 +611,62 @@ router.delete(
  *     responses:
  *       200:
  *         description: Type added to project
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectSingleResponse'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectValidationErrorResponse'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UnauthorizedResponse'
+ *       403:
+ *         description: Forbidden
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ForbiddenResponse'
+ *       404:
+ *         description: Project or type not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectNotFoundResponse'
+ *       409:
+ *         description: Type already exists on project
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectServerErrorResponse'
  */
-
-router.put(
-  "/:id/type",
-  authenticate,
-  validateSchema(typeIdSchema),
-  asyncHandler(hasRole("user")),
-  asyncHandler(ownsEntity(projectService)),
-  asyncHandler(addType)
-);
 
 /**
  * @swagger
  * /projects/{id}/type:
  *   delete:
  *     summary: Remove a type (tag) from a project
+ *     description: >
+ *       Removes a type (tag) from the specified project. The type should be provided in the request body as a type ID.
+ *       Only the project owner or users with the appropriate role can remove a type from a project.
  *     tags: [Projects]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: UUID of the project
  *         schema:
  *           type: string
  *     requestBody:
@@ -334,7 +678,51 @@ router.put(
  *     responses:
  *       200:
  *         description: Type removed from project
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectSingleResponse'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectValidationErrorResponse'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UnauthorizedResponse'
+ *       403:
+ *         description: Forbidden
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ForbiddenResponse'
+ *       404:
+ *         description: Project or type not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectNotFoundResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectServerErrorResponse'
  */
+
+router.put(
+  "/:id/type",
+  authenticate,
+  validateSchema(typeIdSchema),
+  asyncHandler(hasRole("user")),
+  asyncHandler(ownsEntity(projectService)),
+  asyncHandler(addType)
+);
+
 router.delete(
   "/:id/type",
   authenticate,
@@ -347,180 +735,3 @@ router.delete(
 router.use("/", projectComments);
 
 module.exports = router;
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Project:
- *       type: object
- *       required:
- *         - name
- *         - description
- *         - types
- *         - userId
- *         - eulogy
- *         - causeOfDeath
- *         - startDate
- *         - endDate
- *       properties:
- *         id:
- *           type: string
- *           format: uuid
- *         name:
- *           type: string
- *           example: "Feature Creeper Codex"
- *         description:
- *           type: string
- *           example: "A parody app showing how simple ideas spiral into feature-bloated chaos."
- *         eulogy:
- *           type: string
- *           example: "Laid to rest after haunting VS Code for too long."
- *         causeOfDeath:
- *           type: string
- *           example: "Dog Puked on the server"
- *         status:
- *           type: string
- *           enum: [inactive, active, buried, resurrected, completed, archived]
- *           example: "archived"
- *         startDate:
- *           type: string
- *           format: date
- *           example: "2024-10-01"
- *         endDate:
- *           type: string
- *           format: date
- *           example: "2025-01-15"
- *         tombstoneId:
- *           type: string
- *           format: uuid
- *           nullable: true
- *         userId:
- *           type: string
- *           format: uuid
- *         types:
- *           type: array
- *           items:
- *             type: integer
- *             example: 1
- *         user:
- *           type: object
- *           properties:
- *             id:
- *               type: string
- *               format: uuid
- *             username:
- *               type: string
- *             avatarUrl:
- *               type: string
- *               nullable: true
- *         commentCount:
- *           type: integer
- *         upvoteCount:
- *           type: integer
- *         userHasVoted:
- *           type: boolean
- *           nullable: true
- *         createdAt:
- *           type: string
- *           format: date-time
- *         updatedAt:
- *           type: string
- *           format: date-time
- *
- *     ProjectArrayResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *         status:
- *           type: string
- *           example: "success"
- *         statusCode:
- *           type: integer
- *           example: 200
- *         message:
- *           type: string
- *           example: "Success"
- *         data:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/Project'
- *         meta:
- *           type: object
- *           properties:
- *             total:
- *               type: integer
- *             offset:
- *               type: integer
- *             limit:
- *               type: integer
- *             hasNext:
- *               type: boolean
- *
- *     ProjectSingleResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *         status:
- *           type: string
- *         statusCode:
- *           type: integer
- *         message:
- *           type: string
- *         data:
- *           $ref: '#/components/schemas/Project'
- *
- *     NotFoundResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: false
- *         status:
- *           type: string
- *           example: "fail"
- *         statusCode:
- *           type: integer
- *           example: 404
- *         message:
- *           type: string
- *           example: "Project not found"
- *
- *     UnauthorizedResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: false
- *         status:
- *           type: string
- *           example: "fail"
- *         statusCode:
- *           type: integer
- *           example: 401
- *         message:
- *           type: string
- *           example: "Unauthorized, invalid or expired token."
- *
- *     ValidationErrorResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: false
- *         status:
- *           type: string
- *           example: "bad request"
- *         statusCode:
- *           type: integer
- *           example: 400
- *         message:
- *           type: string
- *           example: "Validation Error: X errors occurred"
- *         errors:
- *           type: array
- *           items:
- *             type: string
- */

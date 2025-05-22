@@ -152,7 +152,7 @@ class ProjectService {
       throw createError({ message: "Project not found", statusCode: 404 });
     }
     await project.removeType(typeId);
-    return project;
+    return this.getOneId(id);
   }
 
   async addType(id, typeId) {
@@ -160,8 +160,29 @@ class ProjectService {
     if (!project) {
       throw createError({ message: "Project not found", statusCode: 404 });
     }
-    await project.addType(typeId);
-    return project;
+    const type = await this.Type.findByPk(typeId);
+    if (!type) {
+      throw createError({ message: "Type not found", statusCode: 404 });
+    }
+    try {
+      await project.addType(typeId);
+    } catch (error) {
+      if (error.name === "SequelizeUniqueConstraintError") {
+        console.error("Unique constraint error:", error);
+        throw createError({
+          message: "Type already exists in project",
+          status: "error",
+          statusCode: 409,
+        });
+      }
+      throw createError({
+        message: "Error adding type to project",
+        status: "error",
+        statusCode: 500,
+        errors: { result: error.message },
+      });
+    }
+    return this.getOneId(id);
   }
 
   async delete(id) {
