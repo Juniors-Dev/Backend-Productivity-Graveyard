@@ -66,6 +66,7 @@ class ProjectQueryBuilder {
 
     if (this.includeTypes) {
       fields.push(`ARRAY_AGG(jsonb_build_object('name', t."name", 'id', t."id")) AS "types"`);
+      // fields.push(`ARRAY_AGG(jsonb_build_object('name', t."name", 'id', t."id")) AS "types"`);
       // fields.push(`ARRAY_AGG(DISTINCT t."name") AS "types"`);
       // fields.push(`ARRAY_AGG(rows(t."name", t."id")) AS "types"`);
     }
@@ -91,7 +92,7 @@ class ProjectQueryBuilder {
     }
 
     if (this.includeTypes) {
-      joins.push(`LEFT JOIN "ProjectType" pt ON p."id" = pt."projectId"`);
+      joins.push(`LEFT JOIN "ProjectTypes" pt ON p."id" = pt."projectId"`);
       joins.push(`LEFT JOIN "Types" t ON pt."typeId" = t."id"`);
     }
 
@@ -108,9 +109,16 @@ class ProjectQueryBuilder {
     if (this.filters.projectId) conditions.push(`p."id" = :projectId`);
     if (this.filters.userId) conditions.push(`p."userId" = :userId`);
     if (this.filters.status) conditions.push(`p."status" = :status`);
-    if (this.filters.types?.length) conditions.push(`t."id" IN (:types)`);
+    //if (this.filters.types?.length) conditions.push(`t."id" IN (:types)`);
 
     return conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  }
+
+  buildHavingClause() {
+    if (this.filters.types?.length) {
+      return `HAVING BOOL_OR(t."id" = ANY(ARRAY[:types]))`;
+    }
+    return "";
   }
 
   buildGroupBy() {
@@ -147,6 +155,7 @@ class ProjectQueryBuilder {
       ${this.buildJoins()}
       ${this.buildWhereClause()}
       GROUP BY ${this.buildGroupBy()}
+      ${this.buildHavingClause()}
       ${this.buildOrderBy()}
       LIMIT :limit OFFSET :offset
     `;

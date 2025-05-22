@@ -9,8 +9,22 @@ class ProjectService {
   }
 
   async getAll(limit = 100, offset = 0, options = {}) {
-    const { userId, currentUserId, status, orderBy, order, types } = options;
+    const { userId, currentUserId, status, orderBy, order } = options;
+    let { types } = options;
 
+    if (typeof types === "string") {
+      // Convert comma-separated string to array of numbers
+      types = types.split(",").map((type) => Number(type));
+    }
+
+    if (Array.isArray(types)) {
+      types = types.map((type) => Number(type)); // Make sure all are numbers
+      if (types.some(isNaN)) {
+        throw new Error("Types array contains invalid numbers");
+      }
+    } else {
+      types = [];
+    }
     const queryBuilder = new ProjectQueryBuilder()
       .withVotes()
       .withTypes()
@@ -117,7 +131,7 @@ class ProjectService {
       });
     } catch (error) {
       if (transaction) await transaction.rollback();
-      console.error("Error starting transaction:", error);
+      // Removed debug console.error for production
       throw createError({
         message: "Error creating project",
         status: "error",
