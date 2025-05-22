@@ -27,7 +27,7 @@ module.exports = (sequelize, Sequelize) => {
 
   Type.associate = (models) => {
     Type.belongsToMany(models.Project, {
-      through: "ProjectTags",
+      through: models.ProjectType,
       foreignKey: "typeId",
       otherKey: "projectId",
       as: "projects",

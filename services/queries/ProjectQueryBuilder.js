@@ -91,7 +91,7 @@ class ProjectQueryBuilder {
     }
 
     if (this.includeTypes) {
-      joins.push(`LEFT JOIN "ProjectTags" pt ON p."id" = pt."projectId"`);
+      joins.push(`LEFT JOIN "ProjectType" pt ON p."id" = pt."projectId"`);
       joins.push(`LEFT JOIN "Types" t ON pt."typeId" = t."id"`);
     }
 
