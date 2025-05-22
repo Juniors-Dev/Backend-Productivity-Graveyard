@@ -5,7 +5,8 @@
   "main": "./bin/www",
   "type": "commonjs",
   "scripts": {
-    "test": "jest",
+    "test": "jest --verbose --coverage",
+    "test-projects": "jest --verbose --forceExit tests/projects.test.js",
     "start": "node ./bin/www",
     "dev": "node --watch ./bin/www",
     "prepare": "husky install",
