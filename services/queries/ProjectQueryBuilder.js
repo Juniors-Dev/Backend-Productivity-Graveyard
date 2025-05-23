@@ -24,7 +24,6 @@ class ProjectQueryBuilder {
 
   queryByName(query) {
     this.filters.query = query;
-    console.log("query", this.filters.query);
     return this;
   }
 
@@ -117,7 +116,7 @@ class ProjectQueryBuilder {
     if (this.filters.types?.length) conditions.push(`t."id" IN (:types)`);
     if (this.filters.query) {
       const query = this.filters.query.replace(/'/g, "''");
-      conditions.push(`(p."name" ILIKE '%${query}%')`);
+      conditions.push(`(p."name" ILIKE :query)`);
       //conditions.push(`(p."name" ILIKE '%${query}%' OR p."description" ILIKE '%${query}%')`);
     }
 

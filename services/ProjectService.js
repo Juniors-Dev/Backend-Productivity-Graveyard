@@ -30,7 +30,7 @@ class ProjectService {
         userId,
         status,
         types,
-        query: query,
+        query: `%${query}%`,
       },
       type: this.client.QueryTypes.SELECT,
     });
@@ -41,7 +41,7 @@ class ProjectService {
         userId,
         status,
         types,
-        query: query,
+        query: `%${query}%`,
       },
       type: this.client.QueryTypes.SELECT,
     });
