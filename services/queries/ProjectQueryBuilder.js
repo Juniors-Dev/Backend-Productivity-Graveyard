@@ -22,6 +22,12 @@ class ProjectQueryBuilder {
     return this;
   }
 
+  queryByName(query) {
+    this.filters.query = query;
+    console.log("query", this.filters.query);
+    return this;
+  }
+
   filterByUser(userId) {
     this.filters.userId = userId;
     return this;
@@ -109,6 +115,11 @@ class ProjectQueryBuilder {
     if (this.filters.userId) conditions.push(`p."userId" = :userId`);
     if (this.filters.status) conditions.push(`p."status" = :status`);
     if (this.filters.types?.length) conditions.push(`t."id" IN (:types)`);
+    if (this.filters.query) {
+      const query = this.filters.query.replace(/'/g, "''");
+      conditions.push(`(p."name" ILIKE '%${query}%')`);
+      //conditions.push(`(p."name" ILIKE '%${query}%' OR p."description" ILIKE '%${query}%')`);
+    }
 
     return conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
   }

@@ -7,7 +7,7 @@ var { getLimitOffset } = require("../utilities/getPagination.js");
 
 async function getAll(req, res) {
   const { limit, offset } = getLimitOffset(req);
-  const { status, orderBy, order, userId, types } = req.query;
+  const { status, orderBy, order, userId, types, query } = req.query;
   const options = {
     status,
     orderBy,
@@ -15,6 +15,7 @@ async function getAll(req, res) {
     userId,
     types: types ? types.split(",") : [],
     currentUserId: req.user?.id || null,
+    query: query || null,
   };
 
   const { count, rows } = await projectService.getAll(limit, offset, options);
