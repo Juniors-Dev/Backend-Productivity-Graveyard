@@ -15,15 +15,14 @@ var { authenticate, asyncHandler } = require("../middleware");
  *           example: true
  *         status:
  *           type: string
- *           enum: [success]
- *           example: success
+ *           example: "success"
  *         statusCode:
- *           type: number
+ *           type: integer
  *           example: 200
  *         message:
  *           type: string
  *           description: Indicates whether upvote was added or removed
- *           example: Project upvoted successfully
+ *           example: "Project upvoted successfully"
  *         data:
  *           type: object
  *           properties:
@@ -32,43 +31,9 @@ var { authenticate, asyncHandler } = require("../middleware");
  *               description: True if the user upvoted, false if removed
  *               example: true
  *             count:
- *               type: number
- *               description: Projects total number of upvotes after toggling
+ *               type: integer
+ *               description: Project's total number of upvotes after toggling
  *               example: 22
- *     VoteErrorResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: false
- *           description: Always false for error responses
- *         status:
- *           type: string
- *           enum: [fail, error, unauthorized, bad request]
- *           description: Indicates the type of error that occurred
- *           example: error
- *         statusCode:
- *           type: number
- *           description: HTTP status code
- *           example: 404
- *         message:
- *           type: string
- *           description: Human-readable error message
- *           example: "Project not found"
- *         oneOf:
- *             - type: object
- *               description: Error details for specific fields
- *               example:
- *                 projectId: "No project with id:1234"
- *             - type: array
- *               items:
- *                 type: object
- *               description: List of validation errors
- *               example:
- *                 - field: "username"
- *                   message: "Username is required"
- *                 - field: "email"
- *                   message: "Email format is invalid"
  */
 
 /**
@@ -76,7 +41,7 @@ var { authenticate, asyncHandler } = require("../middleware");
  * /votes/{projectId}/toggle:
  *   post:
  *     summary: Toggle upvote on a project
- *     description: Adds an upvote if the user hasn't upvoted yet, or removes it if they have
+ *     description: Adds an upvote if the user hasn't upvoted yet, or removes it if they have. Authentication is required.
  *     tags: [Votes]
  *     security:
  *       - bearerAuth: []
@@ -97,20 +62,22 @@ var { authenticate, asyncHandler } = require("../middleware");
  *               $ref: '#/components/schemas/ToggleUpvoteResponse'
  *             examples:
  *               upvoted:
+ *                 summary: User upvoted the project
  *                 value:
  *                   success: true
- *                   status: success
+ *                   status: "success"
  *                   statusCode: 200
- *                   message: Project upvoted successfully
+ *                   message: "Project upvoted successfully"
  *                   data:
  *                     upvoted: true
  *                     count: 22
  *               removedUpvote:
+ *                 summary: User removed their upvote
  *                 value:
  *                   success: true
- *                   status: success
+ *                   status: "success"
  *                   statusCode: 200
- *                   message: Upvote removed successfully
+ *                   message: "Upvote removed successfully"
  *                   data:
  *                     upvoted: false
  *                     count: 21
@@ -119,25 +86,20 @@ var { authenticate, asyncHandler } = require("../middleware");
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/VoteErrorResponse'
- *             example:
- *               success: false
- *               status: unauthorized
- *               statusCode: 401
- *               message: "Unauthorized, invalid or expired token."
+ *               $ref: '#/components/schemas/UnauthorizedResponse'
  *       404:
  *         description: Project not found
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/VoteErrorResponse'
- *             example:
- *               success: false
- *               status: fail
- *               statusCode: 404
- *               message: Project not found
- *               errors:
- *                 projectId: "1234"
+ *               $ref: '#/components/schemas/ProjectNotFoundResponse' #notFoundResponse
+ *
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.post("/:projectId/toggle", authenticate, asyncHandler(toggleUpvote));
