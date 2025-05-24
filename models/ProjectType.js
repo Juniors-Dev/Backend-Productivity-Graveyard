@@ -3,8 +3,8 @@
 module.exports = (sequelize, Sequelize) => {
   const { DataTypes } = Sequelize;
 
-  const ProjectTag = sequelize.define(
-    "ProjectTag",
+  const ProjectType = sequelize.define(
+    "ProjectType",
     {
       projectId: {
         type: DataTypes.UUID,
@@ -25,15 +25,15 @@ module.exports = (sequelize, Sequelize) => {
     },
     {
       timestamps: true,
-      tableName: "ProjectTags",
+      tableName: "ProjectTypes",
       indexes: [
         {
-          name: "project_type_unique",
+          name: "project_types_unique",
           unique: true,
           fields: ["projectId", "typeId"],
         },
       ],
     }
   );
-  return ProjectTag;
+  return ProjectType;
 };
