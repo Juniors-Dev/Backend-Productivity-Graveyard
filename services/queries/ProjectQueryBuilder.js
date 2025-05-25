@@ -67,6 +67,7 @@ class ProjectQueryBuilder {
       `p."status"`,
       `p."userId"`,
       `COUNT(DISTINCT c."id")::INT AS "commentCount"`,
+      `ARRAY_AGG(DISTINCT jsonb_build_object('id', ts."id", 'name', ts."name", 'imageUrl', ts."imageUrl")) AS "tombstone"`,
     ];
 
     if (this.includeTypes) {
@@ -90,7 +91,10 @@ class ProjectQueryBuilder {
   }
 
   buildJoins() {
-    const joins = [`LEFT JOIN "Comments" c ON p."id" = c."projectId"`];
+    const joins = [
+      `LEFT JOIN "Comments" c ON p."id" = c."projectId"`,
+      `LEFT JOIN "Tombstones" ts ON p."tombstoneId" = ts."id"`,
+    ];
 
     if (this.includeVotes) {
       joins.push(`LEFT JOIN "Upvotes" uv ON p."id" = uv."projectId"`);

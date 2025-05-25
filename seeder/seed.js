@@ -4,7 +4,7 @@ var userRoles = require("./roles.json");
 var deathTypes = require("./types.json");
 var userAchievements = require("./achievements.json");
 var dummyUsers = require("./users.json");
-var userProjects = require("./projects.json");
+var projects = require("./projects.json");
 var userComments = require("./comments.json");
 var userVotes = require("./upVote.json");
 var resurrectedProjects = require("./ResurrectionEvent.json");
@@ -16,21 +16,23 @@ async function basicSeed() {
     const hasRoles = await db.Role.findAll();
     const hasTypes = await db.Type.findAll();
     const hasAchievements = await db.Achievement.findAll();
+    const hasTombstones = await db.Tombstone.findAll();
 
-    if (hasRoles.length > 0 || hasTypes.length > 0 || hasAchievements.length > 0) {
+    if (hasRoles.length > 0 || hasTypes.length > 0 || hasAchievements.length > 0 || hasTombstones.length > 0) {
       console.log("Database already seeded with basics. Skipping seeding process.");
       return;
     }
     transaction = await db.sequelize.transaction();
 
-    const [roles, types, achievements] = await Promise.all([
+    const [roles, types, achievements, tombstones] = await Promise.all([
       db.Role.bulkCreate(userRoles, { transaction }),
       db.Type.bulkCreate(deathTypes, { transaction }),
       db.Achievement.bulkCreate(userAchievements, { transaction }),
+      db.Tombstone.bulkCreate(projectTombstones, { transaction }),
     ]);
 
-    if (!roles || !types || !achievements) {
-      throw new Error("Failed to seed roles, types or achevements.");
+    if (!roles || !types || !achievements || !tombstones) {
+      throw new Error("Failed to seed roles, types, tombstones or achevements.");
     }
 
     await transaction.commit();
@@ -89,34 +91,46 @@ async function usersSeed() {
 async function projectsSeed() {
   let transaction;
   try {
-    const hasProject = await db.Project.findAll();
-    const users = await db.User.findAll();
+    const hasProjects = await db.Project.count();
 
-    if (hasProject.length > 0) {
+    if (hasProjects > 0) {
       console.log("Database already seeded with projects. Skipping seeding process.");
       return;
     }
 
+    const users = await db.User.findAll({ attributes: ["id"] });
+
+    if (users.length === 0) {
+      throw new Error("No users found. Cannot seed projects without users.");
+    }
+    const userIds = users.map((u) => u.id);
+
     transaction = await db.sequelize.transaction();
 
-    for (let i = 0; i < userProjects.length; i++) {
-      const userId = users[userProjects[i].userId - 1].id;
-      const project = await db.Project.create(
-        {
-          ...userProjects[i],
-          userId: userId,
-        },
-        { transaction }
-      );
+    const formattedProjects = projects.map((project, index) => {
+      return {
+        ...project,
+        userId: userIds[(project.userId - 1) % userIds.length],
+        tombstoneId: project.tombstoneId || (index % 20) + 1, // fallback if not explicitly set
+      };
+    });
 
-      if (!project) {
-        throw new Error("Failed to create project.");
+    // Bulk create projects
+    const createdProjects = await db.Project.bulkCreate(formattedProjects, {
+      transaction,
+      returning: true,
+    });
+
+    // Handle many-to-many for types
+    for (let i = 0; i < createdProjects.length; i++) {
+      const types = projects[i].types;
+      if (types && types.length > 0) {
+        await createdProjects[i].setTypes(types, { transaction });
       }
-      await project.setTypes(userProjects[i].types, { transaction });
     }
 
     await transaction.commit();
-    console.log("Projects seeded successfully.");
+    console.log("Project seeding complete.");
   } catch (error) {
     console.error("Error seeding projects:", error);
     if (transaction && !transaction.finished) {

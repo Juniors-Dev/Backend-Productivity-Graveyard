@@ -1,43 +1,72 @@
 [
   {
-    "firstName": "admin",
+    "firstName": "Ada",
+    "lastName": "Lovelace",
     "username": "admin_user",
-    "displayName": "Admin User",
-    "email": "admin@example.com",
+    "email": "ada.admin@example.com",
     "password": "admin123",
-    "bio": "Administrator with full permissions",
+    "bio": "Can override your code and your will to live. Handles bans with a smile.",
     "roleId": 3,
     "achievement": [1]
   },
   {
-    "firstName": "user1",
-    "username": "user1",
-    "displayName": "user1",
-    "email": "user@example.com",
+    "firstName": "Jake",
+    "lastName": "Junior",
+    "username": "jake_the_junior",
+    "email": "jake@example.com",
     "password": "user123",
-    "bio": "Regular user account",
+    "bio": "Junior dev. Broke production once, now writes poetry in commit messages.",
     "roleId": 1,
     "achievement": [1]
   },
   {
-    "firstName": "user2",
-    "username": "user2",
-    "displayName": "user2",
-    "email": "user2@example.com",
+    "firstName": "Nina",
+    "lastName": "Null",
+    "username": "nina_null",
+    "email": "nina@example.com",
     "password": "user123",
-    "bio": "Regular user account",
+    "bio": "Frontend fan. Has 42 design systems and still hates all buttons.",
     "roleId": 1,
     "achievement": [1]
   },
   {
-    "firstName": "mod1",
-    "lastName": "",
-    "username": "moderator",
-    "displayName": "moderator user",
+    "firstName": "Trevor",
+    "lastName": "Dev",
+    "username": "trev_dev",
+    "email": "trev@example.com",
+    "password": "user123",
+    "bio": "Backend builder. Once Dockerized his breakfast. Loves indexes and chili.",
+    "roleId": 1,
+    "achievement": [1]
+  },
+  {
+    "firstName": "Alice",
+    "lastName": "Smith",
+    "username": "moderator_ally",
     "email": "alice.smith@example.com",
     "password": "mod123",
-    "bio": "Moderator account with limited permissions",
+    "bio": "Moderator with an iron fist and CSS-laced gloves. Speaks fluent regex.",
     "roleId": 2,
+    "achievement": [1]
+  },
+  {
+    "firstName": "Bruno",
+    "lastName": "Burnout",
+    "username": "bruno_burnout",
+    "email": "bruno@example.com",
+    "password": "user123",
+    "bio": "Former startup hero turned side-project ghost. Maintainer of 0 repos.",
+    "roleId": 1,
+    "achievement": [1]
+  },
+  {
+    "firstName": "Sasha",
+    "lastName": "Scopecreep",
+    "username": "sasha_scopecreep",
+    "email": "sasha@example.com",
+    "password": "user123",
+    "bio": "Started a to-do app. It now powers a space agency. Easily distracted.",
+    "roleId": 1,
     "achievement": [1]
   }
 ]

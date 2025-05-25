@@ -6,6 +6,7 @@ class ProjectService {
     this.Project = db.Project;
     this.Type = db.Type;
     this.User = db.User;
+    this.Tombstone = db.Tombstone;
   }
 
   async getAll(limit = 100, offset = 0, options = {}) {
@@ -99,9 +100,17 @@ class ProjectService {
     endDate,
     userId,
     types = [],
-    tombstoneId = null,
+    tombstoneId = 1,
     status = "buried",
   }) {
+    const tombstone = await this.Tombstone.findByPk(tombstoneId);
+    if (!tombstone) {
+      throw createError({
+        message: "Tombstone not found",
+        statusCode: 404,
+      });
+    }
+
     let transaction;
     try {
       transaction = await this.client.transaction();
@@ -148,6 +157,12 @@ class ProjectService {
   }
 
   async update(id, args) {
+    if (args.tombstoneId) {
+      const tombstone = await this.Tombstone.findByPk(args.tombstoneId);
+      if (!tombstone) {
+        throw createError({ message: "Tombstone not found", statusCode: 404 });
+      }
+    }
     const project = await this.Project.findByPk(id);
     if (!project) {
       throw createError({ message: "Project not found", statusCode: 404 });

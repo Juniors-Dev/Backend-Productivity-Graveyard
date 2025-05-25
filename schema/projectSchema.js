@@ -16,7 +16,7 @@ const projectSchema = object({
       startDate ? schema.min(startDate, "End date must be after start date") : schema
     ),
   types: array().of(number()).min(1, "At least one type must be selected").required("Types are required"),
-  tombstoneId: string().nullable(),
+  tombstoneId: number().nullable(),
 });
 
 const projectUpdateSchema = object({
@@ -30,7 +30,7 @@ const projectUpdateSchema = object({
     .when("startDate", (startDate, schema) =>
       startDate ? schema.min(startDate, "End date must be after start date") : schema
     ),
-  tombstoneId: string().nullable(),
+  tombstoneId: number().nullable(),
   status: string().oneOf(["inactive", "active", "buried", "resurrected", "completed", "archived"]),
 });
 
