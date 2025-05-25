@@ -85,6 +85,18 @@ var projectComments = require("./projectComments");
  *             avatarUrl:
  *               type: string
  *               nullable: true
+ *         tombstone:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *               example: 1
+ *             name:
+ *               type: string
+ *               example: "Feature Creep"
+ *             imageUrl:
+ *               type: string
+ *               example: "/images/tombstone1.png"
  *         commentCount:
  *           type: integer
  *         upvoteCount:
