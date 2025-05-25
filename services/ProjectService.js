@@ -83,7 +83,7 @@ class ProjectService {
     endDate,
     userId,
     types = [],
-    tombstoneId = null,
+    tombstoneId = 1,
     status = "buried",
   }) {
     let transaction;
