@@ -35,11 +35,14 @@ const createRateLimiter = ({ max, windowMs, message }) => {
  * @param {number} options.windowMs - Time window in milliseconds for the slowdown.
  * @returns {Function} The slowdown middleware function.
  */
-const createSlowDown = ({ delayAfter, delayMs, windowMs }) => {
+const createSlowDown = ({ delayAfter, delayMs = 50, windowMs }) => {
   return slowDown({
     windowMs,
     delayAfter,
-    delayMs,
+    delayMs: (used, req) => {
+      return (used - delayAfter) * delayMs;
+    },
+    limit: delayAfter,
   });
 };
 
