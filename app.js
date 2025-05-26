@@ -6,7 +6,7 @@ const logger = require("morgan");
 const dotenv = require("dotenv");
 dotenv.config();
 var { errorResponse } = require("./utilities/response");
-var { createRateLimiter, createSlowDown } = require("./utilities/responseLimiting");
+var { createRateLimiter, createSlowDown } = require("./middleware");
 var helmet = require("helmet");
 
 //swagger

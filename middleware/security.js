@@ -1,6 +1,6 @@
 const rateLimit = require("express-rate-limit");
 const slowDown = require("express-slow-down");
-const { errorResponse } = require("./response");
+const { errorResponse } = require("../utilities/response");
 
 /**
  * Creates a rate limiter middleware for Express.js.

@@ -1,9 +1,8 @@
 var express = require("express");
 var router = express.Router();
 var { login, register } = require("../controllers/authController");
-var { validateSchema, asyncHandler, validateCredentials } = require("../middleware");
+var { validateSchema, asyncHandler, validateCredentials, createRateLimiter, createSlowDown } = require("../middleware");
 const { loginSchema, registerSchema, updateUserSchema } = require("../schema");
-var { createRateLimiter, createSlowDown } = require("../utilities/responseLimiting");
 
 router.use(
   createRateLimiter({
