@@ -7,6 +7,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 var { errorResponse } = require("./utilities/response");
 var { createRateLimiter, createSlowDown } = require("./utilities/responseLimiting");
+var helmet = require("helmet");
 
 //swagger
 const swaggerUi = require("swagger-ui-express");
@@ -37,6 +38,8 @@ var app = express();
 if (process.env.CORS === "true") {
   app.use(cors());
 }
+
+app.use(helmet());
 
 app.use(
   createRateLimiter({
