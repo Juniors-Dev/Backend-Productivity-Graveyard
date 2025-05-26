@@ -6,6 +6,7 @@ const logger = require("morgan");
 const dotenv = require("dotenv");
 dotenv.config();
 var { errorResponse } = require("./utilities/response");
+var { createRateLimiter, createSlowDown } = require("./utilities/responseLimiting");
 
 //swagger
 const swaggerUi = require("swagger-ui-express");
@@ -36,6 +37,22 @@ var app = express();
 if (process.env.CORS === "true") {
   app.use(cors());
 }
+
+app.use(
+  createRateLimiter({
+    max: parseInt(process.env.RATE_LIMIT_MAX) || 600,
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 10 * 60 * 1000, // 10 minutes
+    message: "Too many requests, please try again later.",
+  })
+);
+
+app.use(
+  createSlowDown({
+    delayAfter: parseInt(process.env.SLOW_DOWN_DELAY_AFTER) || 240,
+    delayMs: parseInt(process.env.SLOW_DOWN_DELAY_MS) || 500,
+    windowMs: parseInt(process.env.SLOW_DOWN_WINDOW_MS) || 5 * 60 * 1000, // 5 minutes
+  })
+);
 
 app.use(logger("dev"));
 app.use(express.json());
