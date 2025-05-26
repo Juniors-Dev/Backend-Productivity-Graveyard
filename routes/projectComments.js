@@ -252,8 +252,8 @@ router.post(
  *           format: uuid
  *         description: Project ID
  *         example: "987fcdeb-51a2-43d1-9c4f-123456789abc"
- *        - $ref: '#/components/parameters/limitParam'
- *        - $ref: '#/components/parameters/offsetParam'
+ *       - $ref: '#/components/parameters/limitParam'
+ *       - $ref: '#/components/parameters/offsetParam'
  *     responses:
  *       200:
  *         description: Comments retrieved successfully
