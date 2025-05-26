@@ -39,7 +39,11 @@ if (process.env.CORS === "true") {
   app.use(cors());
 }
 
+// Security headers using Helmet
 app.use(helmet());
+
+// Disable the 'X-Powered-By' header for security
+app.disable("x-powered-by");
 
 app.use(
   createRateLimiter({
@@ -58,7 +62,8 @@ app.use(
 );
 
 app.use(logger("dev"));
-app.use(express.json());
+// limit the size of JSON payloads to prevent abuse, we are not currently using file uploads this should be sufficient
+app.use(express.json({ limit: "100kb" }));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
