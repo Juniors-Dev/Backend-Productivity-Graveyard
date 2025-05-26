@@ -42,7 +42,6 @@ const createSlowDown = ({ delayAfter, delayMs = 50, windowMs }) => {
     delayMs: (used, req) => {
       return (used - delayAfter) * delayMs;
     },
-    limit: delayAfter,
   });
 };
 
