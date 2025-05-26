@@ -49,8 +49,20 @@ class StatsService {
           GROUP BY topBurialMonth
           ORDER BY COUNT(*) DESC
           LIMIT 1
-        ) AS topBurialMonth
-      `,
+        ) AS topBurialMonth,
+        (
+        SELECT jsonb_build_object(
+          'id', p."id",
+          'name', p."name",
+          'votes', COUNT(u."id")
+        )
+        FROM "Projects" p
+        LEFT JOIN "Upvotes" u ON p."id" = u."projectId"
+        GROUP BY p."id", p."name"
+        ORDER BY COUNT(u."id") DESC
+        LIMIT 1
+      ) AS topVotedProject
+    `,
       {
         type: this.client.QueryTypes.SELECT,
       }
@@ -104,7 +116,20 @@ class StatsService {
         GROUP BY 1
         ORDER BY COUNT(*) DESC
         LIMIT 1
-      ) AS topBurialMonth
+      ) AS topBurialMonth,
+      (
+        SELECT jsonb_build_object(
+          'id', p."id",
+          'name', p."name",
+          'votes', COUNT(u."id")
+        )
+        FROM "Projects" p
+        LEFT JOIN "Upvotes" u ON p."id" = u."projectId"
+        WHERE p."userId" = :userId
+        GROUP BY p."id", p."name"
+        ORDER BY COUNT(u."id") DESC
+        LIMIT 1
+      ) AS topVotedProject
     `,
       {
         replacements: { userId },

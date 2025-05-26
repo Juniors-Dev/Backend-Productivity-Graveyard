@@ -21,6 +21,7 @@ async function getAll(req, res) {
         rageQuitRate: data.ragequitrate,
         topBurialDay: data.topburialday,
         topBurialMonth: data.topburialmonth,
+        mostVotedProject: data.topvotedproject,
       },
       statusCode: 200,
     })
@@ -41,7 +42,21 @@ async function getUserStats(req, res) {
   res.status(200).json(
     successResponse({
       message: "Success",
-      data,
+      data: {
+        totalUsers: data.totalusers,
+        totalComments: data.totalcomments,
+        totalProjects: data.totalprojects,
+        averageLifespan: data.averagelifespan,
+        mostCommonCauses: data.mostcommoncauses,
+        funeralsToday: data.funeralstoday,
+        totalVotes: data.totalvotes,
+        votesToday: data.votestoday,
+        averageEulogyLength: data.averageeulogylength,
+        rageQuitRate: data.ragequitrate,
+        topBurialDay: data.topburialday,
+        topBurialMonth: data.topburialmonth,
+        mostVotedProject: data.topvotedproject,
+      },
       statusCode: 200,
     })
   );
@@ -61,7 +76,21 @@ async function getCurrentUserStats(req, res) {
   res.status(200).json(
     successResponse({
       message: "Success",
-      data,
+      data: {
+        totalUsers: data.totalusers,
+        totalComments: data.totalcomments,
+        totalProjects: data.totalprojects,
+        averageLifespan: data.averagelifespan,
+        mostCommonCauses: data.mostcommoncauses,
+        funeralsToday: data.funeralstoday,
+        totalVotes: data.totalvotes,
+        votesToday: data.votestoday,
+        averageEulogyLength: data.averageeulogylength,
+        rageQuitRate: data.ragequitrate,
+        topBurialDay: data.topburialday,
+        topBurialMonth: data.topburialmonth,
+        mostVotedProject: data.topvotedproject,
+      },
       statusCode: 200,
     })
   );
