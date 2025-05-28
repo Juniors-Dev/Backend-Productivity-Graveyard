@@ -24,7 +24,7 @@ class StatsService {
           GROUP BY pt."typeId", t."name"
           ORDER BY COUNT(*) DESC
           LIMIT 1
-        ) AS mostCommonCauses,
+        ) AS mostCommonCause,
         (SELECT COUNT(*) FROM "Projects" WHERE "createdAt"::date = CURRENT_DATE) AS funeralsToday,
         (SELECT COUNT(*) FROM "Upvotes") AS totalVotes,
         (SELECT COUNT(*) FROM "Upvotes" WHERE "createdAt"::date = CURRENT_DATE) AS votesToday,
