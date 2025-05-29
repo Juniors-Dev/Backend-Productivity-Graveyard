@@ -328,7 +328,7 @@ var projectComments = require("./projectComments");
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -391,7 +391,7 @@ router.get("/", isLoggedIn, asyncHandler(getAll));
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -450,7 +450,7 @@ router.get("/types", asyncHandler(getAllTypes));
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -499,7 +499,7 @@ router.get("/tombstones", asyncHandler(getAllTombstones));
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -549,7 +549,7 @@ router.get("/:id", isLoggedIn, asyncHandler(getOneId));
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -616,7 +616,7 @@ router.post("/", authenticate, validateSchema(projectSchema), asyncHandler(hasRo
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -693,7 +693,7 @@ router.put(
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -776,7 +776,7 @@ router.delete(
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -856,7 +856,7 @@ router.put(
  *           $ref: '#/components/headers/RateLimitHeaders'
  *
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:

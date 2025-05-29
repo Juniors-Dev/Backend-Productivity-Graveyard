@@ -235,7 +235,7 @@ var { createComment, getProjectComments } = require("../controllers/commentContr
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -290,7 +290,7 @@ router.post(
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:

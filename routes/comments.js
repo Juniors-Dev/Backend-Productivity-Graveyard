@@ -99,7 +99,7 @@ var commentService = new CommentService(db);
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -173,7 +173,7 @@ router.put(
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:

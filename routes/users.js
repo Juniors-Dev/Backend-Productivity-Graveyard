@@ -392,7 +392,7 @@ router.get("/:id", asyncHandler(getUser));
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -442,7 +442,7 @@ router.put("/me", asyncHandler(authenticate), validateSchema(updateUserSchema), 
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
