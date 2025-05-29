@@ -1,7 +1,8 @@
 var express = require("express");
 var router = express.Router();
 var { toggleUpvote } = require("../controllers/voteController");
-var { authenticate, asyncHandler } = require("../middleware");
+var { authenticate, asyncHandler, validateParamSchema } = require("../middleware");
+var { projectIdSchema } = require("../schema/params");
 
 /**
  * @swagger
@@ -102,6 +103,6 @@ var { authenticate, asyncHandler } = require("../middleware");
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
-router.post("/:projectId/toggle", authenticate, asyncHandler(toggleUpvote));
+router.post("/:projectId/toggle", validateParamSchema(projectIdSchema), authenticate, asyncHandler(toggleUpvote));
 
 module.exports = router;

@@ -105,13 +105,38 @@ describe("Votes API", () => {
     expect(res.body.message).toBe("Unauthorized, token not found.");
   });
 
+  it("rejects request with invalid token", async () => {
+    const res = await request(app).post(`/votes/${projectId}/toggle`).set("Authorization", "Bearer invalid-token");
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe("Unauthorized, invalid or expired token.");
+  });
+
+  it("rejects request with malformed authorization header", async () => {
+    const res = await request(app).post(`/votes/${projectId}/toggle`).set("Authorization", "InvalidFormat");
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe("Unauthorized, invalid token format.");
+  });
+
   it("rejects vote request for a non-existent project", async () => {
-    const nonExistentProjectId = "99999999-9999-9999-9999-999999999999";
+    const nonExistentProjectId = "123e4567-e89b-12d3-a456-426614174000";
     const res = await toggleUpvote(nonExistentProjectId, token1);
 
     expect(res.statusCode).toBe(404);
     expect(res.body.success).toBe(false);
     expect(res.body.status).toBe("fail");
+  });
+
+  it("rejects request with invalid project ID format", async () => {
+    const invalidProjectId = "invalid-uuid";
+    const res = await toggleUpvote(invalidProjectId, token1);
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.status).toBe("bad request");
   });
 
   it("handles multiple toggle operations in sequence", async () => {
