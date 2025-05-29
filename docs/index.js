@@ -1,11 +1,57 @@
 /**
  * @swagger
  * components:
- *   schemas:
  *
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *       description: JWT token for authentication. Format: "Bearer {token}"
+ *
+ *   headers:
+ *     RateLimitHeaders:
+ *       X-RateLimit-Limit:
+ *         description: The number of allowed requests in the current period
+ *         schema:
+ *           type: integer
+ *         example: 600
+ *       X-RateLimit-Remaining:
+ *         description: The number of remaining requests in the current period
+ *         schema:
+ *           type: integer
+ *         example: 599
+ *       X-RateLimit-Reset:
+ *         description: The time at which the current rate limit window resets (UTC epoch seconds)
+ *         schema:
+ *           type: integer
+ *         example: 1640995200
+ *
+ *   schemas:
  * #-------------------------------
  * # Reusable Error Responses
  * #-------------------------------
+ *
+ *     RateLimitResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "error"
+ *         statusCode:
+ *           type: integer
+ *           example: 429
+ *         message:
+ *           type: string
+ *           example: "Too many requests, please try again later."
+ *         errors:
+ *           type: null
+ *           nullable: true
+ *           example: null
+ *       description: "Global rate limit response (600 requests per 10 minutes)"
  *
  *     ValidationErrorResponse:
  *       type: object

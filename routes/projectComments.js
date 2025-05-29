@@ -226,6 +226,20 @@ var { createComment, getProjectComments } = require("../controllers/commentContr
  *                   statusCode: 404
  *                   message: "Parent comment not found"
  *                   errors: { parentId: 999 }
+ *       429:
+ *         description: Too many requests - global rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.post(
@@ -267,6 +281,14 @@ router.post(
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *       429:
+ *         description: Too many requests - global rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
  *         description: Server error
  *         content:

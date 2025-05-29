@@ -319,6 +319,20 @@ var projectComments = require("./projectComments");
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UnauthorizedResponse'
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 router.get("/", isLoggedIn, asyncHandler(getAll));
 
@@ -368,6 +382,14 @@ router.get("/", isLoggedIn, asyncHandler(getAll));
  *                         type: string
  *                         format: date-time
  *                         example: "2025-05-07T20:30:17.974Z"
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
  *         description: Server error
  *         content:
@@ -419,6 +441,20 @@ router.get("/types", asyncHandler(getAllTypes));
  *                       imageUrl:
  *                         type: string
  *                         example: "/images/tombstone1.png"
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 router.get("/tombstones", asyncHandler(getAllTombstones));
 
@@ -454,6 +490,20 @@ router.get("/tombstones", asyncHandler(getAllTombstones));
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/NotFoundResponse'
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.get("/:id", isLoggedIn, asyncHandler(getOneId));
@@ -489,6 +539,21 @@ router.get("/:id", isLoggedIn, asyncHandler(getOneId));
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UnauthorizedResponse'
+ *
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.post("/", authenticate, validateSchema(projectSchema), asyncHandler(hasRole("user")), asyncHandler(create));
@@ -542,6 +607,14 @@ router.post("/", authenticate, validateSchema(projectSchema), asyncHandler(hasRo
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/NotFoundResponse'
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
  *         description: Server error
  *         content:
@@ -611,6 +684,14 @@ router.put(
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/NotFoundResponse'
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
  *         description: Server error
  *         content:
@@ -686,6 +767,14 @@ router.delete(
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectErrorResponse'
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
  *         description: Server error
  *         content:
@@ -693,6 +782,15 @@ router.delete(
  *             schema:
  *               $ref: '#/components/schemas/ProjectServerErrorResponse'
  */
+
+router.put(
+  "/:id/type",
+  authenticate,
+  validateSchema(typeIdSchema),
+  asyncHandler(hasRole("user")),
+  asyncHandler(ownsEntity(projectService)),
+  asyncHandler(addType)
+);
 
 /**
  * @swagger
@@ -747,6 +845,16 @@ router.delete(
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectNotFoundResponse'
+ *
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *
  *       500:
  *         description: Server error
  *         content:
@@ -754,15 +862,6 @@ router.delete(
  *             schema:
  *               $ref: '#/components/schemas/ProjectServerErrorResponse'
  */
-
-router.put(
-  "/:id/type",
-  authenticate,
-  validateSchema(typeIdSchema),
-  asyncHandler(hasRole("user")),
-  asyncHandler(ownsEntity(projectService)),
-  asyncHandler(addType)
-);
 
 router.delete(
   "/:id/type",

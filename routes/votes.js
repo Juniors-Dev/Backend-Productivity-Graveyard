@@ -41,7 +41,8 @@ var { authenticate, asyncHandler } = require("../middleware");
  * /votes/{projectId}/toggle:
  *   post:
  *     summary: Toggle upvote on a project
- *     description: Adds an upvote if the user hasn't upvoted yet, or removes it if they have. Authentication is required.
+ *     description: Adds an upvote if the user hasn't upvoted yet, or removes it if they have.
+ *       Authentication is required. Rate limited to 600 requests per 10 minutes globally.
  *     tags: [Votes]
  *     security:
  *       - bearerAuth: []
@@ -93,7 +94,14 @@ var { authenticate, asyncHandler } = require("../middleware");
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectNotFoundResponse' #notFoundResponse
- *
+ *       429:
+ *         description: Too many requests - global rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
  *         description: Internal server error
  *         content:
