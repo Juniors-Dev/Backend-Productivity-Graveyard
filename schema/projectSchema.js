@@ -8,13 +8,19 @@ const projectSchema = object({
   description: string().required("Description is required").max(500, "Description must be under 500 characters"),
   eulogy: string().required("Eulogy is required").max(1000, "Eulogy must be under 1000 characters"),
   causeOfDeath: string().required("Cause of death is required").max(100, "Keep cause of death under 255 characters"),
-  startDate: date().required("Start date is required").typeError("Start date must be a valid date"),
+  startDate: date()
+    .required("Start date is required")
+    .typeError("Start date must be a valid date")
+    .transform((v, o) => (o === "" || o === undefined ? null : v)),
+
   endDate: date()
     .required("End date is required")
     .typeError("End date must be a valid date")
-    .when("startDate", (startDate, schema) =>
-      startDate ? schema.min(startDate, "End date must be after start date") : schema
-    ),
+    .transform((v, o) => (o === "" || o === undefined ? null : v))
+    .when("startDate", (start, schema) => {
+      const startDate = new Date(start);
+      return !isNaN(startDate) ? schema.min(startDate, "End date must be after start date") : schema;
+    }),
   types: array().of(number()).min(1, "At least one type must be selected").required("Types are required"),
   tombstoneId: number("Tombstone ID must be a number").typeError("Tombstone ID must be a number").nullable(),
 });
@@ -32,9 +38,10 @@ const projectUpdateSchema = object({
     .nullable()
     .typeError("End date must be a valid date")
     .transform((value, originalValue) => (originalValue === undefined ? null : value))
-    .when("startDate", (startDate, schema) =>
-      startDate ? schema.min(startDate, "End date must be after start date") : schema
-    ),
+    .when("startDate", (start, schema) => {
+      const startDate = new Date(start);
+      return !isNaN(startDate) ? schema.min(startDate, "End date must be after start date") : schema;
+    }),
   tombstoneId: number().nullable(),
   status: string().oneOf(["inactive", "active", "buried", "resurrected", "completed", "archived"]),
 });
