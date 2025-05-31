@@ -7,6 +7,9 @@
   "scripts": {
     "test": "jest --verbose --coverage",
     "test-projects": "jest --verbose --forceExit tests/projects.test.js",
+    "test-users": "jest --verbose --forceExit tests/users.test.js",
+    "test-votes": "jest --verbose --forceExit tests/votes.test.js",
+    "test-comments": "jest --verbose --forceExit tests/comments.test.js",
     "start": "node ./bin/www",
     "dev": "node --watch ./bin/www",
     "prepare": "husky install",

@@ -4,14 +4,14 @@ const { db } = require("../models");
 const { registerSchema, loginSchema } = require("../schema");
 
 //Added this function since the date variable would give an longer name than max.
-let rn = (n2) => {
+const rn = (n2) => {
   const n1 = Math.floor(Math.random() * 10);
   return n1 * n2;
 };
 
-let email = `john${Date.now()}@example.com`;
-let username = `johnuser${rn(13)}`;
-let password = "StrongPassword123";
+const email = `john${Date.now()}@example.com`;
+const username = `johnuser${rn(13)}`;
+const password = "StrongPassword123";
 
 beforeAll(async () => {
   await db.sequelize.authenticate();
