@@ -300,9 +300,7 @@ describe("Projects API", () => {
         .send({ ...testProject, types: [9999] });
       expect(res.statusCode).toBe(404);
       expect(res.body.success).toBe(false);
-      expect(res.body).toHaveProperty("message");
-      expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Types are required");
+      expect(res.body.message).toBe("Some types do not exist");
     });
 
     it("shouldn't create a project with duplicate types", async () => {
@@ -314,7 +312,7 @@ describe("Projects API", () => {
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Types must be unique");
+      expect(res.body.errors).toContain("Cannot contain duplicate types.");
     });
 
     it("shouldn't create a project with non-numeric tombstoneId", async () => {

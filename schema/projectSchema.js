@@ -21,7 +21,13 @@ const projectSchema = object({
       const startDate = new Date(start);
       return !isNaN(startDate) ? schema.min(startDate, "End date must be after start date") : schema;
     }),
-  types: array().of(number()).min(1, "At least one type must be selected").required("Types are required"),
+  types: array()
+    .of(number())
+    .min(1, "At least one type must be selected")
+    .test("unique", "Cannot contain duplicate types.", (value) =>
+      value ? value.length === new Set(value)?.size : true
+    )
+    .required("Types are required"),
   tombstoneId: number("Tombstone ID must be a number").typeError("Tombstone ID must be a number").nullable(),
 });
 

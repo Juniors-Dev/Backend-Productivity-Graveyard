@@ -108,6 +108,19 @@ class ProjectService {
       throw createError({
         message: "Tombstone not found",
         statusCode: 404,
+        status: "fail",
+      });
+    }
+
+    const typesExists = await this.Type.findAll({
+      where: { id: types },
+    });
+
+    if (types.length > 0 && typesExists.length !== types.length) {
+      throw createError({
+        message: "Some types do not exist",
+        statusCode: 404,
+        status: "fail",
       });
     }
 
