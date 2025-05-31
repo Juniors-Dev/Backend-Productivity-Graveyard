@@ -24,7 +24,6 @@ class ProjectQueryBuilder {
 
   queryByName(query) {
     this.filters.query = query;
-    console.log("query", this.filters.query);
     return this;
   }
 
@@ -68,10 +67,12 @@ class ProjectQueryBuilder {
       `p."status"`,
       `p."userId"`,
       `COUNT(DISTINCT c."id")::INT AS "commentCount"`,
+      `ARRAY_AGG(DISTINCT jsonb_build_object('id', ts."id", 'name', ts."name", 'imageUrl', ts."imageUrl")) AS "tombstone"`,
     ];
 
     if (this.includeTypes) {
       fields.push(`ARRAY_AGG(jsonb_build_object('name', t."name", 'id', t."id")) AS "types"`);
+      // fields.push(`ARRAY_AGG(jsonb_build_object('name', t."name", 'id', t."id")) AS "types"`);
       // fields.push(`ARRAY_AGG(DISTINCT t."name") AS "types"`);
       // fields.push(`ARRAY_AGG(rows(t."name", t."id")) AS "types"`);
     }
@@ -90,14 +91,17 @@ class ProjectQueryBuilder {
   }
 
   buildJoins() {
-    const joins = [`LEFT JOIN "Comments" c ON p."id" = c."projectId"`];
+    const joins = [
+      `LEFT JOIN "Comments" c ON p."id" = c."projectId"`,
+      `LEFT JOIN "Tombstones" ts ON p."tombstoneId" = ts."id"`,
+    ];
 
     if (this.includeVotes) {
       joins.push(`LEFT JOIN "Upvotes" uv ON p."id" = uv."projectId"`);
     }
 
     if (this.includeTypes) {
-      joins.push(`LEFT JOIN "ProjectTags" pt ON p."id" = pt."projectId"`);
+      joins.push(`LEFT JOIN "ProjectTypes" pt ON p."id" = pt."projectId"`);
       joins.push(`LEFT JOIN "Types" t ON pt."typeId" = t."id"`);
     }
 
@@ -114,14 +118,20 @@ class ProjectQueryBuilder {
     if (this.filters.projectId) conditions.push(`p."id" = :projectId`);
     if (this.filters.userId) conditions.push(`p."userId" = :userId`);
     if (this.filters.status) conditions.push(`p."status" = :status`);
-    if (this.filters.types?.length) conditions.push(`t."id" IN (:types)`);
     if (this.filters.query) {
       const query = this.filters.query.replace(/'/g, "''");
-      conditions.push(`(p."name" ILIKE '%${query}%')`);
+      conditions.push(`(p."name" ILIKE :query)`);
       //conditions.push(`(p."name" ILIKE '%${query}%' OR p."description" ILIKE '%${query}%')`);
     }
 
     return conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  }
+
+  buildHavingClause() {
+    if (this.filters.types?.length) {
+      return `HAVING BOOL_OR(t."id" = ANY(ARRAY[:types]))`;
+    }
+    return "";
   }
 
   buildGroupBy() {
@@ -158,6 +168,7 @@ class ProjectQueryBuilder {
       ${this.buildJoins()}
       ${this.buildWhereClause()}
       GROUP BY ${this.buildGroupBy()}
+      ${this.buildHavingClause()}
       ${this.buildOrderBy()}
       LIMIT :limit OFFSET :offset
     `;

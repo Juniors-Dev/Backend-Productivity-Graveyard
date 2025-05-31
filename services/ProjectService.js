@@ -6,10 +6,27 @@ class ProjectService {
     this.Project = db.Project;
     this.Type = db.Type;
     this.User = db.User;
+    this.Tombstone = db.Tombstone;
   }
 
   async getAll(limit = 100, offset = 0, options = {}) {
-    const { userId, currentUserId, status, orderBy, order, types, query } = options;
+    const { userId, currentUserId, status, orderBy, order, query } = options;
+    let { types } = options;
+
+    if (typeof types === "string") {
+      // Convert comma-separated string to array of numbers
+      types = types.split(",").map((type) => Number(type));
+    }
+
+    if (Array.isArray(types)) {
+      types = types.map((type) => Number(type)); // Make sure all are numbers
+      if (types.some(isNaN)) {
+        throw new Error("Types array contains invalid numbers");
+      }
+    } else {
+      types = [];
+    }
+
     const queryBuilder = new ProjectQueryBuilder()
       .withVotes()
       .withTypes()
@@ -30,7 +47,7 @@ class ProjectService {
         userId,
         status,
         types,
-        query: query,
+        query: `%${query}%`,
       },
       type: this.client.QueryTypes.SELECT,
     });
@@ -41,7 +58,7 @@ class ProjectService {
         userId,
         status,
         types,
-        query: query,
+        query: `%${query}%`,
       },
       type: this.client.QueryTypes.SELECT,
     });
@@ -83,9 +100,17 @@ class ProjectService {
     endDate,
     userId,
     types = [],
-    tombstoneId = null,
+    tombstoneId = 1,
     status = "buried",
   }) {
+    const tombstone = await this.Tombstone.findByPk(tombstoneId);
+    if (!tombstone) {
+      throw createError({
+        message: "Tombstone not found",
+        statusCode: 404,
+      });
+    }
+
     let transaction;
     try {
       transaction = await this.client.transaction();
@@ -121,7 +146,7 @@ class ProjectService {
       });
     } catch (error) {
       if (transaction) await transaction.rollback();
-      console.error("Error starting transaction:", error);
+      // Removed debug console.error for production
       throw createError({
         message: "Error creating project",
         status: "error",
@@ -132,6 +157,12 @@ class ProjectService {
   }
 
   async update(id, args) {
+    if (args.tombstoneId) {
+      const tombstone = await this.Tombstone.findByPk(args.tombstoneId);
+      if (!tombstone) {
+        throw createError({ message: "Tombstone not found", statusCode: 404 });
+      }
+    }
     const project = await this.Project.findByPk(id);
     if (!project) {
       throw createError({ message: "Project not found", statusCode: 404 });

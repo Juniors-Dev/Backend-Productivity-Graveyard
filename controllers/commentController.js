@@ -18,7 +18,7 @@ async function createComment(req, res) {
         message: "Parent comment not found",
         status: "not found",
         statusCode: 404,
-        errors: { parentId }
+        errors: { parentId },
       });
     }
 
@@ -26,7 +26,7 @@ async function createComment(req, res) {
       throw createError({
         message: "Cannot reply to a reply",
         statusCode: 400,
-        errors: { parentId }
+        errors: { parentId },
       });
     }
   }
@@ -74,15 +74,15 @@ async function updateComment(req, res) {
       message: "Comment not found",
       status: "not found",
       statusCode: 404,
-      errors: { commentId: id }
+      errors: { commentId: id },
     });
   }
 
   if (comment.isDeleted) {
     throw createError({
-      message: "Cannot update a deleted comment", 
+      message: "Cannot update a deleted comment",
       statusCode: 400,
-      errors: { commentId: id }
+      errors: { commentId: id },
     });
   }
 
@@ -106,7 +106,7 @@ async function deleteComment(req, res) {
       message: "Comment not found",
       status: "not found",
       statusCode: 404,
-      errors: { commentId: id }
+      errors: { commentId: id },
     });
   }
 

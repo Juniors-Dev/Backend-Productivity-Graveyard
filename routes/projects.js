@@ -9,6 +9,7 @@ var {
   getAllTypes,
   addType,
   removeType,
+  getAllTombstones,
 } = require("../controllers/projectController");
 var asyncHandler = require("../middleware/asyncHandler");
 var { authenticate, hasRole, validateSchema, ownsEntity, isLoggedIn } = require("../middleware");
@@ -84,6 +85,18 @@ var projectComments = require("./projectComments");
  *             avatarUrl:
  *               type: string
  *               nullable: true
+ *         tombstone:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *               example: 1
+ *             name:
+ *               type: string
+ *               example: "Feature Creep"
+ *             imageUrl:
+ *               type: string
+ *               example: "/images/tombstone1.png"
  *         commentCount:
  *           type: integer
  *         upvoteCount:
@@ -222,97 +235,6 @@ var projectComments = require("./projectComments");
  *           items:
  *             type: string
  *
- *     ValidationErrorResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: false
- *         status:
- *           type: string
- *           example: "bad request"
- *         statusCode:
- *           type: integer
- *           example: 400
- *         message:
- *           type: string
- *           example: "Validation Error: X errors occurred"
- *         errors:
- *           type: array
- *           items:
- *             type: string
- *
- *     NotFoundResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: false
- *         status:
- *           type: string
- *           example: "fail"
- *         statusCode:
- *           type: integer
- *           example: 404
- *         message:
- *           type: string
- *           example: "Project not found"
- *         errors:
- *           type: array
- *           items:
- *             type: string
- *
- *     InternalErrorResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: false
- *         status:
- *           type: string
- *           example: "error"
- *         statusCode:
- *           type: integer
- *           example: 500
- *         message:
- *           type: string
- *           example: "Server error"
- *         errors:
- *           type: array
- *           items:
- *             type: string
- *
- *     UnauthorizedResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: false
- *         status:
- *           type: string
- *           example: "fail"
- *         statusCode:
- *           type: integer
- *           example: 401
- *         message:
- *           type: string
- *           example: "Unauthorized, invalid or expired token."
- *
- *     ForbiddenResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: false
- *         status:
- *           type: string
- *           example: "fail"
- *         statusCode:
- *           type: integer
- *           example: 403
- *         message:
- *           type: string
- *           example: "Forbidden, you do not own this entity."
  */
 
 /**
@@ -455,6 +377,50 @@ router.get("/", isLoggedIn, asyncHandler(getAll));
  */
 
 router.get("/types", asyncHandler(getAllTypes));
+
+/**
+ * @swagger
+ * /projects/tombstones:
+ *   get:
+ *     summary: Get all tombstones
+ *     description: Returns a list of all tombstones (reasons for project discontinuation).
+ *     tags: [Projects]
+ *     responses:
+ *       200:
+ *         description: List of tombstones
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 statusCode:
+ *                   type: integer
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                   example: Success
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       name:
+ *                         type: string
+ *                         example: Feature Creep
+ *                       imageUrl:
+ *                         type: string
+ *                         example: "/images/tombstone1.png"
+ */
+router.get("/tombstones", asyncHandler(getAllTombstones));
 
 /**
  * @swagger

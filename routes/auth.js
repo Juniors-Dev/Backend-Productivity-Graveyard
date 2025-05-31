@@ -1,8 +1,24 @@
 var express = require("express");
 var router = express.Router();
 var { login, register } = require("../controllers/authController");
-var { validateSchema, asyncHandler, validateCredentials } = require("../middleware");
+var { validateSchema, asyncHandler, validateCredentials, createRateLimiter, createSlowDown } = require("../middleware");
 const { loginSchema, registerSchema, updateUserSchema } = require("../schema");
+
+router.use(
+  createRateLimiter({
+    max: parseInt(process.env.RATE_LIMIT_MAX) || 15,
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 10 * 60 * 1000, // 10 minutes
+    message: "Too many authentication attempts, please try again in 10 minutes.",
+  })
+);
+
+router.use(
+  createSlowDown({
+    delayAfter: parseInt(process.env.SLOW_DOWN_DELAY_AFTER) || 8,
+    delayMs: parseInt(process.env.SLOW_DOWN_DELAY_MS) || 500,
+    windowMs: parseInt(process.env.SLOW_DOWN_WINDOW_MS) || 5 * 60 * 1000, // 5 minutes
+  })
+);
 
 /**
  * @swagger

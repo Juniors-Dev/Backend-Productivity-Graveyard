@@ -6,13 +6,23 @@ const logger = require("morgan");
 const dotenv = require("dotenv");
 dotenv.config();
 var { errorResponse } = require("./utilities/response");
+var { createRateLimiter, createSlowDown } = require("./middleware");
+var helmet = require("helmet");
 
 //swagger
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./swagger");
 
 // routers
-var { indexRouter, usersRouter, projectsRouter, authRouter, votesRouter, commentsRouter } = require("./routes/index");
+var {
+  indexRouter,
+  usersRouter,
+  projectsRouter,
+  authRouter,
+  votesRouter,
+  commentsRouter,
+  statsRouter,
+} = require("./routes/index");
 
 // database and seeder
 var { db } = require("./models");
@@ -37,8 +47,31 @@ if (process.env.CORS === "true") {
   app.use(cors());
 }
 
+// Security headers using Helmet
+app.use(helmet());
+
+// Disable the 'X-Powered-By' header for security
+app.disable("x-powered-by");
+
+app.use(
+  createRateLimiter({
+    max: parseInt(process.env.RATE_LIMIT_MAX) || 600,
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 10 * 60 * 1000, // 10 minutes
+    message: "Too many requests, please try again later.",
+  })
+);
+
+app.use(
+  createSlowDown({
+    delayAfter: parseInt(process.env.SLOW_DOWN_DELAY_AFTER) || 240,
+    delayMs: parseInt(process.env.SLOW_DOWN_DELAY_MS) || 500,
+    windowMs: parseInt(process.env.SLOW_DOWN_WINDOW_MS) || 5 * 60 * 1000, // 5 minutes
+  })
+);
+
 app.use(logger("dev"));
-app.use(express.json());
+// limit the size of JSON payloads to prevent abuse, we are not currently using file uploads this should be sufficient
+app.use(express.json({ limit: "100kb" }));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -48,6 +81,7 @@ app.use("/users", usersRouter);
 app.use("/projects", projectsRouter);
 app.use("/comments", commentsRouter);
 app.use("/votes", votesRouter);
+app.use("/stats", statsRouter);
 
 // Swagger
 app.use("/doc", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

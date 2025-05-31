@@ -1,4 +1,5 @@
 const auth = require("./authentication");
+const { createRateLimiter, createSlowDown } = require("./security");
 
 module.exports = {
   asyncHandler: require("./asyncHandler"),
@@ -10,4 +11,6 @@ module.exports = {
   validateParamSchema: require("./validateParamSchema"),
   validateCredentials: require("./validateCredentials"),
   ownsEntity: require("./ownsEntity"),
+  createRateLimiter,
+  createSlowDown,
 };

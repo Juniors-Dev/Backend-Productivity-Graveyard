@@ -5,4 +5,5 @@ module.exports = {
   indexRouter: require("./home"),
   commentsRouter: require("./comments"),
   votesRouter: require("./votes"),
+  statsRouter: require("./stats"),
 };

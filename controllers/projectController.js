@@ -1,7 +1,8 @@
 var { db } = require("../models");
-var { ProjectService, TypeService } = require("../services");
+var { ProjectService, TypeService, TombstoneService } = require("../services");
 var projectService = new ProjectService(db);
 var typeService = new TypeService(db);
+var tombstoneService = new TombstoneService(db);
 var { successResponse, errorResponse, createError } = require("../utilities");
 var { getLimitOffset } = require("../utilities/getPagination.js");
 
@@ -135,6 +136,17 @@ async function addType(req, res) {
   );
 }
 
+async function getAllTombstones(req, res) {
+  const tombstones = await tombstoneService.getAll();
+  res.status(200).json(
+    successResponse({
+      message: "Success",
+      data: tombstones,
+      statusCode: 200,
+    })
+  );
+}
+
 async function deleteProject(req, res) {
   const { id } = req.params;
   const deleted = await projectService.delete(id);
@@ -156,4 +168,5 @@ module.exports = {
   removeType,
   addType,
   deleteProject,
+  getAllTombstones,
 };
