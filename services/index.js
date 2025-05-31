@@ -6,6 +6,7 @@ module.exports = {
   VoteService: require("./VoteService"),
   CommentService: require("./CommentService"),
   TombstoneService: require("./TombstoneService"),
+  StatsService: require("./StatsService"),
 };
 
 //hello
