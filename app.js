@@ -93,12 +93,13 @@ app.use(function (req, res, next) {
 
 // error handler, will catch errors passed by the async handler on controllers/middlewares
 app.use((err, req, res, next) => {
-  console.error("Error:", err);
-
   const statusCode = err.statusCode || 500;
   const status = err.status || "error";
   const message = err.message || "Internal Server Error";
   const errors = err.errors || null;
+  if (statusCode >= 500) {
+    console.error("Server Error:", err);
+  }
   const response = errorResponse({
     message,
     status,

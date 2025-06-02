@@ -1,3 +1,5 @@
+const createError = require("./createError");
+
 /**
  *
  * @param {Error} err - The error object to normalize.

@@ -18,12 +18,7 @@ async function authenticate(req, res, next) {
       throw createError({ statusCode: 401, message: "Unauthorized, invalid token format." });
     }
 
-    const decoded = verifyToken(token[1]);
-    if (!decoded) {
-      const err = createError({ statusCode: 401, message: "Unauthorized, invalid or expired token." });
-      throw err;
-    }
-
+    const decoded = verifyToken(token[1]); // This will now throw specific errors for expired or invalid tokens.
     req.user = decoded;
     next();
   } catch (error) {

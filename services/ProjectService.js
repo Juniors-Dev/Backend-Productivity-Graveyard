@@ -108,6 +108,19 @@ class ProjectService {
       throw createError({
         message: "Tombstone not found",
         statusCode: 404,
+        status: "fail",
+      });
+    }
+
+    const typesExists = await this.Type.findAll({
+      where: { id: types },
+    });
+
+    if (types.length > 0 && typesExists.length !== types.length) {
+      throw createError({
+        message: "Some types do not exist",
+        statusCode: 404,
+        status: "fail",
       });
     }
 
@@ -182,7 +195,14 @@ class ProjectService {
     if (!project) {
       throw createError({ message: "Project not found", statusCode: 404 });
     }
-    await project.removeType(typeId);
+    const res = await project.removeType(typeId);
+    if (res === 0) {
+      throw createError({
+        message: "Type not found in project",
+        status: "fail",
+        statusCode: 404,
+      });
+    }
     return this.getOneId(id);
   }
 
