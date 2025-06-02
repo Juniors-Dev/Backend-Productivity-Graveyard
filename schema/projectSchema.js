@@ -31,27 +31,39 @@ const projectSchema = object({
   tombstoneId: number("Tombstone ID must be a number").typeError("Tombstone ID must be a number").nullable(),
 });
 
-const projectUpdateSchema = object({
-  name: string().min(1, "Name can't be empty").max(100, "Name must be under 100 characters"),
-  description: string().max(500, "Description must be under 500 characters"),
-  eulogy: string().max(1000, "Eulogy must be under 1000 characters"),
-  causeOfDeath: string().max(100, "Keep cause of death under 255 characters"),
-  startDate: date()
-    .nullable()
-    .typeError("Start date must be a valid date")
-    .transform((value, originalValue) => (originalValue === undefined ? null : value)),
-  endDate: date()
-    .nullable()
-    .typeError("End date must be a valid date")
-    .transform((value, originalValue) => (originalValue === undefined ? null : value))
-    .when("startDate", (start, schema) => {
-      const startDate = new Date(start);
-      return !isNaN(startDate) ? schema.min(startDate, "End date must be after start date") : schema;
-    }),
-  tombstoneId: number().nullable(),
-  status: string().oneOf(["inactive", "active", "buried", "resurrected", "completed", "archived"]),
-});
-
+const projectUpdateSchema = object()
+  .shape({
+    name: string().min(1, "Name can't be empty").max(100, "Name must be under 100 characters"),
+    description: string().max(500, "Description must be under 500 characters"),
+    eulogy: string().max(1000, "Eulogy must be under 1000 characters"),
+    causeOfDeath: string().max(100, "Keep cause of death under 255 characters"),
+    startDate: date()
+      .nullable()
+      .typeError("Start date must be a valid date")
+      .transform((value, originalValue) => (originalValue === undefined ? null : value)),
+    endDate: date()
+      .nullable()
+      .typeError("End date must be a valid date")
+      .transform((value, originalValue) => (originalValue === undefined ? null : value))
+      .when("startDate", (start, schema) => {
+        const startDate = new Date(start);
+        return !isNaN(startDate) ? schema.min(startDate, "End date must be after start date") : schema;
+      }),
+    tombstoneId: number().nullable(),
+    status: string().oneOf(["inactive", "active", "buried", "resurrected", "completed", "archived"]),
+  })
+  .test("atLeastOneField", "At least one field must be provided for update", (value) => {
+    return (
+      value.name ||
+      value.description ||
+      value.eulogy ||
+      value.causeOfDeath ||
+      value.startDate ||
+      value.endDate ||
+      value.tombstoneId ||
+      value.status
+    );
+  });
 const typeIdSchema = object({
   typeId: number().required("Type ID is required"),
 });
