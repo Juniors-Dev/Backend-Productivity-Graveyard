@@ -153,7 +153,7 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Keep cause of death under 255 characters");
+      expect(res.body.errors).toContain("Keep cause of death under 100 characters");
     });
 
     it("shouldn't create a project without start date", async () => {
