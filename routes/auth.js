@@ -115,6 +115,27 @@ router.use(
  *               type: string
  *               description: JWT token for authenticated requests
  *               example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTYxNjIzOTAyMn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+ *
+ *     AuthRateLimitResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "error"
+ *         statusCode:
+ *           type: integer
+ *           example: 429
+ *         message:
+ *           type: string
+ *           example: "Too many authentication attempts, please try again in 10 minutes."
+ *         errors:
+ *           type: null
+ *           nullable: true
+ *           example: null
+ *       description: Authentication-specific rate limit response (15 requests per 10 minutes).
  */
 
 /**
@@ -135,6 +156,20 @@ router.use(
  *                 message:
  *                   type: string
  *                   example: Welcome to the API
+ *       429:
+ *         description: Too many requests - global rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.get("/", function (req, res, next) {
@@ -181,6 +216,20 @@ router.get("/", function (req, res, next) {
  *               status: bad request
  *               data:
  *                 errors: ["Last name is required", "Password must be at least 8 characters"]
+ *       429:
+ *         description: Too many authentication attempts - auth rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthRateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.post("/register", validateSchema(registerSchema), asyncHandler(validateCredentials), asyncHandler(register));
@@ -232,6 +281,20 @@ router.post("/register", validateSchema(registerSchema), asyncHandler(validateCr
  *               status: unauthorized
  *               data:
  *                 errors: ["Invalid email or password"]
+ *       429:
+ *         description: Too many authentication attempts - auth rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthRateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.post("/login", validateSchema(loginSchema), asyncHandler(login));
