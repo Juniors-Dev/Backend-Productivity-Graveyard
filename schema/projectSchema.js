@@ -49,8 +49,15 @@ const projectUpdateSchema = object()
         const startDate = new Date(start);
         return !isNaN(startDate) ? schema.min(startDate, "End date must be after start date") : schema;
       }),
-    tombstoneId: number().nullable(),
+    tombstoneId: number("Tombstone ID must be a number").typeError("Tombstone ID must be a number").nullable(),
     status: string().oneOf(["inactive", "active", "buried", "resurrected", "completed", "archived"]),
+  })
+  .test("datesDependency", "Both startDate and endDate must be provided together", (value) => {
+    const { startDate, endDate } = value;
+    if ((startDate && !endDate) || (!startDate && endDate)) {
+      return false;
+    }
+    return true;
   })
   .test("atLeastOneField", "At least one field must be provided for update", (value) => {
     return (

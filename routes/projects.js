@@ -12,8 +12,8 @@ var {
   getAllTombstones,
 } = require("../controllers/projectController");
 var asyncHandler = require("../middleware/asyncHandler");
-var { authenticate, hasRole, validateSchema, ownsEntity, isLoggedIn } = require("../middleware");
-var { projectSchema, projectUpdateSchema, typeIdSchema } = require("../schema/projectSchema");
+var { authenticate, hasRole, validateSchema, validateParamSchema, ownsEntity, isLoggedIn } = require("../middleware");
+var { projectSchema, projectUpdateSchema, typeIdSchema, uuidSchema } = require("../schema");
 var { ProjectService } = require("../services");
 var { db } = require("../models");
 var projectService = new ProjectService(db);
@@ -456,7 +456,7 @@ router.get("/tombstones", asyncHandler(getAllTombstones));
  *               $ref: '#/components/schemas/NotFoundResponse'
  */
 
-router.get("/:id", isLoggedIn, asyncHandler(getOneId));
+router.get("/:id", validateParamSchema(uuidSchema), isLoggedIn, asyncHandler(getOneId));
 
 /**
  * @swagger
@@ -553,6 +553,7 @@ router.post("/", authenticate, validateSchema(projectSchema), asyncHandler(hasRo
 router.put(
   "/:id",
   authenticate,
+  validateParamSchema(uuidSchema),
   validateSchema(projectUpdateSchema),
   asyncHandler(hasRole("user")),
   asyncHandler(ownsEntity(projectService)),
@@ -622,6 +623,7 @@ router.put(
 router.delete(
   "/:id",
   authenticate,
+  validateParamSchema(uuidSchema),
   asyncHandler(hasRole("user")),
   asyncHandler(ownsEntity(projectService)),
   asyncHandler(deleteProject)
@@ -758,6 +760,7 @@ router.delete(
 router.put(
   "/:id/type",
   authenticate,
+  validateParamSchema(uuidSchema),
   validateSchema(typeIdSchema),
   asyncHandler(hasRole("user")),
   asyncHandler(ownsEntity(projectService)),
@@ -767,6 +770,7 @@ router.put(
 router.delete(
   "/:id/type",
   authenticate,
+  validateParamSchema(uuidSchema),
   validateSchema(typeIdSchema),
   asyncHandler(hasRole("user")),
   asyncHandler(ownsEntity(projectService)),
