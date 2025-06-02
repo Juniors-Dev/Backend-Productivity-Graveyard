@@ -25,7 +25,6 @@ const options = {
         },
       },
     },
-    security: [{ bearerAuth: [] }],
   },
   apis: ["./routes/*.js", "./docs/*.js"], // legg inn din path her
 };

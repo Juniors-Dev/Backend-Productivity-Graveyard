@@ -8,11 +8,6 @@ const { loginSchema, registerSchema, updateUserSchema } = require("../schema");
 /**
  * @swagger
  * components:
- *   securitySchemes:
- *     bearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
  *   schemas:
  *     UserResponse:
  *       type: object
@@ -114,6 +109,20 @@ const { loginSchema, registerSchema, updateUserSchema } = require("../schema");
  *                 message:
  *                   type: string
  *                   example: Welcome to the API
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.get("/", function (req, res, next) {
@@ -162,6 +171,20 @@ router.get("/", function (req, res, next) {
  *               status: unauthorized
  *               data:
  *                 errors: ["Invalid or expired token"]
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.get("/me", asyncHandler(authenticate), asyncHandler(getMe));
@@ -215,6 +238,20 @@ router.get("/me", asyncHandler(authenticate), asyncHandler(getMe));
  *               status: unauthorized
  *               data:
  *                 errors: ["Invalid or expired token"]
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.get("/deleted", asyncHandler(authenticate), asyncHandler(getAllSoftDeleted));
@@ -267,6 +304,20 @@ router.get("/deleted", asyncHandler(authenticate), asyncHandler(getAllSoftDelete
  *               status: fail
  *               data:
  *                 errors: ["User not found"]
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.get("/:id", asyncHandler(getUser));
@@ -332,6 +383,20 @@ router.get("/:id", asyncHandler(getUser));
  *             example:
  *               status: unauthorized
  *               data:
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.put("/me", asyncHandler(authenticate), validateSchema(updateUserSchema), asyncHandler(updateMe));
@@ -368,6 +433,20 @@ router.put("/me", asyncHandler(authenticate), validateSchema(updateUserSchema), 
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
 router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
