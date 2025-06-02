@@ -8,6 +8,8 @@ module.exports = {
   loginSchema,
   registerSchema,
   updateUserSchema,
+  createCommentSchema,
+  updateCommentSchema,
   projectIdSchema,
   commentIdSchema,
   uuidSchema,
