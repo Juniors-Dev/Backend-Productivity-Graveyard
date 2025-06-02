@@ -199,7 +199,7 @@ class ProjectService {
     if (res === 0) {
       throw createError({
         message: "Type not found in project",
-        status: "error",
+        status: "fail",
         statusCode: 404,
       });
     }
