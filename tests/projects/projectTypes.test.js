@@ -68,7 +68,7 @@ function projectTypesTests({ app, db, testProject, createTestUser, badToken, exp
           include: [{ model: db.Type, as: "types" }],
         });
 
-        expect(updatedProject.types.map((t) => t.id)).toContain(4);
+        expect(updatedProject.types.map((t) => t.id)).toContain(6);
       });
 
       it("should not add a type without typeId", async () => {
