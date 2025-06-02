@@ -36,7 +36,7 @@ const projectUpdateSchema = object()
     name: string().min(1, "Name can't be empty").max(100, "Name must be under 100 characters"),
     description: string().max(500, "Description must be under 500 characters"),
     eulogy: string().max(1000, "Eulogy must be under 1000 characters"),
-    causeOfDeath: string().max(100, "Keep cause of death under 255 characters"),
+    causeOfDeath: string().max(100, "Keep cause of death under 100 characters"),
     startDate: date()
       .nullable()
       .typeError("Start date must be a valid date")
