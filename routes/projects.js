@@ -248,6 +248,9 @@ var projectComments = require("./projectComments");
  *       This endpoint is publicly accessible and returns metadata for pagination.
  *       A logged in user, it will return true for the userHasVoted field if the user has voted on the project.
  *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *       - {}
  *     parameters:
  *       - in: query
  *         name: limit
@@ -464,6 +467,9 @@ router.get("/tombstones", asyncHandler(getAllTombstones));
  *   get:
  *     summary: Get project by ID
  *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *       - {}
  *     parameters:
  *       - in: path
  *         name: id
@@ -514,6 +520,8 @@ router.get("/:id", isLoggedIn, asyncHandler(getOneId));
  *   post:
  *     summary: Create a new project
  *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -563,6 +571,8 @@ router.post("/", authenticate, validateSchema(projectSchema), asyncHandler(hasRo
  *   put:
  *     summary: Update an existing project
  *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -637,6 +647,8 @@ router.put(
  *   delete:
  *     summary: Soft delete a project
  *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -716,6 +728,8 @@ router.delete(
  *       Adds a type (tag) to the specified project. The type should be provided in the request body as a type ID.
  *       Only the project owner or users with the appropriate role can add a type to a project.
  *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -800,6 +814,8 @@ router.put(
  *       Removes a type (tag) from the specified project. The type should be provided in the request body as a type ID.
  *       Only the project owner or users with the appropriate role can remove a type from a project.
  *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
