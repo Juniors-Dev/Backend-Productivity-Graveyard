@@ -66,55 +66,6 @@ function getTests({ app, db, testProject, createTestUser, badToken, expiredToken
       // Clean up: delete all projects and users
       await cleanUp([user.id, user2.id]);
     });
-    // params to test
-    // Name	Description
-    // limit
-    // integer
-    // (query)
-    // Number of projects to return
-    // Default value : 100
-    // 100
-    // offset
-    // integer
-    // (query)
-    // Number of projects to skip (for pagination)
-    // Default value : 0
-    // 0
-    // status
-    // string
-    // (query)
-    // Filter projects by status
-    // Available values : inactive, active, buried, resurrected, completed, archived
-    // --
-    // orderBy
-    // string
-    // (query)
-    // Field to sort by
-    // Available values : status, createdAt, updatedAt, name, etc..
-    // Default value : createdAt
-    // createdAt
-    // order
-    // string
-    // (query)
-    // Sort direction (asc or desc)
-    // Available values : asc, desc
-    // Default value : desc
-    // desc
-    // userId
-    // string($uuid)
-    // (query)
-    // Filter projects by user ID
-    // userId
-    // types
-    // string
-    // (query)
-    // Comma-separated list of type IDs to filter by (e.g., 1,2,3)
-    // 1,2,3
-    // query
-    // string
-    // (query)
-    // Search by project name
-    // query
 
     describe("GET /projects", () => {
       it("should get all project without token", async () => {

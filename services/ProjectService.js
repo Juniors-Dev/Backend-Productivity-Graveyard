@@ -195,7 +195,14 @@ class ProjectService {
     if (!project) {
       throw createError({ message: "Project not found", statusCode: 404 });
     }
-    await project.removeType(typeId);
+    const res = await project.removeType(typeId);
+    if (res === 0) {
+      throw createError({
+        message: "Type not found in project",
+        status: "error",
+        statusCode: 404,
+      });
+    }
     return this.getOneId(id);
   }
 

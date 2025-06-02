@@ -6,6 +6,7 @@ const { db } = require("../models");
 const createTests = require("./projects/create.test.js");
 const updateTests = require("./projects/update.test.js");
 const getTests = require("./projects/get.test.js");
+const projectTypesTests = require("./projects/projectTypes.test.js");
 
 const createTestUser = (suffix = "", roleId) => ({
   firstName: "Crash",
@@ -68,26 +69,9 @@ describe("Projects API", () => {
   // -------------- GET ----------------
   getTests(config);
 
-  // it("should add a type to the project", async () => {
-  //   const res = await request(app)
-  //     .put(`/projects/${projectId}/type`)
-  //     .set("Authorization", `Bearer ${token}`)
-  //     .send({ typeId: 2 });
-  //   expect([200, 409]).toContain(res.statusCode); // 409 if already exists
-  //   expect(res.body).toHaveProperty("success");
-  // });
+  // -------------- DELETE ----------------
 
-  // it("should remove a type from the project", async () => {
-  //   const res = await request(app)
-  //     .delete(`/projects/${projectId}/type`)
-  //     .set("Authorization", `Bearer ${token}`)
-  //     .send({ typeId: 2 });
-  //   expect(res.statusCode).toBe(200);
-  //   expect(res.body.success).toBe(true);
-  // });
+  // ---------- Type Tests --------------
 
-  // it("should delete the project", async () => {
-  //   const res = await request(app).delete(`/projects/${projectId}`).set("Authorization", `Bearer ${token}`);
-  //   expect([200, 204]).toContain(res.statusCode);
-  // });
+  projectTypesTests(config);
 });
