@@ -5,7 +5,6 @@ const validateParamSchema = (schema) => async (req, res, next) => {
     await schema.validate(req.params, { abortEarly: false });
     next();
   } catch (error) {
-    console.log(error);
     if (error.name === "ValidationError") {
       throw createError({
         statusCode: 400,

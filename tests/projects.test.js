@@ -6,6 +6,7 @@ const { db } = require("../models");
 const createTests = require("./projects/create.test.js");
 const updateTests = require("./projects/update.test.js");
 const getTests = require("./projects/get.test.js");
+const deleteTests = require("./projects/delete.test.js");
 const projectTypesTests = require("./projects/projectTypes.test.js");
 
 const createTestUser = (suffix = "", roleId) => ({
@@ -70,8 +71,8 @@ describe("Projects API", () => {
   getTests(config);
 
   // -------------- DELETE ----------------
+  deleteTests(config);
 
   // ---------- Type Tests --------------
-
   projectTypesTests(config);
 });

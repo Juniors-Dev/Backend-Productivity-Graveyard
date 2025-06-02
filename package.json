@@ -5,7 +5,7 @@
   "main": "./bin/www",
   "type": "commonjs",
   "scripts": {
-    "test": "jest --verbose --coverage",
+    "test": "jest --verbose --coverage --forceExit --testMatch='**/tests/*.test.js'",
     "test-projects": "jest --verbose --forceExit tests/projects.test.js",
     "test-users": "jest --verbose --forceExit tests/users.test.js",
     "test-votes": "jest --verbose --forceExit tests/votes.test.js",
