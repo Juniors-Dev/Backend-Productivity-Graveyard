@@ -24,27 +24,6 @@ router.use(
  * @swagger
  * components:
  *   schemas:
- *     AuthRateLimitResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: false
- *         status:
- *           type: string
- *           example: "error"
- *         statusCode:
- *           type: integer
- *           example: 429
- *         message:
- *           type: string
- *           example: "Too many authentication attempts, please try again in 10 minutes."
- *         errors:
- *           type: null
- *           nullable: true
- *           example: null
- *       description: "Authentication-specific rate limit response (15 requests per 10 minutes)"
- *
  *     RegisterSchema:
  *       type: object
  *       required:
@@ -136,6 +115,27 @@ router.use(
  *               type: string
  *               description: JWT token for authenticated requests
  *               example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTYxNjIzOTAyMn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+ *
+ *     AuthRateLimitResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: "error"
+ *         statusCode:
+ *           type: integer
+ *           example: 429
+ *         message:
+ *           type: string
+ *           example: "Too many authentication attempts, please try again in 10 minutes."
+ *         errors:
+ *           type: null
+ *           nullable: true
+ *           example: null
+ *       description: Authentication-specific rate limit response (15 requests per 10 minutes).
  */
 
 /**

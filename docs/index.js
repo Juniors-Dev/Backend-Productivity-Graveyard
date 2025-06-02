@@ -1,13 +1,32 @@
 /**
  * @swagger
  * components:
- *
  *   securitySchemes:
  *     bearerAuth:
  *       type: http
  *       scheme: bearer
  *       bearerFormat: JWT
- *       description: JWT token for authentication. Format: "Bearer {token}"
+ *   parameters:
+ *     limitParam:
+ *       name: limit
+ *       in: query
+ *       required: false
+ *       description: "Number of items to return (1–100). Defaults to 100."
+ *       schema:
+ *         type: integer
+ *         minimum: 1
+ *         maximum: 100
+ *         default: 100
+ *
+ *     offsetParam:
+ *       name: offset
+ *       in: query
+ *       required: false
+ *       description: "Number of items to skip. Defaults to 0."
+ *       schema:
+ *         type: integer
+ *         minimum: 0
+ *         default: 0
  *
  *   headers:
  *     RateLimitHeaders:
@@ -27,11 +46,10 @@
  *           type: integer
  *         example: 1640995200
  *
- *   schemas:
  * #-------------------------------
  * # Reusable Error Responses
  * #-------------------------------
- *
+ *   schemas:
  *     RateLimitResponse:
  *       type: object
  *       properties:
@@ -40,7 +58,7 @@
  *           example: false
  *         status:
  *           type: string
- *           example: "error"
+ *           example: error
  *         statusCode:
  *           type: integer
  *           example: 429
@@ -51,7 +69,7 @@
  *           type: null
  *           nullable: true
  *           example: null
- *       description: "Global rate limit response (600 requests per 10 minutes)"
+ *       description: Global rate limit response (600 requests per 10 minutes)
  *
  *     ValidationErrorResponse:
  *       type: object
@@ -191,7 +209,7 @@
  *
  *     SimpleSuccessResponse:
  *       type: object
- *       description: "Success response for operations that don't return data"
+ *       description: Success response for operations that don't return data
  *       properties:
  *         success:
  *           type: boolean
@@ -205,35 +223,4 @@
  *         message:
  *           type: string
  *           example: "x deleted successfully"
- */
-
-/**
- * @swagger
- * components:
- *   parameters:
- *
- * #-------------------------------
- * # Reusable operation parameters
- * #-------------------------------
- *
- *   limitParam:
- *     name: limit
- *     in: query
- *     required: false
- *     description: Number of items to return (1–100). Defaults to 100.
- *     schema:
- *       type: integer
- *       minimum: 1
- *       maximum: 100
- *       default: 100
- *
- *     offsetParam:
- *       name: offset
- *       in: query
- *       required: false
- *       description: Number of items to skip. Defaults to 0.
- *       schema:
- *         type: integer
- *         minimum: 0
- *         default: 0
  */

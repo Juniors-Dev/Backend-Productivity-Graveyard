@@ -539,7 +539,6 @@ router.get("/:id", isLoggedIn, asyncHandler(getOneId));
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UnauthorizedResponse'
- *
  *       429:
  *         description: Too many requests
  *         content:
@@ -845,7 +844,6 @@ router.put(
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectNotFoundResponse'
- *
  *       429:
  *         description: Too many requests
  *         content:
@@ -854,7 +852,6 @@ router.put(
  *               $ref: '#/components/schemas/RateLimitResponse'
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
- *
  *       500:
  *         description: Internal server error
  *         content:
