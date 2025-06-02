@@ -7,7 +7,7 @@ const projectSchema = object({
     .max(100, "Name must be under 100 characters"),
   description: string().required("Description is required").max(500, "Description must be under 500 characters"),
   eulogy: string().required("Eulogy is required").max(1000, "Eulogy must be under 1000 characters"),
-  causeOfDeath: string().required("Cause of death is required").max(100, "Keep cause of death under 255 characters"),
+  causeOfDeath: string().required("Cause of death is required").max(100, "Keep cause of death under 100 characters"),
   startDate: date()
     .required("Start date is required")
     .typeError("Start date must be a valid date")
