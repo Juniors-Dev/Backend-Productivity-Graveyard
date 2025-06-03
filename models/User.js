@@ -67,6 +67,44 @@ module.exports = (sequelize, Sequelize) => {
         allowNull: false,
         defaultValue: 1,
       },
+      isEmailVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        comment: "Has the user verified their email?",
+      },
+      emailVerificationToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: "Token used for verifying email ownership",
+      },
+      emailVerificationExpires: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: "Expiration date/time for the email verification token",
+      },
+      passwordResetToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: "Token used for resetting password",
+      },
+      passwordResetExpires: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: "Expiration time for the password reset token",
+      },
+      pendingEmail: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: { isEmail: true },
+      },
+      emailChangeToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      emailChangeExpires: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     },
     {
       paranoid: true,

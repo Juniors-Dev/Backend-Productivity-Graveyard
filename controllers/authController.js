@@ -4,6 +4,24 @@ const userService = new UserService(db);
 const RoleService = require("../services/RoleService");
 const roleService = new RoleService(db);
 const { generateToken, hashPassword, verifyPassword, createError } = require("../utilities");
+const { generateEmailVerificationToken } = require("../utilities/emailToken");
+const { loginLimiter } = require("../middleware/rateLimiters");
+
+async function verifyEmail(req, res, next) {
+  const token = req.query.token;
+
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const user = await userService.verifyEmailToken(token);
+
+  if (!user) {
+    throw new Error("Invalid or expired token");
+  }
+
+  res.status(200).json({ status: "success", message: "Email verified successfully." });
+}
 
 async function register(req, res) {
   const { firstName, lastName, username, email, password } = req.body;
@@ -31,6 +49,7 @@ async function register(req, res) {
       message: "Conflict, user not created.",
     });
   }
+
   res.status(201).json({ status: "success", statusCode: 201, data: { result: "Account created." } });
 }
 
@@ -41,7 +60,7 @@ async function login(req, res) {
   // finding the user - note we pass false to include the password fields
   const user = await userService.getOneEmail(email, false, false);
 
-  //Cheking if the user exist
+  //checking if the user exist
   if (!user) {
     throw createError({
       status: "unauthorized",
@@ -82,4 +101,4 @@ async function login(req, res) {
   });
 }
 
-module.exports = { register, login };
+module.exports = { register, login, verifyEmail };

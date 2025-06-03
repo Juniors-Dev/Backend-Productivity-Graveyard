@@ -2,6 +2,7 @@ const { UserService } = require("../services/index");
 const { db } = require("../models");
 const userService = new UserService(db);
 const sanitizeUser = require("../utilities/sanitizeUser");
+const { hashPassword } = require("../utilities/hashing");
 
 //This for getting the user based of Id.
 async function getUser(req, res, next) {
@@ -82,4 +83,85 @@ async function getAllSoftDeleted(req, res, next) {
   });
 }
 
-module.exports = { getUser, updateMe, getMe, softDeletedUser, getAllSoftDeleted };
+async function requestPasswordReset(req, res, next) {
+  const { email } = req.body;
+
+  if (!email) {
+    throw new Error("Email is required");
+  }
+
+  await userService.requestPasswordReset(email);
+
+  return res.status(200).json({
+    status: "success",
+    statusCode: 200,
+    data: {
+      message: "If this email exists, a password reset link has been sent.",
+    },
+  });
+}
+
+async function resetPassword(req, res, next) {
+  const token = req.query.token;
+  const { password } = req.body;
+
+  if (!token || !password) {
+    throw new Error("Token and password are required");
+  }
+
+  const { hashedPassword, salt } = await hashPassword(password);
+
+  await userService.resetPassword(token, hashedPassword, salt);
+
+  res.status(200).json({
+    status: "success",
+    statusCode: 200,
+    message: "Password has been reset successfully",
+  });
+}
+
+async function resetEmail(req, res, next) {
+  const token = req.query.token;
+
+  if (!token) {
+    throw new Error("Token is required");
+  }
+
+  await userService.resetEmail(token);
+
+  res.status(200).json({
+    status: "success",
+    statusCode: 200,
+    message: "Email has been reset successfully",
+  });
+}
+
+async function requestEmailReset(req, res, next) {
+  const { email } = req.body;
+
+  if (!email) {
+    throw new Error("Email is required");
+  }
+
+  await userService.requestEmailChange(req.user.id, email);
+
+  return res.status(200).json({
+    status: "success",
+    statusCode: 200,
+    data: {
+      message: "If this email exists, a verification link has been sent to the new email address.",
+    },
+  });
+}
+
+module.exports = {
+  getUser,
+  updateMe,
+  getMe,
+  softDeletedUser,
+  getAllSoftDeleted,
+  requestPasswordReset,
+  resetPassword,
+  requestEmailReset,
+  resetEmail,
+};

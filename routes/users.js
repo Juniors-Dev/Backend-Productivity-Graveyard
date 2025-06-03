@@ -1,8 +1,26 @@
 var express = require("express");
 var router = express.Router();
-const { getUser, updateMe, getMe, softDeletedUser, getAllSoftDeleted } = require("../controllers/userController");
-const { authenticate, hasRole, isAdmin, isSelfOrAdmin } = require("../middleware/authentication");
-var { validateSchema, asyncHandler, validateCredentials } = require("../middleware");
+const {
+  getUser,
+  updateMe,
+  getMe,
+  softDeletedUser,
+  getAllSoftDeleted,
+  requestPasswordReset,
+  resetPassword,
+  requestEmailReset,
+  resetEmail,
+} = require("../controllers/userController");
+
+const {
+  validateSchema,
+  authenticate,
+  asyncHandler,
+  passwordResetLimiter,
+  emailResetLimiter,
+  validateCredentials,
+} = require("../middleware");
+const { hasRole, isAdmin, isSelfOrAdmin } = require("../middleware/authentication");
 const { loginSchema, registerSchema, updateUserSchema } = require("../schema");
 
 /**
@@ -188,6 +206,8 @@ router.get("/", function (req, res, next) {
  */
 
 router.get("/me", asyncHandler(authenticate), asyncHandler(getMe));
+router.put("/me", asyncHandler(authenticate), asyncHandler(updateMe));
+router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
 
 /**
  * @swagger
@@ -256,6 +276,15 @@ router.get("/me", asyncHandler(authenticate), asyncHandler(getMe));
 
 router.get("/deleted", asyncHandler(authenticate), asyncHandler(getAllSoftDeleted));
 
+// Email flows
+router.post("/request-email-reset", asyncHandler(authenticate), emailResetLimiter, asyncHandler(requestEmailReset));
+
+router.post("/verify-new-email", asyncHandler(resetEmail));
+
+router.post("/request-password-reset", passwordResetLimiter, asyncHandler(requestPasswordReset));
+
+router.post("/reset-password", asyncHandler(resetPassword));
+
 /**
  * @swagger
  * /users/{id}:
@@ -319,7 +348,6 @@ router.get("/deleted", asyncHandler(authenticate), asyncHandler(getAllSoftDelete
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-
 router.get("/:id", asyncHandler(getUser));
 
 /**

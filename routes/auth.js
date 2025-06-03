@@ -1,7 +1,14 @@
 var express = require("express");
 var router = express.Router();
-var { login, register } = require("../controllers/authController");
-var { validateSchema, asyncHandler, validateCredentials, createRateLimiter, createSlowDown } = require("../middleware");
+var { login, register, verifyEmail } = require("../controllers/authController");
+var {
+  validateSchema,
+  asyncHandler,
+  validateCredentials,
+  createRateLimiter,
+  createSlowDown,
+  loginLimiter,
+} = require("../middleware");
 const { loginSchema, registerSchema, updateUserSchema } = require("../schema");
 
 router.use(
@@ -176,6 +183,9 @@ router.get("/", function (req, res, next) {
   res.status(200).json({ message: "Welcome to the API" });
 });
 
+//verify email
+router.get("/verify-email", asyncHandler(verifyEmail));
+
 /**
  * @swagger
  * /auth/register:
@@ -297,6 +307,6 @@ router.post("/register", validateSchema(registerSchema), asyncHandler(validateCr
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
-router.post("/login", validateSchema(loginSchema), asyncHandler(login));
+router.post("/login", validateSchema(loginSchema), loginLimiter, asyncHandler(login));
 
 module.exports = router;
