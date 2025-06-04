@@ -7,7 +7,8 @@
     "password": "admin123",
     "bio": "Can override your code and your will to live. Handles bans with a smile.",
     "roleId": 3,
-    "achievement": [1]
+    "achievement": [1],
+    "isEmailVerified": true
   },
   {
     "firstName": "Jake",
@@ -17,7 +18,8 @@
     "password": "user123",
     "bio": "Junior dev. Broke production once, now writes poetry in commit messages.",
     "roleId": 1,
-    "achievement": [1]
+    "achievement": [1],
+    "isEmailVerified": true
   },
   {
     "firstName": "Nina",
@@ -27,7 +29,8 @@
     "password": "user123",
     "bio": "Frontend fan. Has 42 design systems and still hates all buttons.",
     "roleId": 1,
-    "achievement": [1]
+    "achievement": [1],
+    "isEmailVerified": true
   },
   {
     "firstName": "Trevor",
@@ -37,7 +40,8 @@
     "password": "user123",
     "bio": "Backend builder. Once Dockerized his breakfast. Loves indexes and chili.",
     "roleId": 1,
-    "achievement": [1]
+    "achievement": [1],
+    "isEmailVerified": true
   },
   {
     "firstName": "Alice",
@@ -47,7 +51,8 @@
     "password": "mod123",
     "bio": "Moderator with an iron fist and CSS-laced gloves. Speaks fluent regex.",
     "roleId": 2,
-    "achievement": [1]
+    "achievement": [1],
+    "isEmailVerified": true
   },
   {
     "firstName": "Bruno",
@@ -57,7 +62,8 @@
     "password": "user123",
     "bio": "Former startup hero turned side-project ghost. Maintainer of 0 repos.",
     "roleId": 1,
-    "achievement": [1]
+    "achievement": [1],
+    "isEmailVerified": true
   },
   {
     "firstName": "Sasha",
@@ -67,6 +73,7 @@
     "password": "user123",
     "bio": "Started a to-do app. It now powers a space agency. Easily distracted.",
     "roleId": 1,
-    "achievement": [1]
+    "achievement": [1],
+    "isEmailVerified": true
   }
 ]

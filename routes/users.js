@@ -11,17 +11,14 @@ const {
   requestEmailReset,
   resetEmail,
 } = require("../controllers/userController");
-
 const {
   validateSchema,
   authenticate,
   asyncHandler,
   passwordResetLimiter,
   emailResetLimiter,
-  validateCredentials,
 } = require("../middleware");
-const { hasRole, isAdmin, isSelfOrAdmin } = require("../middleware/authentication");
-const { loginSchema, registerSchema, updateUserSchema } = require("../schema");
+const { updateUserSchema } = require("../schema");
 
 /**
  * @swagger
