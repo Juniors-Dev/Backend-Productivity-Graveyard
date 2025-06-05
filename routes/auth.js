@@ -215,7 +215,7 @@ router.get("/", function (req, res, next) {
  *             example:
  *               status: bad request
  *               data:
- *                 errors: ["Last name is required", "Password must be at least 8 characters"]
+ *                 errors: [{field: "email", message: "Email is required"}, {field: "password", message: "Password must be at least 8 characters"}]
  *       429:
  *         description: Too many authentication attempts - auth rate limit exceeded
  *         content:
@@ -270,7 +270,7 @@ router.post("/register", validateSchema(registerSchema), asyncHandler(validateCr
  *             example:
  *               status: bad request
  *               data:
- *                 errors: ["Please provide a valid email"]
+ *                 errors: [{field: "email", message: "Email is required"}, {field: "password", message: "Password is required"}]
  *       401:
  *         description: Unauthorized - invalid credentials
  *         content:

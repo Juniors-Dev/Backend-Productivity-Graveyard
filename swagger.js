@@ -26,7 +26,7 @@ const options = {
       },
     },
   },
-  apis: ["./routes/*.js", "./docs/*.js"], // legg inn din path her
+  apis: ["./docs/*.js", "./routes/*.js"], // legg inn din path her
 };
 
 const swaggerSpec = swaggerJSDoc(options);

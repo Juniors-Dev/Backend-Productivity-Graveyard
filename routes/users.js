@@ -372,8 +372,9 @@ router.get("/:id", asyncHandler(getUser));
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example:
  *               status: bad request
+ *               message: "Validation Error: 1 errors occurred"
  *               data:
- *                 errors: ["Username is required"]
+ *                 errors: [{ "field": "username", "message": "Username is a string and must be unique" }]
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *         content:

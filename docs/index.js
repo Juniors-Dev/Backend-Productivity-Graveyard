@@ -85,12 +85,24 @@
  *           example: 400
  *         message:
  *           type: string
- *           example: "Validation Error: x errors occurred"
+ *           example: "Validation Error: X errors occurred"
  *         errors:
  *           type: array
  *           items:
- *             type: string
- *           example: ["Username is required", "Email format is invalid"]
+ *             type: object
+ *             properties:
+ *               field:
+ *                 type: string
+ *                 example: "fieldName"
+ *               message:
+ *                 type: string
+ *                 example: "Error message"
+ *           description: List of validation errors with field names and messages
+ *           example:
+ *             - field: "name"
+ *               message: "Name is required"
+ *             - field: "description"
+ *               message: "Description must be at least 10 characters"
  *
  *     ApplicationErrorResponse:
  *       type: object
