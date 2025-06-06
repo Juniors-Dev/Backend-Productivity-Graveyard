@@ -41,7 +41,7 @@ router.get("/healthz", async (req, res) => {
     });
   } catch (err) {
     console.error("Health check failed:", err);
-    res.status(500).json({ status: "db unavailable", error: err.message });
+    res.status(500).json({ status: "db unavailable", error: "An internal server error occurred" });
   }
 });
 
