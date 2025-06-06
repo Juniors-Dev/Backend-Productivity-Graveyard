@@ -25,34 +25,45 @@ var {
 } = require("./routes/index");
 
 // database and seeder
-var { db } = require("./models");
+var { db, adminDb, ensureCrudUserPrivileges } = require("./models");
 const seed = require("./seeder/seed.js");
 
-// Check if the database connection is successful
-db.sequelize.authenticate();
-
-// can add the seeder here if needed
-db.sequelize.sync({ force: false }).then(async () => {
+// Setting up the database connection and ensuring the CRUD user has the necessary privileges
+(async () => {
   try {
-    await seed();
-  } catch (error) {
-    console.error("Error seeding database:", error);
+    console.log("Syncing and seeding DB with admin privileges...");
+    await adminDb.sequelize.sync({ force: false });
+    await seed(adminDb);
+    await ensureCrudUserPrivileges();
+    await adminDb.sequelize.close();
+    console.log("Admin DB setup complete.");
+    console.log("Authenticating CRUD user...");
+    await db.sequelize.authenticate();
+    console.log("CRUD DB authenticated. Starting app...");
+  } catch (err) {
+    console.error("Fatal DB setup error:", err);
+    process.exit(1);
   }
-});
+})();
 
 var app = express();
 
+// Middlewarres for setting up the application
 // Enable CORS if needed
 if (process.env.CORS === "true") {
   app.use(cors());
 }
-
 // Security headers using Helmet
 app.use(helmet());
-
 // Disable the 'X-Powered-By' header for security
 app.disable("x-powered-by");
+app.use(logger("dev"));
+// limit the size of JSON payloads to prevent abuse, we are not currently using file uploads this should be sufficient
+app.use(express.json({ limit: "100kb" }));
+app.use(express.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, "public")));
 
+// Rate limiting and slow down middleware
 app.use(
   createRateLimiter({
     max: parseInt(process.env.RATE_LIMIT_MAX) || 600,
@@ -60,7 +71,6 @@ app.use(
     message: "Too many requests, please try again later.",
   })
 );
-
 app.use(
   createSlowDown({
     delayAfter: parseInt(process.env.SLOW_DOWN_DELAY_AFTER) || 240,
@@ -69,12 +79,7 @@ app.use(
   })
 );
 
-app.use(logger("dev"));
-// limit the size of JSON payloads to prevent abuse, we are not currently using file uploads this should be sufficient
-app.use(express.json({ limit: "100kb" }));
-app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "public")));
-
+// Route handlers
 app.use("/", indexRouter);
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
@@ -82,8 +87,6 @@ app.use("/projects", projectsRouter);
 app.use("/comments", commentsRouter);
 app.use("/votes", votesRouter);
 app.use("/stats", statsRouter);
-
-// Swagger
 app.use("/doc", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // catch 404 and forward to error handler

@@ -1,4 +1,3 @@
-var { db } = require("../models");
 var { hashPassword } = require("../utilities/hashing");
 var userRoles = require("./roles.json");
 var deathTypes = require("./types.json");
@@ -10,7 +9,7 @@ var userVotes = require("./upVote.json");
 var resurrectedProjects = require("./ResurrectionEvent.json");
 var projectTombstones = require("./tombstones.json");
 
-async function basicSeed() {
+async function basicSeed(db) {
   let transaction;
   try {
     const hasRoles = await db.Role.findAll();
@@ -45,7 +44,7 @@ async function basicSeed() {
   }
 }
 
-async function usersSeed() {
+async function usersSeed(db) {
   let transaction;
 
   try {
@@ -88,7 +87,7 @@ async function usersSeed() {
   }
 }
 
-async function projectsSeed() {
+async function projectsSeed(db) {
   let transaction;
   try {
     const hasProjects = await db.Project.count();
@@ -139,7 +138,7 @@ async function projectsSeed() {
   }
 }
 
-async function moreSeed() {
+async function moreSeed(db) {
   let transaction;
   try {
     const hasComments = await db.Comment.findAll();
@@ -211,11 +210,11 @@ async function moreSeed() {
   }
 }
 
-async function seed() {
-  await basicSeed();
-  await usersSeed();
-  await projectsSeed();
-  await moreSeed();
+async function seed(db) {
+  await basicSeed(db);
+  await usersSeed(db);
+  await projectsSeed(db);
+  await moreSeed(db);
 }
 
 module.exports = seed;
