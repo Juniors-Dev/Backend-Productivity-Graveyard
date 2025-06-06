@@ -196,9 +196,7 @@ var { createComment, getProjectComments } = require("../controllers/commentContr
  *         content:
  *           application/json:
  *             schema:
- *             oneOf:
- *               - $ref: '#/components/schemas/ValidationErrorResponse'
- *               - $ref: '#/components/schemas/ApplicationErrorResponse'
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
  *       401:
  *         description: Unauthorized - authentication required
  *         content:

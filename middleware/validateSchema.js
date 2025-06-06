@@ -7,11 +7,17 @@ const validateSchema = (schema) => async (req, res, next) => {
     next();
   } catch (error) {
     if (error.name === "ValidationError") {
+      const errors = error.inner.map((err) => ({
+        field: err.path,
+        message: err.message,
+      }));
+
       throw createError({
         statusCode: 400,
         status: "bad request",
         message: `Validation Error: ${error.message}`,
-        errors: error.errors,
+        errors: errors,
+        // errors: error.errors || [], // Ensure errors is an array
       });
     } else {
       // probably going to happen when passing invalid schema
