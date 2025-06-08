@@ -51,7 +51,6 @@ class UserService {
       firstName,
       lastName,
       username,
-      displayName: username,
       email,
       hashedPassword,
       salt,
