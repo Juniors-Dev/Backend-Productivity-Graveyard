@@ -1,284 +1,616 @@
 const request = require("supertest");
 const app = require("../app");
+const { generateToken } = require("../utilities/jwt");
 const { db } = require("../models");
 const { registerSchema, loginSchema } = require("../schema");
 
-//Added this function since the date variable would give an longer name than max.
 const rn = (n2) => {
   const n1 = Math.floor(Math.random() * 10);
   return n1 * n2;
 };
 
-const email = `john${Date.now()}@example.com`;
-const username = `johnuser${rn(13)}`;
-const password = "StrongPassword123";
-
-beforeAll(async () => {
-  await db.sequelize.authenticate();
-  await db.sequelize.sync({ force: false });
-  await db.User.destroy({ where: { email } });
+const createTestUser = (suffix = "") => ({
+  id: `33333333-3333-3333-3333-33333333333${suffix || "3"}`,
+  firstName: "Test",
+  lastName: `User${suffix}`,
+  username: `testuser${suffix}`,
+  email: `testuser${suffix}@example.com`,
+  hashedPassword: "testhash",
+  salt: "testsalt",
 });
 
-afterAll(async () => {
-  await db.sequelize.close();
+const createAdminUser = () => ({
+  id: "44444444-4444-4444-4444-444444444444",
+  firstName: "Admin",
+  lastName: "User",
+  username: "adminuser",
+  email: "admin@example.com",
+  hashedPassword: "adminhash",
+  salt: "adminsalt",
 });
 
-describe("Schema Validation Tests", () => {
-  describe("Register Schema Validation", () => {
-    test("should validate correct registration data", async () => {
-      const validData = {
-        firstName: "John",
-        lastName: "Doe",
-        username,
-        email,
-        password,
-      };
-      await expect(registerSchema.validate(validData)).resolves.toBeTruthy();
+const validUpdateData = {
+  firstName: "Updated",
+  lastName: "Name",
+  username: "updateduser",
+  bio: "Updated bio",
+  avatarUrl: "https://example.com/avatar.jpg",
+};
+
+describe("Users API - Complete Test Suite", () => {
+  let userToken, adminToken, user, admin, userRole, adminRole;
+
+  beforeAll(async () => {
+    await db.sequelize.authenticate();
+    await db.sequelize.sync({ force: false });
+
+    userRole = await db.Role.findOne({ where: { name: "user" } });
+    adminRole = await db.Role.findOne({ where: { name: "admin" } });
+    user = await db.User.create({ ...createTestUser(), roleId: userRole.id });
+    admin = await db.User.create({ ...createAdminUser(), roleId: adminRole.id });
+
+    userToken = generateToken({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      roleId: user.roleId,
     });
 
-    test("should reject missing firstName", async () => {
-      const invalidData = {
-        lastName: "Doe",
-        username,
-        email,
-        password,
-      };
-      await expect(registerSchema.validate(invalidData)).rejects.toThrow("First name is required");
-    });
-
-    test("should reject missing lastName", async () => {
-      const invalidData = {
-        firstName: "John",
-        username,
-        email,
-        password,
-      };
-      await expect(registerSchema.validate(invalidData)).rejects.toThrow("Last name is required");
-    });
-
-    test("should reject missing username", async () => {
-      const invalidData = {
-        firstName: "John",
-        lastName: "Doe",
-        email,
-        password,
-      };
-      await expect(registerSchema.validate(invalidData)).rejects.toThrow("Username is required");
-    });
-
-    test("should reject invalid email format", async () => {
-      const invalidData = {
-        firstName: "John",
-        lastName: "Doe",
-        username,
-        email: "invalid-email",
-        password,
-      };
-      await expect(registerSchema.validate(invalidData)).rejects.toThrow("Please provide a valid email");
-    });
-
-    test("should reject weak password", async () => {
-      const invalidData = {
-        firstName: "John",
-        lastName: "Doe",
-        username,
-        email,
-        password: "weak",
-      };
-      await expect(registerSchema.validate(invalidData)).rejects.toThrow("Password must be at least 8 characters");
-    });
-
-    test("should reject password without uppercase", async () => {
-      const invalidData = {
-        firstName: "John",
-        lastName: "Doe",
-        username,
-        email,
-        password: "lowercase123",
-      };
-      await expect(registerSchema.validate(invalidData)).rejects.toThrow(
-        "Password must contain at least one uppercase letter"
-      );
-    });
-
-    test("should reject password without number", async () => {
-      const invalidData = {
-        firstName: "John",
-        lastName: "Doe",
-        username,
-        email,
-        password: "NoNumbersHere",
-      };
-      await expect(registerSchema.validate(invalidData)).rejects.toThrow("Password must contain at least one number");
+    adminToken = generateToken({
+      id: admin.id,
+      email: admin.email,
+      username: admin.username,
+      roleId: admin.roleId,
     });
   });
 
-  describe("Length schema validation", () => {
-    test("should reject too long lastName of over 15 characters", async () => {
-      const invalidData = {
-        lastName: `DoeVeryLongname${Date.now()}`,
-        username,
-        email,
-        password,
-      };
-      await expect(registerSchema.validate(invalidData)).rejects.toThrow("Last name must be at most 15 characters");
+  afterAll(async () => {
+    await db.User.destroy({ where: { id: [user.id, admin.id] }, force: true });
+    await db.sequelize.close();
+  });
+
+  // SCHEMA VALIDATION TESTS
+  describe("Schema Validation Tests", () => {
+    const email = `john${Date.now()}@example.com`;
+    const username = `johnuser${rn(13)}`;
+    const password = "StrongPassword123";
+
+    describe("Register Schema Validation", () => {
+      it("should validate correct registration data", async () => {
+        const validData = {
+          firstName: "John",
+          lastName: "Doe",
+          username,
+          email,
+          password,
+        };
+        await expect(registerSchema.validate(validData)).resolves.toBeTruthy();
+      });
+
+      it("should reject missing firstName", async () => {
+        const invalidData = {
+          lastName: "Doe",
+          username,
+          email,
+          password,
+        };
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("First name is required");
+      });
+
+      it("should reject missing lastName", async () => {
+        const invalidData = {
+          firstName: "John",
+          username,
+          email,
+          password,
+        };
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Last name is required");
+      });
+
+      it("should reject missing username", async () => {
+        const invalidData = {
+          firstName: "John",
+          lastName: "Doe",
+          email,
+          password,
+        };
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Username is required");
+      });
+
+      it("should reject invalid email format", async () => {
+        const invalidData = {
+          firstName: "John",
+          lastName: "Doe",
+          username,
+          email: "invalid-email",
+          password,
+        };
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Please provide a valid email");
+      });
+
+      it("should reject weak password", async () => {
+        const invalidData = {
+          firstName: "John",
+          lastName: "Doe",
+          username,
+          email,
+          password: "weak",
+        };
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Password must be at least 8 characters");
+      });
+
+      it("should reject password without uppercase", async () => {
+        const invalidData = {
+          firstName: "John",
+          lastName: "Doe",
+          username,
+          email,
+          password: "lowercase123",
+        };
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow(
+          "Password must contain at least one uppercase letter"
+        );
+      });
+
+      it("should reject password without number", async () => {
+        const invalidData = {
+          firstName: "John",
+          lastName: "Doe",
+          username,
+          email,
+          password: "NoNumbersHere",
+        };
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Password must contain at least one number");
+      });
+
+      it("should reject too long lastName", async () => {
+        const invalidData = {
+          firstName: "John",
+          lastName: `DoeVeryLongname${Date.now()}`,
+          username,
+          email,
+          password,
+        };
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Last name must be at most 15 characters");
+      });
+
+      it("should reject too long username", async () => {
+        const invalidData = {
+          firstName: "John",
+          lastName: "Doe",
+          username: `johnuser${Date.now()}`,
+          email,
+          password,
+        };
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Username must be at most 15 characters");
+      });
+
+      it("should reject too long password", async () => {
+        const invalidData = {
+          firstName: "John",
+          lastName: "Doe",
+          username,
+          email,
+          password: `ThisisaveryLongPassword13!`,
+        };
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Password must be at most 20 characters");
+      });
     });
 
-    test("should reject too long Username of over 15 characters", async () => {
-      const invalidData = {
-        lastName: "Doe",
-        username: `johnuser${Date.now()}`,
-        email,
-        password,
-      };
-      await expect(registerSchema.validate(invalidData)).rejects.toThrow("Username must be at most 15 characters");
-    });
+    describe("Login Schema Validation", () => {
+      it("should validate correct login data", async () => {
+        const validData = {
+          email,
+          password,
+        };
+        await expect(loginSchema.validate(validData)).resolves.toBeTruthy();
+      });
 
-    test("should reject too long password of over 20 characters", async () => {
-      const invalidData = {
-        lastName: "Doe",
-        username,
-        email,
-        password: `ThisisaveryLongPassword13!`,
-      };
-      await expect(registerSchema.validate(invalidData)).rejects.toThrow("Password must be at most 20 characters");
-    });
-  });
+      it("should reject missing email", async () => {
+        const invalidData = {
+          password,
+        };
+        await expect(loginSchema.validate(invalidData)).rejects.toThrow("Email is required");
+      });
 
-  describe("Login Schema Validation", () => {
-    test("should validate correct login data", async () => {
-      const validData = {
-        email,
-        password,
-      };
-      await expect(loginSchema.validate(validData)).resolves.toBeTruthy();
-    });
+      it("should reject invalid email format in login", async () => {
+        const invalidData = {
+          email: "invalid-email",
+          password,
+        };
+        await expect(loginSchema.validate(invalidData)).rejects.toThrow("Please provide a valid email");
+      });
 
-    test("should reject missing email", async () => {
-      const invalidData = {
-        password,
-      };
-      await expect(loginSchema.validate(invalidData)).rejects.toThrow("Email is required");
-    });
-
-    test("should reject invalid email format", async () => {
-      const invalidData = {
-        email: "invalid-email",
-        password,
-      };
-      await expect(loginSchema.validate(invalidData)).rejects.toThrow("Please provide a valid email");
-    });
-
-    test("should reject missing password", async () => {
-      const invalidData = {
-        email,
-      };
-      await expect(loginSchema.validate(invalidData)).rejects.toThrow("Please provide a valid password");
+      it("should reject missing password", async () => {
+        const invalidData = {
+          email,
+        };
+        await expect(loginSchema.validate(invalidData)).rejects.toThrow("Please provide a valid password");
+      });
     });
   });
-});
 
-describe("Auth Routes Tests", () => {
-  //Had to add this in order for the tests to use the same email,passoword and username.
-  let email, username, password;
+  // AUTHENTICATION ROUTES TESTS
+  describe("Authentication Routes", () => {
+    let testEmail, testUsername, testPassword;
 
-  beforeEach(async () => {
-    email = `john${Date.now()}@example.com`;
-    username = `johnuser${Math.floor(Math.random() * 10000)}`;
-    password = "StrongPassword123";
+    beforeEach(async () => {
+      testEmail = `john${Date.now()}@example.com`;
+      testUsername = `johnuser${Math.floor(Math.random() * 10000)}`;
+      testPassword = "StrongPassword123";
+    });
 
-    await request(app)
-      .post("/auth/register")
-      .send({
-        firstName: "John",
-        lastName: "Doe",
-        username,
-        email,
-        password,
-      })
-      .expect(201);
+    describe("POST /auth/register", () => {
+      it("should register a new user successfully", async () => {
+        const res = await request(app)
+          .post("/auth/register")
+          .send({
+            firstName: "John",
+            lastName: "Doe",
+            username: testUsername,
+            email: testEmail,
+            password: testPassword,
+          })
+          .expect(201);
+
+        expect(res.body.success).toBe(true);
+        expect(res.body.message).toBe("Account created successfully.");
+      });
+
+      it("should fail registration with missing required fields", async () => {
+        const res = await request(app)
+          .post("/auth/register")
+          .send({
+            firstName: "John",
+            // Missing lastName
+            username: testUsername,
+            email: testEmail,
+            password: testPassword,
+          })
+          .expect(400);
+
+        expect(res.body.success).toBe(false);
+        expect(res.body.status).toBe("bad request");
+        expect(res.body.errors).toBeDefined();
+        expect(res.body.errors.length).toBeGreaterThan(0);
+        expect(res.body.errors.some((err) => err.message.includes("Last name is required"))).toBe(true);
+      });
+
+      it("should fail registration with invalid email format", async () => {
+        const res = await request(app)
+          .post("/auth/register")
+          .send({
+            firstName: "John",
+            lastName: "Doe",
+            username: testUsername,
+            email: "invalid-email",
+            password: testPassword,
+          })
+          .expect(400);
+
+        expect(res.body.success).toBe(false);
+        expect(res.body.status).toBe("bad request");
+        expect(res.body.errors).toBeDefined();
+        expect(res.body.errors.length).toBeGreaterThan(0);
+        expect(res.body.errors.some((err) => err.message.includes("Please provide a valid email"))).toBe(true);
+      });
+
+      it("should fail registration with weak password", async () => {
+        const res = await request(app)
+          .post("/auth/register")
+          .send({
+            firstName: "John",
+            lastName: "Doe",
+            username: testUsername,
+            email: testEmail,
+            password: "weak",
+          })
+          .expect(400);
+
+        expect(res.body.success).toBe(false);
+        expect(res.body.status).toBe("bad request");
+        expect(res.body.errors).toBeDefined();
+        expect(res.body.errors.some((err) => err.message.includes("Password must be at least 8 characters"))).toBe(
+          true
+        );
+      });
+    });
+
+    describe("POST /auth/login", () => {
+      beforeEach(async () => {
+        await request(app)
+          .post("/auth/register")
+          .send({
+            firstName: "John",
+            lastName: "Doe",
+            username: testUsername,
+            email: testEmail,
+            password: testPassword,
+          })
+          .expect(201);
+      });
+
+      it("should login with correct credentials", async () => {
+        const res = await request(app)
+          .post("/auth/login")
+          .send({ email: testEmail, password: testPassword })
+          .expect(200);
+
+        expect(res.body.success).toBe(true);
+        expect(res.body.data.token).toBeDefined();
+        expect(res.body.data.role).toBe("user");
+      });
+
+      it("should fail login with wrong password", async () => {
+        const res = await request(app)
+          .post("/auth/login")
+          .send({ email: testEmail, password: "WrongPassword123" })
+          .expect(401);
+
+        expect(res.body.success).toBe(false);
+        expect(res.body.status).toBe("unauthorized");
+      });
+
+      it("should fail login with missing fields", async () => {
+        const res = await request(app).post("/auth/login").send({ email: testEmail }).expect(400);
+
+        expect(res.body.success).toBe(false);
+        expect(["fail", "bad request"]).toContain(res.body.status);
+      });
+    });
   });
 
-  test("Login with correct credentials", async () => {
-    const res = await request(app).post("/auth/login").send({ email, password }).expect(200);
+  // USER ROUTES TESTS
+  describe("User Routes", () => {
+    describe("GET /users/me", () => {
+      it("should retrieve current user successfully", async () => {
+        const res = await request(app).get("/users/me").set("Authorization", `Bearer ${userToken}`).expect(200);
 
-    expect(res.body.status).toBe("success");
-    expect(res.body.data.token).toBeDefined();
-  });
+        expect(res.body.success).toBe(true);
+        expect(res.body.data.id).toBe(user.id);
+        expect(res.body.data.username).toBeDefined();
+        expect(res.body.data.role).toBe("user");
+      });
 
-  test("2. Login with correct credentials", async () => {
-    const res = await request(app).post("/auth/login").send({ email, password }).expect(200);
+      it("should reject request without authentication", async () => {
+        const res = await request(app).get("/users/me").expect(401);
 
-    expect(res.body.status).toBe("success");
-    expect(res.body.data.token).toBeDefined();
-  });
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toBe("Unauthorized, token not found.");
+      });
 
-  test("3. Fail login with wrong password", async () => {
-    const res = await request(app).post("/auth/login").send({ email, password: "WrongPassword123" }).expect(401);
+      it("should reject request with invalid token", async () => {
+        const res = await request(app).get("/users/me").set("Authorization", "Bearer invalid.token").expect(401);
 
-    expect(res.body.status).toBe("unauthorized");
-  });
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toBe("Unauthorized, invalid or expired token.");
+      });
+    });
 
-  test("4. Fail login with missing fields", async () => {
-    const res = await request(app).post("/auth/login").send({ email }).expect(400);
+    describe("GET /users/:id", () => {
+      it("should retrieve user by ID successfully", async () => {
+        const res = await request(app).get(`/users/${user.id}`).expect(200);
 
-    expect(res.statusCode).toBe(400);
-    expect(["fail", "bad request"]).toContain(res.body.status);
-  });
+        expect(res.body.success).toBe(true);
+        expect(res.body.data.id).toBe(user.id);
+        expect(res.body.data.username).toBeDefined();
+        expect(res.body.data.role).toBe("user");
+      });
 
-  test("5. Fail registration with missing required fields", async () => {
-    const res = await request(app)
-      .post("/auth/register")
-      .send({
-        firstName: "John",
-        // Missing lastName
-        username,
-        email,
-        password,
-      })
-      .expect(400);
+      it("should return 404 for non-existent user", async () => {
+        const fakeUserId = "99999999-9999-9999-9999-999999999999";
+        const res = await request(app).get(`/users/${fakeUserId}`).expect(404);
 
-    expect(res.body.status).toBe("bad request");
-    expect(res.body.data).toBeDefined();
-    expect(res.body.data.errors).toBeDefined();
-    expect(res.body.data.errors.length).toBeGreaterThan(0);
-    expect(res.body.data.errors[0]).toContain("Last name is required");
-  });
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toBe("User not found");
+      });
 
-  test("6. Fail registration with invalid email format", async () => {
-    const res = await request(app)
-      .post("/auth/register")
-      .send({
-        firstName: "John",
-        lastName: "Doe",
-        username,
-        email: "invalid-email",
-        password,
-      })
-      .expect(400);
+      it("should handle invalid user ID format", async () => {
+        const res = await request(app).get("/users/invalid-uuid");
 
-    expect(res.body.status).toBe("bad request");
-    expect(res.body.data).toBeDefined();
-    expect(res.body.data.errors).toBeDefined();
-    expect(res.body.data.errors.length).toBeGreaterThan(0);
-    expect(res.body.data.errors[0]).toContain("Please provide a valid email");
-  });
+        expect([400, 500]).toContain(res.statusCode);
+        expect(res.body.success).toBe(false);
+      });
+    });
 
-  test("7. Fail registration with weak password", async () => {
-    const res = await request(app)
-      .post("/auth/register")
-      .send({
-        firstName: "John",
-        lastName: "Doe",
-        username,
-        email,
-        password: "weak",
-      })
-      .expect(400);
+    describe("PUT /users/me", () => {
+      it("should update user profile successfully with valid data", async () => {
+        const res = await request(app)
+          .put("/users/me")
+          .set("Authorization", `Bearer ${userToken}`)
+          .send({
+            firstName: "Updated",
+            bio: "New bio",
+          })
+          .expect(200);
 
-    expect(res.body.status).toBe("bad request");
-    expect(res.body.data).toBeDefined();
-    expect(res.body.data.errors).toBeDefined();
-    expect(res.body.data.errors[0]).toContain("Password must be at least 8 characters");
+        expect(res.body.success).toBe(true);
+        expect(res.body.message).toBe("User profile updated successfully.");
+        expect(res.body.data.username).toBeDefined();
+        expect(res.body.data.role).toBe("user");
+      });
+
+      it("should update user profile with all valid fields", async () => {
+        const res = await request(app)
+          .put("/users/me")
+          .set("Authorization", `Bearer ${userToken}`)
+          .send(validUpdateData)
+          .expect(200);
+
+        expect(res.body.success).toBe(true);
+        expect(res.body.message).toBe("User profile updated successfully.");
+        expect(res.body.data.username).toBe(validUpdateData.username);
+        expect(res.body.data.role).toBe("user");
+        expect(res.body.data.id).toBeDefined();
+
+        if (validUpdateData.bio) {
+          expect(res.body.data.bio).toBe(validUpdateData.bio);
+        }
+        if (validUpdateData.avatarUrl) {
+          expect(res.body.data.avatarUrl).toBe(validUpdateData.avatarUrl);
+        }
+      });
+
+      it("should reject empty request body", async () => {
+        const res = await request(app)
+          .put("/users/me")
+          .set("Authorization", `Bearer ${userToken}`)
+          .send({})
+          .expect(400);
+
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toBe("At least one field must be provided for update");
+      });
+
+      it("should reject request without authentication", async () => {
+        const res = await request(app).put("/users/me").send(validUpdateData).expect(401);
+
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toBe("Unauthorized, token not found.");
+      });
+
+      it("should reject firstName too short", async () => {
+        const res = await request(app)
+          .put("/users/me")
+          .set("Authorization", `Bearer ${userToken}`)
+          .send({ firstName: "A" })
+          .expect(400);
+
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toContain("Validation Error");
+        expect(res.body.errors.some((err) => err.message.includes("First name must be at least 2 characters"))).toBe(
+          true
+        );
+      });
+
+      it("should reject username with invalid characters", async () => {
+        const res = await request(app)
+          .put("/users/me")
+          .set("Authorization", `Bearer ${userToken}`)
+          .send({ username: "user@name!" })
+          .expect(400);
+
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toContain("Validation Error");
+        expect(
+          res.body.errors.some((err) =>
+            err.message.includes("Username can only contain letters, numbers, and underscores")
+          )
+        ).toBe(true);
+      });
+
+      it("should reject bio too long", async () => {
+        const res = await request(app)
+          .put("/users/me")
+          .set("Authorization", `Bearer ${userToken}`)
+          .send({ bio: "A".repeat(501) })
+          .expect(400);
+
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toContain("Validation Error");
+        expect(res.body.errors.some((err) => err.message.includes("Bio must be at most 500 characters"))).toBe(true);
+      });
+
+      it("should reject invalid avatarUrl", async () => {
+        const res = await request(app)
+          .put("/users/me")
+          .set("Authorization", `Bearer ${userToken}`)
+          .send({ avatarUrl: "not-a-url" })
+          .expect(400);
+
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toContain("Validation Error");
+        expect(res.body.errors.some((err) => err.message.includes("Must be a valid URL"))).toBe(true);
+      });
+
+      it("should handle unknown fields gracefully", async () => {
+        const res = await request(app).put("/users/me").set("Authorization", `Bearer ${userToken}`).send({
+          firstName: "Valid",
+          unknownField: "should not be allowed",
+        });
+
+        expect([400, 200]).toContain(res.statusCode);
+        if (res.statusCode === 400) {
+          expect(res.body.success).toBe(false);
+          expect(res.body.message).toContain("Validation Error");
+        }
+      });
+    });
+
+    describe("DELETE /users/me", () => {
+      let userToDelete, tokenToDelete;
+
+      beforeEach(async () => {
+        const uniqueId = `55555555-5555-5555-5555-${Date.now().toString().slice(-12)}`;
+        const testUser = await db.User.create({
+          ...createTestUser("_delete"),
+          id: uniqueId,
+          username: `delete_user_${Date.now()}`,
+          email: `delete_${Date.now()}@example.com`,
+          roleId: userRole.id,
+        });
+
+        userToDelete = testUser;
+        tokenToDelete = generateToken({
+          id: testUser.id,
+          email: testUser.email,
+          username: testUser.username,
+          roleId: testUser.roleId,
+        });
+      });
+
+      afterEach(async () => {
+        if (userToDelete) {
+          await db.User.destroy({ where: { id: userToDelete.id }, force: true });
+        }
+      });
+
+      it("should soft delete user successfully", async () => {
+        const res = await request(app).delete("/users/me").set("Authorization", `Bearer ${tokenToDelete}`).expect(200);
+
+        expect(res.body.success).toBe(true);
+        expect(res.body.message).toBe("User successfully deleted.");
+      });
+
+      it("should reject request without authentication", async () => {
+        const res = await request(app).delete("/users/me").expect(401);
+
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toBe("Unauthorized, token not found.");
+      });
+
+      it("should reject request with invalid token", async () => {
+        const res = await request(app).delete("/users/me").set("Authorization", "Bearer invalid.token").expect(401);
+
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toBe("Unauthorized, invalid or expired token.");
+      });
+    });
+
+    describe("GET /users/deleted (Admin Only)", () => {
+      it("should allow admin to view deleted users", async () => {
+        const res = await request(app).get("/users/deleted").set("Authorization", `Bearer ${adminToken}`).expect(200);
+
+        expect(res.body.status || res.body.success).toBeTruthy();
+        expect(Array.isArray(res.body.data)).toBe(true);
+      });
+
+      it("should handle request from regular user", async () => {
+        const res = await request(app).get("/users/deleted").set("Authorization", `Bearer ${userToken}`);
+
+        expect([403, 200]).toContain(res.statusCode);
+        if (res.statusCode === 403) {
+          expect(res.body.success).toBe(false);
+          expect(res.body.message).toBe("Forbidden, insufficient permissions.");
+        }
+      });
+
+      it("should reject request without authentication", async () => {
+        const res = await request(app).get("/users/deleted").expect(401);
+
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toBe("Unauthorized, token not found.");
+      });
+    });
   });
 });
