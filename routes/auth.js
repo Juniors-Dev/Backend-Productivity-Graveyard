@@ -23,6 +23,7 @@ router.use(
 router.get("/", function (req, res, next) {
   res.status(200).json({ message: "Welcome to the API" });
 });
+
 router.post("/register", validateSchema(registerSchema), asyncHandler(validateCredentials), asyncHandler(register));
 router.post("/login", validateSchema(loginSchema), asyncHandler(login));
 

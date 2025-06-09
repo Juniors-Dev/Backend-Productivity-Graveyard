@@ -12,6 +12,7 @@ router.post(
   validateSchema(createCommentSchema),
   asyncHandler(createComment)
 );
+
 router.get("/:projectId/comments", validateParamSchema(projectIdSchema), asyncHandler(getProjectComments));
 
 /**

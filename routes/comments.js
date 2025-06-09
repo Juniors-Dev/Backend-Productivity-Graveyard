@@ -16,6 +16,7 @@ router.put(
   validateSchema(updateCommentSchema),
   asyncHandler(updateComment)
 );
+
 router.delete(
   "/:id",
   authenticate,
