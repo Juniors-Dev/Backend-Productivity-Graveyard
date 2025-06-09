@@ -6,17 +6,42 @@ router.get("/", function (req, res, next) {
   res.status(200).json({ message: "Welcome to the API" });
 });
 
-router.get("/check", async function (req, res, next) {
+router.get("/healthz", async (req, res) => {
   try {
-    const roles = await db.Role.findAll();
-    const types = await db.Type.findAll();
-    const users = await db.User.findAll();
-    const projects = await db.Project.findAll();
-    const achievements = await db.Achievement.findAll();
-    res.status(200).json({ status: "ok", roles, types, users, projects, achievements });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ status: "error", message: "Internal Server Error" });
+    await db.sequelize.query("SELECT 1;");
+
+    // Check counts of essential tables
+    const [roleCount, typeCount, achievementCount] = await Promise.all([
+      db.Role.count(),
+      db.Type.count(),
+      db.Achievement.count(),
+    ]);
+
+    if (roleCount === 0 || typeCount === 0 || achievementCount === 0) {
+      return res.status(500).json({
+        status: "incomplete seed",
+        roleCount,
+        typeCount,
+        achievementCount,
+      });
+    }
+
+    const seconds = Math.floor(process.uptime());
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const friendlyUptime = `${hours}h ${minutes % 60}m ${seconds % 60}s`;
+
+    res.status(200).json({
+      status: "ok",
+      uptime: process.uptime(),
+      friendlyUptime,
+      roleCount,
+      typeCount,
+      achievementCount,
+    });
+  } catch (err) {
+    console.error("Health check failed:", err);
+    res.status(500).json({ status: "db unavailable", error: "An internal server error occurred" });
   }
 });
 
