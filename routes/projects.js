@@ -19,6 +19,53 @@ var { db } = require("../models");
 var projectService = new ProjectService(db);
 var projectComments = require("./projectComments");
 
+router.get("/", isLoggedIn, asyncHandler(getAll));
+router.get("/types", asyncHandler(getAllTypes));
+router.get("/tombstones", asyncHandler(getAllTombstones));
+router.get("/:id", validateParamSchema(uuidSchema), isLoggedIn, asyncHandler(getOneId));
+router.post("/", authenticate, validateSchema(projectSchema), asyncHandler(hasRole("user")), asyncHandler(create));
+
+router.put(
+  "/:id",
+  authenticate,
+  validateParamSchema(uuidSchema),
+  validateSchema(projectUpdateSchema),
+  asyncHandler(hasRole("user")),
+  asyncHandler(ownsEntity(projectService)),
+  asyncHandler(update)
+);
+
+router.delete(
+  "/:id",
+  authenticate,
+  validateParamSchema(uuidSchema),
+  asyncHandler(hasRole("user")),
+  asyncHandler(ownsEntity(projectService)),
+  asyncHandler(deleteProject)
+);
+
+router.put(
+  "/:id/type",
+  authenticate,
+  validateParamSchema(uuidSchema),
+  validateSchema(typeIdSchema),
+  asyncHandler(hasRole("user")),
+  asyncHandler(ownsEntity(projectService)),
+  asyncHandler(addType)
+);
+
+router.delete(
+  "/:id/type",
+  authenticate,
+  validateParamSchema(uuidSchema),
+  validateSchema(typeIdSchema),
+  asyncHandler(hasRole("user")),
+  asyncHandler(ownsEntity(projectService)),
+  asyncHandler(removeType)
+);
+
+router.use("/", projectComments);
+
 /**
  * @swagger
  * components:
@@ -350,7 +397,6 @@ var projectComments = require("./projectComments");
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-router.get("/", isLoggedIn, asyncHandler(getAll));
 
 /**
  * @swagger
@@ -414,8 +460,6 @@ router.get("/", isLoggedIn, asyncHandler(getAll));
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
-router.get("/types", asyncHandler(getAllTypes));
-
 /**
  * @swagger
  * /projects/tombstones:
@@ -472,7 +516,6 @@ router.get("/types", asyncHandler(getAllTypes));
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-router.get("/tombstones", asyncHandler(getAllTombstones));
 
 /**
  * @swagger
@@ -525,8 +568,6 @@ router.get("/tombstones", asyncHandler(getAllTombstones));
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
-router.get("/:id", validateParamSchema(uuidSchema), isLoggedIn, asyncHandler(getOneId));
-
 /**
  * @swagger
  * /projects:
@@ -575,8 +616,6 @@ router.get("/:id", validateParamSchema(uuidSchema), isLoggedIn, asyncHandler(get
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-
-router.post("/", authenticate, validateSchema(projectSchema), asyncHandler(hasRole("user")), asyncHandler(create));
 
 /**
  * @swagger
@@ -644,16 +683,6 @@ router.post("/", authenticate, validateSchema(projectSchema), asyncHandler(hasRo
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-
-router.put(
-  "/:id",
-  authenticate,
-  validateParamSchema(uuidSchema),
-  validateSchema(projectUpdateSchema),
-  asyncHandler(hasRole("user")),
-  asyncHandler(ownsEntity(projectService)),
-  asyncHandler(update)
-);
 
 /**
  * @swagger
@@ -724,15 +753,6 @@ router.put(
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-
-router.delete(
-  "/:id",
-  authenticate,
-  validateParamSchema(uuidSchema),
-  asyncHandler(hasRole("user")),
-  asyncHandler(ownsEntity(projectService)),
-  asyncHandler(deleteProject)
-);
 
 /**
  * @swagger
@@ -810,15 +830,6 @@ router.delete(
  *             schema:
  *               $ref: '#/components/schemas/ProjectServerErrorResponse'
  */
-router.put(
-  "/:id/type",
-  authenticate,
-  validateParamSchema(uuidSchema),
-  validateSchema(typeIdSchema),
-  asyncHandler(hasRole("user")),
-  asyncHandler(ownsEntity(projectService)),
-  asyncHandler(addType)
-);
 
 /**
  * @swagger
@@ -890,17 +901,5 @@ router.put(
  *             schema:
  *               $ref: '#/components/schemas/ProjectServerErrorResponse'
  */
-
-router.delete(
-  "/:id/type",
-  authenticate,
-  validateParamSchema(uuidSchema),
-  validateSchema(typeIdSchema),
-  asyncHandler(hasRole("user")),
-  asyncHandler(ownsEntity(projectService)),
-  asyncHandler(removeType)
-);
-
-router.use("/", projectComments);
 
 module.exports = router;

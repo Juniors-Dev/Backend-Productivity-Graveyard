@@ -3,6 +3,9 @@ var router = express.Router();
 var { getAll, getUserStats, getCurrentUserStats } = require("../controllers/statsController");
 var { authenticate, asyncHandler } = require("../middleware");
 
+router.get("/", asyncHandler(getAll));
+router.get("/user/me", authenticate, asyncHandler(getCurrentUserStats));
+
 /**
  * @swagger
  * tags:
@@ -33,7 +36,6 @@ var { authenticate, asyncHandler } = require("../middleware");
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-router.get("/", asyncHandler(getAll));
 
 /**
  * @swagger
@@ -65,7 +67,6 @@ router.get("/", asyncHandler(getAll));
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-router.get("/user/me", authenticate, asyncHandler(getCurrentUserStats));
 
 /**
  * @swagger
