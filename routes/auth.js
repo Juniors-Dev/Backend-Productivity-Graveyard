@@ -20,6 +20,13 @@ router.use(
   })
 );
 
+router.get("/", function (req, res, next) {
+  res.status(200).json({ message: "Welcome to the API" });
+});
+
+router.post("/register", validateSchema(registerSchema), asyncHandler(validateCredentials), asyncHandler(register));
+router.post("/login", validateSchema(loginSchema), asyncHandler(login));
+
 /**
  * @swagger
  * components:
@@ -172,10 +179,6 @@ router.use(
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
-router.get("/", function (req, res, next) {
-  res.status(200).json({ message: "Welcome to the API" });
-});
-
 /**
  * @swagger
  * /auth/register:
@@ -231,8 +234,6 @@ router.get("/", function (req, res, next) {
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-
-router.post("/register", validateSchema(registerSchema), asyncHandler(validateCredentials), asyncHandler(register));
 
 /**
  * @swagger
@@ -296,7 +297,5 @@ router.post("/register", validateSchema(registerSchema), asyncHandler(validateCr
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-
-router.post("/login", validateSchema(loginSchema), asyncHandler(login));
 
 module.exports = router;

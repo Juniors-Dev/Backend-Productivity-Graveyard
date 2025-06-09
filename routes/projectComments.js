@@ -5,6 +5,16 @@ var { createCommentSchema } = require("../schema/commentSchema");
 var { projectIdSchema } = require("../schema/params");
 var { createComment, getProjectComments } = require("../controllers/commentController");
 
+router.post(
+  "/:projectId/comments",
+  authenticate,
+  validateParamSchema(projectIdSchema),
+  validateSchema(createCommentSchema),
+  asyncHandler(createComment)
+);
+
+router.get("/:projectId/comments", validateParamSchema(projectIdSchema), asyncHandler(getProjectComments));
+
 /**
  * @swagger
  * components:
@@ -240,14 +250,6 @@ var { createComment, getProjectComments } = require("../controllers/commentContr
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
-router.post(
-  "/:projectId/comments",
-  authenticate,
-  validateParamSchema(projectIdSchema),
-  validateSchema(createCommentSchema),
-  asyncHandler(createComment)
-);
-
 /**
  * @swagger
  * /projects/{projectId}/comments:
@@ -294,7 +296,5 @@ router.post(
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-
-router.get("/:projectId/comments", validateParamSchema(projectIdSchema), asyncHandler(getProjectComments));
 
 module.exports = router;

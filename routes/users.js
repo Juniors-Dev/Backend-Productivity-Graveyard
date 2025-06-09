@@ -5,6 +5,16 @@ const { authenticate, hasRole, isAdmin, isSelfOrAdmin } = require("../middleware
 var { validateSchema, asyncHandler, validateCredentials } = require("../middleware");
 const { loginSchema, registerSchema, updateUserSchema } = require("../schema");
 
+router.get("/", function (req, res, next) {
+  res.status(200).json({ message: "Welcome to the API" });
+});
+
+router.get("/me", asyncHandler(authenticate), asyncHandler(getMe));
+router.get("/deleted", asyncHandler(authenticate), asyncHandler(getAllSoftDeleted));
+router.get("/:id", asyncHandler(getUser));
+router.put("/me", asyncHandler(authenticate), validateSchema(updateUserSchema), asyncHandler(updateMe));
+router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
+
 /**
  * @swagger
  * components:
@@ -125,10 +135,6 @@ const { loginSchema, registerSchema, updateUserSchema } = require("../schema");
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
-router.get("/", function (req, res, next) {
-  res.status(200).json({ message: "Welcome to the API" });
-});
-
 /**
  * @swagger
  * /users/me:
@@ -186,8 +192,6 @@ router.get("/", function (req, res, next) {
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-
-router.get("/me", asyncHandler(authenticate), asyncHandler(getMe));
 
 /**
  * @swagger
@@ -254,8 +258,6 @@ router.get("/me", asyncHandler(authenticate), asyncHandler(getMe));
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
-router.get("/deleted", asyncHandler(authenticate), asyncHandler(getAllSoftDeleted));
-
 /**
  * @swagger
  * /users/{id}:
@@ -319,8 +321,6 @@ router.get("/deleted", asyncHandler(authenticate), asyncHandler(getAllSoftDelete
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-
-router.get("/:id", asyncHandler(getUser));
 
 /**
  * @swagger
@@ -400,8 +400,6 @@ router.get("/:id", asyncHandler(getUser));
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
-router.put("/me", asyncHandler(authenticate), validateSchema(updateUserSchema), asyncHandler(updateMe));
-
 /**
  * @swagger
  * /users/me:
@@ -449,7 +447,5 @@ router.put("/me", asyncHandler(authenticate), validateSchema(updateUserSchema), 
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-
-router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
 
 module.exports = router;
