@@ -28,7 +28,12 @@ module.exports = (sequelize, Sequelize) => {
       parentId: {
         type: DataTypes.INTEGER,
         allowNull: true,
-        comment: "Self-reference to parent comment for threading (if this is a reply)",
+        comment: "Parent comment for replies (null for root comments)",
+      },
+      threadId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        comment: "Root comment ID for thread grouping",
       },
       isDeleted: {
         type: DataTypes.BOOLEAN,
@@ -67,11 +72,23 @@ module.exports = (sequelize, Sequelize) => {
       foreignKey: "parentId",
       as: "parent",
       constraints: true,
+      onDelete: "RESTRICT",
+      onUpdate: "CASCADE",
+    });
+    Comment.belongsTo(models.Comment, {
+      foreignKey: "threadId",
+      as: "thread",
+      onDelete: "RESTRICT",
+      onUpdate: "CASCADE",
     });
     Comment.hasMany(models.Comment, {
       foreignKey: "parentId",
       as: "replies",
       constraints: true,
+    });
+    Comment.hasMany(models.Comment, {
+      foreignKey: "threadId",
+      as: "threadReplies",
     });
   };
   return Comment;

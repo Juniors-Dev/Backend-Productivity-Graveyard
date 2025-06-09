@@ -21,14 +21,6 @@ async function createComment(req, res) {
         errors: { parentId },
       });
     }
-
-    if (parentComment.parentId !== null) {
-      throw createError({
-        message: "Cannot reply to a reply",
-        statusCode: 400,
-        errors: { parentId },
-      });
-    }
   }
 
   const newComment = await commentService.createComment({ projectId, userId, message, parentId });
@@ -46,7 +38,7 @@ async function getProjectComments(req, res) {
   const { projectId } = req.params;
   const { limit, offset } = getLimitOffset(req);
 
-  const { count, rows } = await commentService.getProjectComments(projectId, { limit, offset });
+  const { count, rows } = await commentService.getRootComments(projectId, { limit, offset });
 
   res.status(200).json(
     successResponse({
@@ -59,6 +51,26 @@ async function getProjectComments(req, res) {
         hasNext: offset + limit < count,
       },
       statusCode: 200,
+    })
+  );
+}
+
+async function getCommentReplies(req, res) {
+  const { id } = req.params;
+  const { limit, offset } = getLimitOffset(req);
+
+  const { count, rows } = await commentService.getCommentReplies(id, { limit, offset });
+
+  res.status(200).json(
+    successResponse({
+      message: "Replies retrieved successfully",
+      data: rows,
+      meta: {
+        total: count,
+        limit,
+        offset,
+        hasNext: offset + limit < count,
+      },
     })
   );
 }
@@ -121,6 +133,7 @@ async function deleteComment(req, res) {
 module.exports = {
   createComment,
   getProjectComments,
+  getCommentReplies,
   updateComment,
   deleteComment,
 };

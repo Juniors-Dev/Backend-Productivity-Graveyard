@@ -1,12 +1,46 @@
 var express = require("express");
 var router = express.Router();
-const { asyncHandler, authenticate, validateSchema, validateParamSchema, ownsEntity } = require("../middleware");
+const {
+  asyncHandler,
+  authenticate,
+  validateSchema,
+  validateParamSchema,
+  ownsEntity,
+  createRateLimiter,
+} = require("../middleware");
 var { updateCommentSchema } = require("../schema/commentSchema");
 var { commentIdSchema } = require("../schema/params");
-var { updateComment, deleteComment } = require("../controllers/commentController");
+var { updateComment, deleteComment, getCommentReplies } = require("../controllers/commentController");
 var CommentService = require("../services/CommentService");
 var { db } = require("../models");
 var commentService = new CommentService(db);
+
+router.use(
+  createRateLimiter({
+    max: parseInt(process.env.RATE_LIMIT_MAX) || 5,
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 1 * 60 * 1000, // 1 minute
+    message: "Too many comments, please try again later",
+  })
+);
+
+router.get("/:id/replies", validateParamSchema(commentIdSchema), asyncHandler(getCommentReplies));
+
+router.put(
+  "/:id",
+  authenticate,
+  validateParamSchema(commentIdSchema),
+  asyncHandler(ownsEntity(commentService)),
+  validateSchema(updateCommentSchema),
+  asyncHandler(updateComment)
+);
+
+router.delete(
+  "/:id",
+  authenticate,
+  validateParamSchema(commentIdSchema),
+  asyncHandler(ownsEntity(commentService)),
+  asyncHandler(deleteComment)
+);
 
 /**
  * @swagger
@@ -24,6 +58,7 @@ var commentService = new CommentService(db);
  *           minLength: 1
  *           maxLength: 2000
  */
+
 /**
  * @swagger
  * /comments/{id}:
@@ -106,15 +141,6 @@ var commentService = new CommentService(db);
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
-router.put(
-  "/:id",
-  authenticate,
-  validateParamSchema(commentIdSchema),
-  asyncHandler(ownsEntity(commentService)),
-  validateSchema(updateCommentSchema),
-  asyncHandler(updateComment)
-);
-
 /**
  * @swagger
  * /comments/{id}:
@@ -179,13 +205,5 @@ router.put(
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-
-router.delete(
-  "/:id",
-  authenticate,
-  validateParamSchema(commentIdSchema),
-  asyncHandler(ownsEntity(commentService)),
-  asyncHandler(deleteComment)
-);
 
 module.exports = router;

@@ -1,3 +1,4 @@
+const createError = require("../utilities/createError");
 class CommentService {
   constructor(db) {
     this.client = db.sequelize;
@@ -6,39 +7,172 @@ class CommentService {
   }
 
   async createComment({ projectId, userId, message, parentId = null }) {
-    const newComment = await this.Comment.create({
-      projectId,
-      userId,
-      message,
-      parentId,
-    });
+    const transaction = await this.client.transaction();
 
-    return this.getOneWithDetails(newComment.id);
+    try {
+      let threadId = null;
+
+      //if this is a reply, find parent comment to set threadId
+      if (parentId) {
+        const parentComment = await this.Comment.findByPk(parentId, { transaction });
+        if (!parentComment) {
+          throw createError({
+            message: "Parent comment not found",
+            status: "not found",
+            statusCode: 404,
+            errors: { parentId },
+          });
+        }
+
+        threadId = parentComment.threadId || parentComment.id;
+      }
+
+      const newComment = await this.Comment.create(
+        {
+          projectId,
+          userId,
+          message,
+          parentId,
+          threadId,
+        },
+        { transaction }
+      );
+
+      //If root comment, set threadId to its own id
+      if (!parentId) {
+        await newComment.update({ threadId: newComment.id }, { transaction });
+      }
+
+      await transaction.commit();
+      return this.getOneWithDetails(newComment.id);
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
-  async getProjectComments(projectId, { limit, offset }) {
-    const { count, rows } = await this.Comment.findAndCountAll({
-      where: { projectId, parentId: null },
+  async getRootComments(projectId, { limit, offset }) {
+    const { count, rows: rootComments } = await this.Comment.findAndCountAll({
+      where: {
+        projectId,
+        parentId: null,
+      },
       include: [
-        { model: this.User, as: "User", attributes: ["id", "username", "avatarUrl"], required: false },
         {
-          model: this.Comment,
-          as: "replies",
-          include: [{ model: this.User, as: "User", attributes: ["id", "username", "avatarUrl"], required: false }],
-          separate: true,
-          order: [["createdAt", "ASC"]],
+          model: this.User,
+          as: "User",
+          attributes: ["id", "username", "avatarUrl"],
+          required: false,
         },
       ],
       order: [["createdAt", "DESC"]],
       limit,
       offset,
     });
-    const commentsAsJSON = rows.map((comment) => comment.toJSON());
+
+    if (rootComments.length === 0) {
+      return { count: 0, rows: [] };
+    }
+
+    // Get all replies for these root comments in 1 query
+    const rootCommentIds = rootComments.map((c) => c.id);
+
+    const allReplies = await this.Comment.findAll({
+      where: {
+        [this.client.Sequelize.Op.or]: [
+          { parentId: { [this.client.Sequelize.Op.in]: rootCommentIds } },
+          { threadId: { [this.client.Sequelize.Op.in]: rootCommentIds } },
+        ],
+      },
+      include: [
+        {
+          model: this.User,
+          as: "User",
+          attributes: ["id", "username", "avatarUrl"],
+          required: false,
+        },
+        {
+          model: this.Comment,
+          as: "parent",
+          attributes: ["id", "message"],
+          include: [
+            {
+              model: this.User,
+              as: "User",
+              attributes: ["username"],
+            },
+          ],
+          required: false,
+        },
+      ],
+      order: [["createdAt", "ASC"]],
+    });
+
+    const repliesByThread = new Map();
+    allReplies.forEach((reply) => {
+      const threadId = reply.threadId || reply.parentId;
+      if (!repliesByThread.has(threadId)) {
+        repliesByThread.set(threadId, []);
+      }
+      repliesByThread.get(threadId).push(reply.toJSON());
+    });
+
+    const commentsWithReplies = rootComments.map((comment) => ({
+      ...comment.toJSON(),
+      replyCount: repliesByThread.get(comment.id)?.length || 0,
+      // Optional: include first 2 replies as preview
+      replyPreview: repliesByThread.get(comment.id)?.slice(0, 2) || [],
+    }));
 
     return {
       count: count,
-      rows: commentsAsJSON,
+      rows: commentsWithReplies,
     };
+  }
+
+  async getCommentReplies(commentId, { limit, offset }) {
+    const comment = await this.Comment.findByPk(commentId);
+    if (!comment) {
+      throw createError({
+        message: "Comment not found",
+        statusCode: 404,
+      });
+    }
+
+    const threadId = comment.threadId || comment.id;
+
+    const { count, rows } = await this.Comment.findAndCountAll({
+      where: {
+        threadId,
+        parentId: { [this.client.Sequelize.Op.not]: null },
+      },
+      include: [
+        {
+          model: this.User,
+          as: "User",
+          attributes: ["id", "username", "avatarUrl"],
+          required: false,
+        },
+        {
+          model: this.Comment,
+          as: "parent",
+          attributes: ["id", "message"],
+          include: [
+            {
+              model: this.User,
+              as: "User",
+              attributes: ["username"],
+            },
+          ],
+          required: false,
+        },
+      ],
+      order: [["createdAt", "ASC"]],
+      limit,
+      offset,
+    });
+
+    return { count, rows: rows.map((r) => r.toJSON()) };
   }
 
   async getOneId(commentId) {
