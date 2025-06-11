@@ -19,7 +19,7 @@ async function getUser(req, res, next) {
     successResponse({
       message: "User retrieved successfully.",
       data: user,
-      statusCode: 400,
+      statusCode: 200,
     })
   );
 }

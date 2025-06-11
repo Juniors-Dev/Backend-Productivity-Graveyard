@@ -215,6 +215,27 @@
  *           nullable: true
  *           example: null
  *
+ *     ConflictResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         status:
+ *           type: string
+ *           example: conflict
+ *         statusCode:
+ *           type: integer
+ *           example: 409
+ *         message:
+ *           type: string
+ *           example: "Conflict, user not created."
+ *         errors:
+ *           type: null
+ *           nullable: true
+ *           example: null
+ *       description: Used for resource conflict errors like duplicate username/email.
+ *
  * #-------------------------------
  * # Reusable Success Response
  * #-------------------------------
