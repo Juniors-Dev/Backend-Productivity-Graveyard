@@ -61,7 +61,15 @@ app.use(logger("dev"));
 // limit the size of JSON payloads to prevent abuse, we are not currently using file uploads this should be sufficient
 app.use(express.json({ limit: "100kb" }));
 app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(
+  express.static(path.join(__dirname, "public"), {
+    setHeaders: (res, path) => {
+      if (path.endsWith(".png") || path.endsWith(".jpg") || path.endsWith(".webp")) {
+        res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+      }
+    },
+  })
+);
 
 // Rate limiting and slow down middleware
 app.use(
