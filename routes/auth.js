@@ -276,7 +276,10 @@ router.post("/login", validateSchema(loginSchema), asyncHandler(login));
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
  *             example:
+ *               success: true
  *               status: success
+ *               statusCode: 200
+ *               message: "Login successful."
  *               data:
  *                 id: "3f173b5c-8a0d-4e7f-90cb-4adf2b2c0001"
  *                 email: john.doe@example.com
@@ -304,7 +307,7 @@ router.post("/login", validateSchema(loginSchema), asyncHandler(login));
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UnauthorizedResponse'
- *               example::
+ *               example:
  *                 success: false
  *                 status: fail
  *                 statusCode: 401

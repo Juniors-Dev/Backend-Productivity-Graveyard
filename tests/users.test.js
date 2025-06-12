@@ -372,6 +372,22 @@ describe("Users API - Complete Test Suite", () => {
         expect(res.body.data.role).toBe("user");
       });
 
+      it("should return owner-specific fields for current user", async () => {
+        const res = await request(app).get("/users/me").set("Authorization", `Bearer ${userToken}`).expect(200);
+
+        expect(res.body.success).toBe(true);
+        expect(res.body.data.id).toBe(user.id);
+
+        // Owner-specific fields that sanitizeUser should include
+        expect(res.body.data.email).toBeDefined();
+        expect(res.body.data.firstName).toBeDefined();
+        expect(res.body.data.lastName).toBeDefined();
+
+        // Should NOT include sensitive fields
+        expect(res.body.data.hashedPassword).toBeUndefined();
+        expect(res.body.data.salt).toBeUndefined();
+      });
+
       it("should reject request without authentication", async () => {
         const res = await request(app).get("/users/me").expect(401);
 
@@ -395,6 +411,20 @@ describe("Users API - Complete Test Suite", () => {
         expect(res.body.data.id).toBe(user.id);
         expect(res.body.data.username).toBeDefined();
         expect(res.body.data.role).toBe("user");
+      });
+
+      it("should NOT return owner-specific fields for other users", async () => {
+        const res = await request(app)
+          .get(`/users/${user.id}`) // Public profile endpoint
+          .expect(200);
+
+        expect(res.body.data.username).toBeDefined();
+        expect(res.body.data.bio).toBeDefined();
+
+        // Should NOT include owner-specific fields
+        expect(res.body.data.email).toBeUndefined();
+        expect(res.body.data.firstName).toBeUndefined();
+        expect(res.body.data.lastName).toBeUndefined();
       });
 
       it("should return 404 for non-existent user", async () => {

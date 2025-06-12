@@ -213,6 +213,43 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UnauthorizedResponse'
+ *             examples:
+ *               missingToken:
+ *                 summary: No authorization header
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 401
+ *                   message: "Unauthorized, token not found."
+ *                   errors: null
+ *               expiredToken:
+ *                 summary: Expired JWT token
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 401
+ *                   message: "Unauthorized, token has expired."
+ *                   errors: null
+ *               invalidToken:
+ *                 summary: Invalid JWT token
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 401
+ *                   message: "Unauthorized, invalid or expired token."
+ *                   errors: null
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundResponse'
+ *             example:
+ *               success: false
+ *               status: "fail"
+ *               statusCode: 404
+ *               message: "Failed to retrive user"
+ *               errors: null
  *       429:
  *         description: Too many requests
  *         content:
@@ -408,15 +445,33 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *                 bio: "I build APIs."
  *                 avatarUrl: "https://cdn.example.com/avatar/janedoe.jpg"
  *       400:
- *         description: Bad request - validation error
+ *         description: Bad request - validation error or empty body
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ValidationErrorResponse'
- *             example:
- *               status: bad request
- *               message: "Validation Error: 1 errors occurred"
- *               errors: [{ "field": "username", "message": "Username is a string and must be unique" }]
+ *             examples:
+ *               validationError:
+ *                 summary: Schema validation error
+ *                 value:
+ *                   success: false
+ *                   status: "bad request"
+ *                   statusCode: 400
+ *                   message: "Validation Error: 1 errors occurred"
+ *                   errors: [
+ *                     {
+ *                       "field": "username",
+ *                       "message": "Username can only contain letters, numbers, and underscores"
+ *                     }
+ *                   ]
+ *               emptyBody:
+ *                 summary: Empty request body
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 400
+ *                   message: "At least one field must be provided for update"
+ *                   errors: null
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *         content:
@@ -434,6 +489,7 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *               status: "not found"
  *               statusCode: 404
  *               message: "User not found"
+ *               errors: null
  *       429:
  *         description: Too many requests
  *         content:
