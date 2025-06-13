@@ -157,7 +157,7 @@ class ProjectQueryBuilder {
   }
 
   buildOrderBy() {
-    return `ORDER BY p."${this.orderBy.column}" ${this.orderBy.direction}`;
+    return `ORDER BY "${this.orderBy.column}" ${this.orderBy.direction}`;
   }
 
   buildListQuery() {
