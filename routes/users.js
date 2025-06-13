@@ -10,10 +10,10 @@ router.get("/", function (req, res, next) {
 });
 
 router.get("/me", asyncHandler(authenticate), asyncHandler(getMe));
-router.get("/deleted", asyncHandler(authenticate), asyncHandler(getAllSoftDeleted));
 router.get("/:id", asyncHandler(getUser));
 router.put("/me", asyncHandler(authenticate), validateSchema(updateUserSchema), asyncHandler(updateMe));
 router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
+/*router.get("/deleted", asyncHandler(authenticate), asyncHandler(isAdmin), asyncHandler(getAllSoftDeleted));*/
 
 /**
  * @swagger
@@ -250,67 +250,6 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *               statusCode: 404
  *               message: "Failed to retrive user"
  *               errors: null
- *       429:
- *         description: Too many requests
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/RateLimitResponse'
- *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/InternalErrorResponse'
- */
-
-/**
- * @swagger
- * /users/deleted:
- *   get:
- *     summary: Get all soft-deleted users
- *     description: Retrieve a list of all users that have been soft-deleted
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of soft-deleted users retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/SoftDeletedUser'
- *             example:
- *               status: success
- *               data:
- *                 - id: 1
- *                   firstName: John
- *                   lastName: Doe
- *                   username: johndoe123
- *                   email: john.doe@example.com
- *                   deletedAt: "2024-04-30T12:00:00Z"
- *                 - id: 2
- *                   firstName: Jane
- *                   lastName: Smith
- *                   username: janesmith456
- *                   email: jane.smith@example.com
- *                   deletedAt: "2024-04-30T11:00:00Z"
- *       401:
- *         description: Unauthorized - Invalid or missing token
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/UnauthorizedResponse'
  *       429:
  *         description: Too many requests
  *         content:

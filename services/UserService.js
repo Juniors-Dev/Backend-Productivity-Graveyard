@@ -92,8 +92,8 @@ class UserService {
     }
   }
 
-  async getAllDeleted() {
-    return this.User.findAll({
+  /*async getAllDeleted(options = {}) {
+    const users = await this.User.findAll({
       where: {
         deletedAt: {
           [Op.ne]: null,
@@ -101,11 +101,13 @@ class UserService {
       },
       paranoid: false,
     });
+
+    return users.map((user) => sanitizeUser(user, options));
   }
 
   async restore(id) {
     return this.User.restore({ where: { id } });
-  }
+  }*/
 }
 
 module.exports = UserService;

@@ -616,31 +616,5 @@ describe("Users API - Complete Test Suite", () => {
         expect(res.body.message).toBe("Unauthorized, invalid or expired token.");
       });
     });
-
-    describe("GET /users/deleted (Admin Only)", () => {
-      it("should allow admin to view deleted users", async () => {
-        const res = await request(app).get("/users/deleted").set("Authorization", `Bearer ${adminToken}`).expect(200);
-
-        expect(res.body.status || res.body.success).toBeTruthy();
-        expect(Array.isArray(res.body.data)).toBe(true);
-      });
-
-      it("should handle request from regular user", async () => {
-        const res = await request(app).get("/users/deleted").set("Authorization", `Bearer ${userToken}`);
-
-        expect([403, 200]).toContain(res.statusCode);
-        if (res.statusCode === 403) {
-          expect(res.body.success).toBe(false);
-          expect(res.body.message).toBe("Forbidden, insufficient permissions.");
-        }
-      });
-
-      it("should reject request without authentication", async () => {
-        const res = await request(app).get("/users/deleted").expect(401);
-
-        expect(res.body.success).toBe(false);
-        expect(res.body.message).toBe("Unauthorized, token not found.");
-      });
-    });
   });
 });

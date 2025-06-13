@@ -92,15 +92,15 @@ async function softDeletedUser(req, res, next) {
   );
 }
 
-//this should be added to the AdminController
-async function getAllSoftDeleted(req, res, next) {
-  const deletedUsers = await userService.getAllDeleted();
+// This should be added to a AdminController
+/*async function getAllSoftDeleted(req, res, next) {
+  const deletedUsers = await userService.getAllDeleted({ isAdmin: true });
 
   res.status(200).json({
     status: "success",
     statusCode: 200,
     data: deletedUsers,
   });
-}
+}*/
 
-module.exports = { getUser, updateMe, getMe, softDeletedUser, getAllSoftDeleted };
+module.exports = { getUser, updateMe, getMe, softDeletedUser };
