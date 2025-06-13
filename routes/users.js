@@ -10,10 +10,10 @@ router.get("/", function (req, res, next) {
 });
 
 router.get("/me", asyncHandler(authenticate), asyncHandler(getMe));
-router.get("/deleted", asyncHandler(authenticate), asyncHandler(getAllSoftDeleted));
 router.get("/:id", asyncHandler(getUser));
 router.put("/me", asyncHandler(authenticate), validateSchema(updateUserSchema), asyncHandler(updateMe));
 router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
+/*router.get("/deleted", asyncHandler(authenticate), asyncHandler(isAdmin), asyncHandler(getAllSoftDeleted));*/
 
 /**
  * @swagger
@@ -23,8 +23,12 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *       type: object
  *       properties:
  *         id:
- *           type: integer
- *           example: 1
+ *           type: string
+ *           format: uuid
+ *           example: "a88c5e91-57e7-4121-872f-6b793a154f6c"
+ *         fullName:
+ *           type: string
+ *           example: "John Doe"
  *         firstName:
  *           type: string
  *           example: John
@@ -38,6 +42,18 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *           type: string
  *           format: email
  *           example: john.doe@example.com
+ *         bio:
+ *           type: string
+ *           nullable: true
+ *           example: "404: Social life not found."
+ *         avatarUrl:
+ *           type: string
+ *           format: uri
+ *           nullable: true
+ *           example: "https://cdn.example.com/avatar/johndoe.jpg"
+ *         role:
+ *           type: string
+ *           example: user
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -46,6 +62,7 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *           type: string
  *           format: date-time
  *           example: "2024-04-30T12:00:00Z"
+ *
  *     SoftDeletedUser:
  *       type: object
  *       properties:
@@ -69,21 +86,37 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *           type: string
  *           format: date-time
  *           example: "2024-04-30T12:00:00Z"
+ *
  *     UpdateUserSchema:
  *       type: object
  *       properties:
  *         firstName:
  *           type: string
- *           description: User's first name
+ *           maxLength: 15
+ *           minLength: 2
  *           example: John
  *         lastName:
  *           type: string
- *           description: User's last name
+ *           maxLength: 15
+ *           minLength: 2
  *           example: Doe
  *         username:
  *           type: string
- *           description: User's unique username
+ *           minLength: 3
+ *           maxLength: 20
+ *           pattern: "^[a-zA-Z0-9_]+$"
  *           example: johndoe123
+ *         bio:
+ *           type: string
+ *           maxLength: 500
+ *           example: "I'm a developer."
+ *         avatarUrl:
+ *           type: string
+ *           format: uri
+ *           example: "https://cdn.example.com/avatar/johndoe.jpg"
+ *       description: At least one field must be provided. No unknown fields allowed.
+ *       additionalProperties: false
+ *
  *     ErrorResponse:
  *       type: object
  *       properties:
@@ -128,7 +161,7 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -154,29 +187,69 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *               properties:
  *                 status:
  *                   type: string
- *                   example: success
+ *                 statusCode:
+ *                   type: integer
+ *                 message:
+ *                   type: string
  *                 data:
  *                   $ref: '#/components/schemas/UserResponse'
  *             example:
  *               status: success
+ *               statusCode: 200
+ *               message: Current user retrieved successfully.
  *               data:
- *                 id: 1
+ *                 id: "4fae1234-b678-433e-aaaa-17faae0cf1b2"
+ *                 username: johndoe123
+ *                 fullName: John Doe
  *                 firstName: John
  *                 lastName: Doe
- *                 username: johndoe123
  *                 email: john.doe@example.com
- *                 createdAt: "2024-04-30T12:00:00Z"
- *                 updatedAt: "2024-04-30T12:00:00Z"
+ *                 bio: "I like building stuff."
+ *                 avatarUrl: "https://cdn.example.com/avatar/johndoe.jpg"
+ *                 role: user
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/UnauthorizedResponse'
+ *             examples:
+ *               missingToken:
+ *                 summary: No authorization header
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 401
+ *                   message: "Unauthorized, token not found."
+ *                   errors: null
+ *               expiredToken:
+ *                 summary: Expired JWT token
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 401
+ *                   message: "Unauthorized, token has expired."
+ *                   errors: null
+ *               invalidToken:
+ *                 summary: Invalid JWT token
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 401
+ *                   message: "Unauthorized, invalid or expired token."
+ *                   errors: null
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundResponse'
  *             example:
- *               status: unauthorized
- *               data:
- *                 errors: ["Invalid or expired token"]
+ *               success: false
+ *               status: "fail"
+ *               statusCode: 404
+ *               message: "Failed to retrive user"
+ *               errors: null
  *       429:
  *         description: Too many requests
  *         content:
@@ -186,72 +259,7 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/InternalErrorResponse'
- */
-
-/**
- * @swagger
- * /users/deleted:
- *   get:
- *     summary: Get all soft-deleted users
- *     description: Retrieve a list of all users that have been soft-deleted
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of soft-deleted users retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/SoftDeletedUser'
- *             example:
- *               status: success
- *               data:
- *                 - id: 1
- *                   firstName: John
- *                   lastName: Doe
- *                   username: johndoe123
- *                   email: john.doe@example.com
- *                   deletedAt: "2024-04-30T12:00:00Z"
- *                 - id: 2
- *                   firstName: Jane
- *                   lastName: Smith
- *                   username: janesmith456
- *                   email: jane.smith@example.com
- *                   deletedAt: "2024-04-30T11:00:00Z"
- *       401:
- *         description: Unauthorized - Invalid or missing token
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example:
- *               status: unauthorized
- *               data:
- *                 errors: ["Invalid or expired token"]
- *       429:
- *         description: Too many requests
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/RateLimitResponse'
- *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
- *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -270,9 +278,8 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *         description: User ID
- *         example: 1
  *     responses:
  *       200:
  *         description: User profile retrieved successfully
@@ -281,31 +288,40 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
  *                 status:
  *                   type: string
- *                   example: success
+ *                 statusCode:
+ *                   type: integer
+ *                 message:
+ *                   type: string
  *                 data:
  *                   $ref: '#/components/schemas/UserResponse'
  *             example:
+ *               success: true
  *               status: success
+ *               statusCode: 200
+ *               message: "User retrieved successfully."
  *               data:
- *                 id: 1
- *                 firstName: John
- *                 lastName: Doe
+ *                 id: "4fae1234-b678-433e-aaaa-17faae0cf1b2"
+ *                 fullName: John Doe
  *                 username: johndoe123
- *                 email: john.doe@example.com
- *                 createdAt: "2024-04-30T12:00:00Z"
- *                 updatedAt: "2024-04-30T12:00:00Z"
+ *                 bio: "My best friend is a rubber duck!"
+ *                 avatarUrl: "https://cdn.example.com/avatar/johndoe.jpg"
+ *                 role: user
  *       404:
  *         description: User not found
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/NotFoundResponse'
  *             example:
- *               status: fail
- *               data:
- *                 errors: ["User not found"]
+ *               success: false
+ *               status: "not found"
+ *               statusCode: 404
+ *               message: "User not found"
+ *               errors: null
  *       429:
  *         description: Too many requests
  *         content:
@@ -315,7 +331,7 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -327,7 +343,7 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  * /users/me:
  *   put:
  *     summary: Update current user profile
- *     description: Update the authenticated user's profile information
+ *     description: Update the authenticated user's profile information. At least one field must be provided.
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
@@ -337,10 +353,6 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/UpdateUserSchema'
- *           example:
- *             firstName: John
- *             lastName: Doe
- *             username: johndoe123
  *     responses:
  *       200:
  *         description: User profile updated successfully
@@ -349,41 +361,74 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
  *                 status:
  *                   type: string
- *                   example: success
+ *                 statusCode:
+ *                   type: integer
+ *                 message:
+ *                   type: string
  *                 data:
  *                   $ref: '#/components/schemas/UserResponse'
  *             example:
+ *               success: true
  *               status: success
+ *               statusCode: 200
+ *               message: "User profile updated successfully."
  *               data:
- *                 id: 1
- *                 firstName: John
+ *                 id: "4fae1234-b678-433e-aaaa-17faae0cf1b2"
+ *                 username: janedoe
+ *                 firstName: Jane
  *                 lastName: Doe
- *                 username: johndoe123
- *                 email: john.doe@example.com
- *                 createdAt: "2024-04-30T12:00:00Z"
- *                 updatedAt: "2024-04-30T12:00:00Z"
+ *                 bio: "I build APIs."
+ *                 avatarUrl: "https://cdn.example.com/avatar/janedoe.jpg"
  *       400:
- *         description: Bad request - validation error
+ *         description: Bad request - validation error or empty body
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example:
- *               status: bad request
- *               message: "Validation Error: 1 errors occurred"
- *               data:
- *                 errors: [{ "field": "username", "message": "Username is a string and must be unique" }]
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *             examples:
+ *               validationError:
+ *                 summary: Schema validation error
+ *                 value:
+ *                   success: false
+ *                   status: "bad request"
+ *                   statusCode: 400
+ *                   message: "Validation Error: 1 errors occurred"
+ *                   errors: [
+ *                     {
+ *                       "field": "username",
+ *                       "message": "Username can only contain letters, numbers, and underscores"
+ *                     }
+ *                   ]
+ *               emptyBody:
+ *                 summary: Empty request body
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 400
+ *                   message: "At least one field must be provided for update"
+ *                   errors: null
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/UnauthorizedResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundResponse'
  *             example:
- *               status: unauthorized
- *               data:
+ *               success: false
+ *               status: "not found"
+ *               statusCode: 404
+ *               message: "User not found"
+ *               errors: null
  *       429:
  *         description: Too many requests
  *         content:
@@ -415,23 +460,19 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   type: object
- *                   properties:
- *                     message:
- *                       type: string
- *                       example: User account soft-deleted successfully
+ *               $ref: '#/components/schemas/SimpleSuccessResponse'
+ *             example:
+ *               success: true
+ *               status: success
+ *               statusCode: 200
+ *               message: "User successfully deleted."
+ *               data: null
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/UnauthorizedResponse'
  *       429:
  *         description: Too many requests
  *         content:

@@ -3,7 +3,7 @@ const UserService = require("../services/UserService");
 const userService = new UserService(db);
 const RoleService = require("../services/RoleService");
 const roleService = new RoleService(db);
-const { generateToken, hashPassword, verifyPassword, createError } = require("../utilities");
+const { generateToken, hashPassword, verifyPassword, createError, successResponse } = require("../utilities");
 
 async function register(req, res) {
   const { firstName, lastName, username, email, password } = req.body;
@@ -17,7 +17,6 @@ async function register(req, res) {
     firstName,
     lastName,
     username,
-    displayName: username,
     email,
     hashedPassword,
     salt,
@@ -31,7 +30,12 @@ async function register(req, res) {
       message: "Conflict, user not created.",
     });
   }
-  res.status(201).json({ status: "success", statusCode: 201, data: { result: "Account created." } });
+  res.status(201).json(
+    successResponse({
+      message: "Account created successfully.",
+      statusCode: 201,
+    })
+  );
 }
 
 async function login(req, res) {
@@ -68,18 +72,19 @@ async function login(req, res) {
     roleId: user.roleId,
   });
 
-  return res.status(200).json({
-    status: "success",
-    statusCode: 200,
-    data: {
-      result: "Login successful.",
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      role: user.Role.role,
-      token,
-    },
-  });
+  res.status(200).json(
+    successResponse({
+      message: "Login successful.",
+      data: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.Role.name,
+        token,
+      },
+      statusCode: 200,
+    })
+  );
 }
 
 module.exports = { register, login };
