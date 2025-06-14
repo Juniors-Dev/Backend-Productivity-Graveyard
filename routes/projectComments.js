@@ -5,150 +5,16 @@ var { createCommentSchema } = require("../schema/commentSchema");
 var { projectIdSchema } = require("../schema/params");
 var { createComment, getProjectComments } = require("../controllers/commentController");
 
-/**
- * @swagger
- * components:
- *   schemas:
- *     CreateCommentSchema:
- *       type: object
- *       required:
- *         - message
- *       properties:
- *         message:
- *           type: string
- *           description: The comment message
- *           example: "This project looks interesting!"
- *           minLength: 1
- *           maxLength: 2000
- *         parentId:
- *           type: integer
- *           nullable: true
- *           description: ID of parent comment (for replies)
- *           example: null
- *     CommentUser:
- *       type: object
- *       nullable: true
- *       properties:
- *         id:
- *           type: string
- *           format: uuid
- *           example: "123e4567-e89b-12d3-a456-426614174000"
- *         username:
- *           type: string
- *           example: "oddbjarne123"
- *         avatarUrl:
- *           type: string
- *           nullable: true
- *           example: "https://example.com/avatar.jpg"
- *     CommentResponse:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *           example: 123
- *         message:
- *           type: string
- *           description: The comment message (shows "[deleted]" if comment is deleted)
- *           example: "10/10 would clone"
- *         projectId:
- *           type: string
- *           format: uuid
- *           example: "987fcdeb-51a2-43d1-9c4f-123456789abc"
- *         parentId:
- *           type: integer
- *           nullable: true
- *           description: ID of parent comment (null for top-level comments)
- *           example: null
- *         isDeleted:
- *           type: boolean
- *           example: false
- *         createdAt:
- *           type: string
- *           format: date-time
- *           example: "2025-05-22T14:30:00.000Z"
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           example: "2025-05-22T14:45:00.000Z"
- *         User:
- *           $ref: '#/components/schemas/CommentUser'
- *         replies:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               id:
- *                 type: integer
- *                 example: 124
- *               message:
- *                 type: string
- *                 example: "I agree!"
- *               parentId:
- *                 type: integer
- *                 example: 123
- *               isDeleted:
- *                 type: boolean
- *                 example: false
- *               createdAt:
- *                 type: string
- *                 format: date-time
- *               updatedAt:
- *                 type: string
- *                 format: date-time
- *               User:
- *                 $ref: '#/components/schemas/CommentUser'
- *     CommentSuccessResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: true
- *         status:
- *           type: string
- *           example: "success"
- *         statusCode:
- *           type: integer
- *           example: 201
- *         message:
- *           type: string
- *           example: "Comment created successfully"
- *         data:
- *           $ref: '#/components/schemas/CommentResponse'
- *     CommentListResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: true
- *         status:
- *           type: string
- *           example: "success"
- *         statusCode:
- *           type: integer
- *           example: 200
- *         message:
- *           type: string
- *           example: "Comments retrieved successfully"
- *         data:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/CommentResponse'
- *         meta:
- *           type: object
- *           properties:
- *             total:
- *               type: integer
- *               example: 25
- *             limit:
- *               type: integer
- *               example: 10
- *             offset:
- *               type: integer
- *               example: 0
- *             hasNext:
- *               type: boolean
- *               example: true
- */
+router.post(
+  "/:projectId/comments",
+  authenticate,
+  validateParamSchema(projectIdSchema),
+  validateSchema(createCommentSchema),
+  asyncHandler(createComment)
+);
+router.get("/:projectId/comments", validateParamSchema(projectIdSchema), asyncHandler(getProjectComments));
+
+module.exports = router;
 
 /**
  * @swagger
@@ -191,12 +57,52 @@ var { createComment, getProjectComments } = require("../controllers/commentContr
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/CommentSuccessResponse'
+ *             example:
+ *               success: true
+ *               status: "success"
+ *               statusCode: 201
+ *               message: "Comment created successfully"
+ *               data:
+ *                 id: 123
+ *                 message: "This project should be resurrected!"
+ *                 projectId: "987fcdeb-51a2-43d1-9c4f-123456789abc"
+ *                 parentId: null
+ *                 threadId: 123
+ *                 isDeleted: false
+ *                 createdAt: "2025-06-14T20:19:55.354Z"
+ *                 updatedAt: "2025-06-14T20:19:55.354Z"
+ *                 User:
+ *                   id: "123e4567-e89b-12d3-a456-426614174000"
+ *                   username: "developer123"
+ *                   avatarUrl: "https://example.com/avatar.jpg"
+ *                 replies: []
  *       400:
  *         description: Bad request - validation error or cannot reply to reply
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *             examples:
+ *               validationError:
+ *                 summary: Validation error
+ *                 value:
+ *                   success: false
+ *                   status: "bad request"
+ *                   statusCode: 400
+ *                   message: "Validation Error: message is required"
+ *                   errors:
+ *                     - field: "message"
+ *                       message: "Comment is required"
+ *                     - field: "message"
+ *                       message: "Comment cannot be empty"
+ *               replyToReply:
+ *                 summary: Cannot reply to a reply
+ *                 value:
+ *                   success: false
+ *                   status: "bad request"
+ *                   statusCode: 400
+ *                   message: "Cannot reply to a reply"
+ *                   errors: null
  *       401:
  *         description: Unauthorized - authentication required
  *         content:
@@ -211,6 +117,7 @@ var { createComment, getProjectComments } = require("../controllers/commentContr
  *               $ref: '#/components/schemas/NotFoundResponse'
  *             examples:
  *               projectNotFound:
+ *                 summary: Project not found
  *                 value:
  *                   success: false
  *                   status: "fail"
@@ -218,6 +125,7 @@ var { createComment, getProjectComments } = require("../controllers/commentContr
  *                   message: "Project not found"
  *                   errors: { projectId: "987fcdeb-51a2-43d1-9c4f-123456789abc" }
  *               parentNotFound:
+ *                 summary: Parent comment not found
  *                 value:
  *                   success: false
  *                   status: "not found"
@@ -225,7 +133,7 @@ var { createComment, getProjectComments } = require("../controllers/commentContr
  *                   message: "Parent comment not found"
  *                   errors: { parentId: 999 }
  *       429:
- *         description: Too many requests - global rate limit exceeded
+ *         description: Too many requests - rate limit exceeded
  *         content:
  *           application/json:
  *             schema:
@@ -239,14 +147,6 @@ var { createComment, getProjectComments } = require("../controllers/commentContr
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-
-router.post(
-  "/:projectId/comments",
-  authenticate,
-  validateParamSchema(projectIdSchema),
-  validateSchema(createCommentSchema),
-  asyncHandler(createComment)
-);
 
 /**
  * @swagger
@@ -295,6 +195,162 @@ router.post(
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
-router.get("/:projectId/comments", validateParamSchema(projectIdSchema), asyncHandler(getProjectComments));
-
-module.exports = router;
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     CreateCommentSchema:
+ *       type: object
+ *       required:
+ *         - message
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: The comment message
+ *           example: "This project looks interesting!"
+ *           minLength: 1
+ *           maxLength: 2000
+ *         parentId:
+ *           type: integer
+ *           nullable: true
+ *           description: ID of parent comment (for replies)
+ *           example: null
+ *
+ *     CommentUser:
+ *       type: object
+ *       nullable: true
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           example: "123e4567-e89b-12d3-a456-426614174000"
+ *         username:
+ *           type: string
+ *           example: "oddbjarne123"
+ *         avatarUrl:
+ *           type: string
+ *           nullable: true
+ *           example: "https://example.com/avatar.jpg"
+ *
+ *     CommentResponse:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 123
+ *         message:
+ *           type: string
+ *           description: The comment message (shows "[deleted]" if comment is deleted)
+ *           example: "10/10 would clone"
+ *         projectId:
+ *           type: string
+ *           format: uuid
+ *           example: "987fcdeb-51a2-43d1-9c4f-123456789abc"
+ *         parentId:
+ *           type: integer
+ *           nullable: true
+ *           description: ID of parent comment (null for top-level comments)
+ *           example: null
+ *         threadId:
+ *           type: integer
+ *           nullable: true
+ *           description: ID of the root comment in this thread
+ *           example: 123
+ *         isDeleted:
+ *           type: boolean
+ *           example: false
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           example: "2025-05-22T14:30:00.000Z"
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           example: "2025-05-22T14:45:00.000Z"
+ *         User:
+ *           $ref: '#/components/schemas/CommentUser'
+ *         replyCount:
+ *           type: integer
+ *           description: Total number of replies in this thread (only for root comments)
+ *           example: 5
+ *         replyPreview:
+ *           type: array
+ *           description: Preview of first 2 replies in this thread (only for root comments)
+ *           maxItems: 2
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *                 example: 124
+ *               message:
+ *                 type: string
+ *                 example: "I agree!"
+ *               parentId:
+ *                 type: integer
+ *                 example: 123
+ *               threadId:
+ *                 type: integer
+ *                 example: 123
+ *               createdAt:
+ *                 type: string
+ *                 format: date-time
+ *               updatedAt:
+ *                 type: string
+ *                 format: date-time
+ *               User:
+ *                 $ref: '#/components/schemas/CommentUser'
+ *
+ *     CommentSuccessResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         statusCode:
+ *           type: integer
+ *           example: 201
+ *         message:
+ *           type: string
+ *           example: "Comment created successfully"
+ *         data:
+ *           $ref: '#/components/schemas/CommentResponse'
+ *
+ *     CommentListResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         statusCode:
+ *           type: integer
+ *           example: 200
+ *         message:
+ *           type: string
+ *           example: "Comments retrieved successfully"
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/CommentResponse'
+ *         meta:
+ *           type: object
+ *           properties:
+ *             total:
+ *               type: integer
+ *               example: 25
+ *             limit:
+ *               type: integer
+ *               example: 10
+ *             offset:
+ *               type: integer
+ *               example: 0
+ *             hasNext:
+ *               type: boolean
+ *               example: true
+ */

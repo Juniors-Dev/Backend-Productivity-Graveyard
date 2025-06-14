@@ -79,10 +79,8 @@ class CommentService {
 
     const allReplies = await this.Comment.findAll({
       where: {
-        [this.client.Sequelize.Op.or]: [
-          { parentId: { [this.client.Sequelize.Op.in]: rootCommentIds } },
-          { threadId: { [this.client.Sequelize.Op.in]: rootCommentIds } },
-        ],
+        threadId: { [this.client.Sequelize.Op.in]: rootCommentIds },
+        parentId: { [this.client.Sequelize.Op.not]: null },
       },
       include: [
         {
@@ -120,7 +118,6 @@ class CommentService {
     const commentsWithReplies = rootComments.map((comment) => ({
       ...comment.toJSON(),
       replyCount: repliesByThread.get(comment.id)?.length || 0,
-      // Optional: include first 2 replies as preview
       replyPreview: repliesByThread.get(comment.id)?.slice(0, 2) || [],
     }));
 

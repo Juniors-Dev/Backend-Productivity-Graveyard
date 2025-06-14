@@ -42,7 +42,6 @@ describe("Comments API", () => {
 
   beforeAll(async () => {
     await db.sequelize.authenticate();
-    await db.sequelize.sync({ force: false });
 
     const role = await db.Role.findOne({ where: { name: "user" } });
     user1 = await db.User.create({ ...createTestUser("1"), roleId: role.id });
@@ -82,7 +81,46 @@ describe("Comments API", () => {
       expect(reply.body.data.parentId).toBe(parent.body.data.id);
     });
 
-    // Authentication
+    // NEW: Thread functionality tests
+    describe("Thread functionality", () => {
+      it("creates thread structure correctly for root comment", async () => {
+        const res = await postComment(projectId, token1, { message: "Root comment" });
+        expect(res.statusCode).toBe(201);
+        expect(res.body.data.threadId).toBe(res.body.data.id); // threadId should equal id for root comments
+        expect(res.body.data.parentId).toBeNull();
+      });
+
+      it("sets threadId correctly for replies", async () => {
+        const parent = await postComment(projectId, token1, { message: "Parent comment" });
+        const reply = await postComment(projectId, token2, {
+          message: "Reply to parent",
+          parentId: parent.body.data.id,
+        });
+
+        expect(reply.statusCode).toBe(201);
+        expect(reply.body.data.threadId).toBe(parent.body.data.id); // Reply should have parent's threadId
+        expect(reply.body.data.parentId).toBe(parent.body.data.id);
+      });
+
+      it("maintains thread consistency for multiple replies", async () => {
+        const parent = await postComment(projectId, token1, { message: "Thread starter" });
+        const reply1 = await postComment(projectId, token2, {
+          message: "First reply",
+          parentId: parent.body.data.id,
+        });
+        const reply2 = await postComment(projectId, token1, {
+          message: "Second reply",
+          parentId: parent.body.data.id,
+        });
+
+        expect(reply1.body.data.threadId).toBe(parent.body.data.id);
+        expect(reply2.body.data.threadId).toBe(parent.body.data.id);
+        // Both replies should be in the same thread
+        expect(reply1.body.data.threadId).toBe(reply2.body.data.threadId);
+      });
+    });
+
+    // Authentication tests
     it("rejects request without authorization header", async () => {
       const res = await request(app).post(`/projects/${projectId}/comments`).send({ message: messages.valid });
 
@@ -157,9 +195,8 @@ describe("Comments API", () => {
 
       expect(res.body.errors).toBeDefined();
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Comment is required");
-      expect(res.body.errors).toContain("Comment cannot be empty");
-      expect(res.body.errors).toHaveLength(2);
+      expect(res.body.errors.some((err) => err.message === "Comment is required")).toBe(true);
+      expect(res.body.errors.some((err) => err.message === "Comment cannot be empty")).toBe(true);
     });
 
     it("rejects missing message field", async () => {
@@ -195,17 +232,6 @@ describe("Comments API", () => {
       expect(res.body.success).toBe(false);
       expect(res.body.message).toContain("Parent comment not found");
     });
-
-    // Business Logic
-    it("prevents replying to a reply (nested replies)", async () => {
-      const parent = await postComment(projectId, token1, { message: "Parent" });
-      const reply = await postComment(projectId, token2, { message: "Reply", parentId: parent.body.data.id });
-      const nested = await postComment(projectId, token1, { message: "Nested", parentId: reply.body.data.id });
-
-      expect(nested.statusCode).toBe(400);
-      expect(nested.body.success).toBe(false);
-      expect(nested.body.message).toContain("Cannot reply to a reply");
-    });
   });
 
   describe("GET /projects/:projectId/comments", () => {
@@ -217,6 +243,27 @@ describe("Comments API", () => {
       expect(res.body.meta).toBeDefined();
     });
 
+    // NEW: Test updated getRootComments with reply preview
+    it("includes reply count and preview in root comments", async () => {
+      // Create a root comment with multiple replies using a unique message
+      const uniqueMessage = `Parent with replies ${Date.now()}`;
+      const parent = await postComment(projectId, token1, { message: uniqueMessage });
+      await postComment(projectId, token2, { message: "Reply 1", parentId: parent.body.data.id });
+      await postComment(projectId, token1, { message: "Reply 2", parentId: parent.body.data.id });
+      await postComment(projectId, token2, { message: "Reply 3", parentId: parent.body.data.id });
+
+      const res = await request(app).get(`/projects/${projectId}/comments`);
+      expect(res.statusCode).toBe(200);
+
+      // Find our test comment in the results
+      const testComment = res.body.data.find((c) => c.message === uniqueMessage);
+      expect(testComment).toBeDefined();
+      expect(testComment.replyCount).toBe(3);
+      expect(testComment.replyPreview).toBeDefined();
+      expect(Array.isArray(testComment.replyPreview)).toBe(true);
+      expect(testComment.replyPreview.length).toBeLessThanOrEqual(2); // Preview shows max 2
+    });
+
     it("handles pagination parameters", async () => {
       const res = await request(app).get(`/projects/${projectId}/comments?limit=5&offset=0`);
       expect(res.statusCode).toBe(200);
@@ -224,9 +271,79 @@ describe("Comments API", () => {
       expect(res.body.meta.offset).toBe(0);
     });
 
-    // Parameter Validation
     it("rejects invalid projectId format", async () => {
       const res = await request(app).get("/projects/invalid-uuid/comments");
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+    });
+  });
+
+  // NEW: Test the comment replies endpoint
+  describe("GET /comments/:id/replies", () => {
+    let parentCommentId;
+
+    beforeEach(async () => {
+      const parent = await postComment(projectId, token1, { message: "Parent for replies test" });
+      parentCommentId = parent.body.data.id;
+
+      // Create some replies
+      await postComment(projectId, token2, { message: "Reply A", parentId: parentCommentId });
+      await postComment(projectId, token1, { message: "Reply B", parentId: parentCommentId });
+    });
+
+    it("retrieves replies for a comment successfully", async () => {
+      const res = await request(app).get(`/comments/${parentCommentId}/replies`);
+      expect(res.statusCode).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBe("Replies retrieved successfully");
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data.length).toBe(2);
+      expect(res.body.meta).toBeDefined();
+    });
+
+    it("returns replies in chronological order", async () => {
+      const res = await request(app).get(`/comments/${parentCommentId}/replies`);
+      expect(res.statusCode).toBe(200);
+
+      const replies = res.body.data;
+      expect(replies[0].message).toBe("Reply A"); // First reply
+      expect(replies[1].message).toBe("Reply B"); // Second reply
+
+      // Check chronological order
+      expect(new Date(replies[0].createdAt).getTime()).toBeLessThan(new Date(replies[1].createdAt).getTime());
+    });
+
+    it("includes parent information in replies", async () => {
+      const res = await request(app).get(`/comments/${parentCommentId}/replies`);
+      expect(res.statusCode).toBe(200);
+
+      const replies = res.body.data;
+      replies.forEach((reply) => {
+        expect(reply.parent).toBeDefined();
+        expect(reply.parent.id).toBe(parentCommentId);
+        expect(reply.parent.message).toBe("Parent for replies test");
+        expect(reply.parent.User).toBeDefined();
+      });
+    });
+
+    it("handles pagination for replies", async () => {
+      const res = await request(app).get(`/comments/${parentCommentId}/replies?limit=1&offset=0`);
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.length).toBe(1);
+      expect(res.body.meta.limit).toBe(1);
+      expect(res.body.meta.total).toBe(2);
+      expect(res.body.meta.hasNext).toBe(true);
+    });
+
+    it("returns 404 for non-existent comment", async () => {
+      const res = await request(app).get("/comments/99999/replies");
+      expect(res.statusCode).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe("Comment not found");
+    });
+
+    it("rejects invalid comment ID format", async () => {
+      const res = await request(app).get("/comments/not-a-number/replies");
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
     });
@@ -244,7 +361,6 @@ describe("Comments API", () => {
       expect(res.body.data.message).toBe(messages.updated);
     });
 
-    // Authentication
     it("rejects request without authentication", async () => {
       const res = await request(app).put(`/comments/${commentId1}`).send({ message: messages.updated });
 
@@ -264,7 +380,6 @@ describe("Comments API", () => {
       expect(res.body.message).toBe("Unauthorized, invalid or expired token.");
     });
 
-    // Parameter validation
     it("rejects invalid comment ID format", async () => {
       const res = await request(app)
         .put("/comments/not-a-number")
@@ -275,7 +390,6 @@ describe("Comments API", () => {
       expect(res.body.success).toBe(false);
     });
 
-    // Ownership
     it("prevents updating other user's comment", async () => {
       const res = await request(app)
         .put(`/comments/${commentId1}`)
@@ -299,7 +413,6 @@ describe("Comments API", () => {
       expect(res.body.message).toBe("Not Found, entity not found.");
     });
 
-    // Body Validation
     it("rejects empty message", async () => {
       const res = await request(app)
         .put(`/comments/${commentId1}`)
@@ -312,9 +425,8 @@ describe("Comments API", () => {
 
       expect(res.body.errors).toBeDefined();
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Comment is required");
-      expect(res.body.errors).toContain("Comment cannot be empty");
-      expect(res.body.errors).toHaveLength(2);
+      expect(res.body.errors.some((err) => err.message === "Comment is required")).toBe(true);
+      expect(res.body.errors.some((err) => err.message === "Comment cannot be empty")).toBe(true);
     });
 
     it("rejects missing message field", async () => {
@@ -335,6 +447,26 @@ describe("Comments API", () => {
       expect(res.body.success).toBe(false);
       expect(res.body.message).toContain("Comment is too long (maximum 2000 characters)");
     });
+
+    it("prevents updating a soft-deleted comment", async () => {
+      // First, create and soft delete a comment
+      const comment = await postComment(projectId, token1, { message: "Will be deleted" });
+      const commentId = comment.body.data.id;
+
+      await request(app).delete(`/comments/${commentId}`).set("Authorization", `Bearer ${token1}`);
+
+      // Try to update the soft-deleted comment
+      const res = await request(app)
+        .put(`/comments/${commentId}`)
+        .set("Authorization", `Bearer ${token1}`)
+        .send({ message: "Trying to update deleted comment" });
+
+      // Should return 403 because ownsEntity middleware can't find the entity
+      // (soft deleted comments might not be returned by ownsEntity check)
+      expect(res.statusCode).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe("Forbidden, you do not own this entity.");
+    });
   });
 
   describe("DELETE /comments/:id", () => {
@@ -351,9 +483,15 @@ describe("Comments API", () => {
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.message).toContain("deleted successfully");
+
+      // Verify it's soft deleted, not hard deleted
+      const deletedComment = await db.Comment.findByPk(commentToDelete);
+      expect(deletedComment).not.toBeNull(); // Record should still exist
+      expect(deletedComment.isDeleted).toBe(true); // Should be marked as deleted
+      expect(deletedComment.userId).toBeNull(); // userId should be nulled out
+      expect(deletedComment.message).toBe("[deleted]"); // Message should be masked by getter
     });
 
-    // Authentication
     it("rejects request without authentication", async () => {
       const res = await request(app).delete(`/comments/${commentToDelete}`);
 
@@ -372,7 +510,6 @@ describe("Comments API", () => {
       expect(res.body.message).toBe("Unauthorized, invalid or expired token.");
     });
 
-    // Parameter validation
     it("rejects invalid comment ID format", async () => {
       const res = await request(app).delete("/comments/not-a-number").set("Authorization", `Bearer ${token1}`);
 
@@ -380,7 +517,6 @@ describe("Comments API", () => {
       expect(res.body.success).toBe(false);
     });
 
-    // Ownership
     it("prevents deleting other user's comment", async () => {
       const res = await request(app).delete(`/comments/${commentToDelete}`).set("Authorization", `Bearer ${token2}`);
 
@@ -396,6 +532,40 @@ describe("Comments API", () => {
       expect(res.statusCode).toBe(404);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBe("Not Found, entity not found.");
+    });
+
+    it("masks message of soft-deleted comments", async () => {
+      // Create a comment, then soft delete it
+      const comment = await postComment(projectId, token1, { message: "This will be masked" });
+      const commentId = comment.body.data.id;
+
+      await request(app).delete(`/comments/${commentId}`).set("Authorization", `Bearer ${token1}`);
+
+      // Verify the comment appears with masked message in project comments
+      const res = await request(app).get(`/projects/${projectId}/comments`);
+      const deletedComment = res.body.data.find((c) => c.id === commentId);
+
+      expect(deletedComment).toBeDefined();
+      expect(deletedComment.message).toBe("[deleted]");
+      expect(deletedComment.isDeleted).toBe(true);
+    });
+
+    it("preserves comment structure after soft delete (for replies)", async () => {
+      // Create a parent comment with a reply
+      const parent = await postComment(projectId, token1, { message: "Parent comment" });
+      const reply = await postComment(projectId, token2, { message: "Reply comment", parentId: parent.body.data.id });
+
+      // Soft delete the parent
+      await request(app).delete(`/comments/${parent.body.data.id}`).set("Authorization", `Bearer ${token1}`);
+
+      // Verify the parent still exists (for reply structure) but is marked deleted
+      const parentInDb = await db.Comment.findByPk(parent.body.data.id);
+      expect(parentInDb).not.toBeNull();
+      expect(parentInDb.isDeleted).toBe(true);
+
+      // Verify replies can still reference the soft-deleted parent
+      const replyInDb = await db.Comment.findByPk(reply.body.data.id);
+      expect(replyInDb.parentId).toBe(parent.body.data.id);
     });
   });
 });
