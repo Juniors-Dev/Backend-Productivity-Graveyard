@@ -54,6 +54,9 @@ module.exports = (sequelize, Sequelize) => {
         {
           fields: ["projectId", "parentId"],
         },
+        {
+          fields: ["threadId"],
+        },
       ],
     }
   );

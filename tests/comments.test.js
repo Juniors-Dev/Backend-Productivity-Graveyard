@@ -86,7 +86,7 @@ describe("Comments API", () => {
       it("creates thread structure correctly for root comment", async () => {
         const res = await postComment(projectId, token1, { message: "Root comment" });
         expect(res.statusCode).toBe(201);
-        expect(res.body.data.threadId).toBe(res.body.data.id); // threadId should equal id for root comments
+        expect(res.body.data.threadId).toBe(res.body.data.id);
         expect(res.body.data.parentId).toBeNull();
       });
 
@@ -98,7 +98,7 @@ describe("Comments API", () => {
         });
 
         expect(reply.statusCode).toBe(201);
-        expect(reply.body.data.threadId).toBe(parent.body.data.id); // Reply should have parent's threadId
+        expect(reply.body.data.threadId).toBe(parent.body.data.id);
         expect(reply.body.data.parentId).toBe(parent.body.data.id);
       });
 
@@ -115,7 +115,6 @@ describe("Comments API", () => {
 
         expect(reply1.body.data.threadId).toBe(parent.body.data.id);
         expect(reply2.body.data.threadId).toBe(parent.body.data.id);
-        // Both replies should be in the same thread
         expect(reply1.body.data.threadId).toBe(reply2.body.data.threadId);
       });
     });
@@ -243,9 +242,7 @@ describe("Comments API", () => {
       expect(res.body.meta).toBeDefined();
     });
 
-    // NEW: Test updated getRootComments with reply preview
     it("includes reply count and preview in root comments", async () => {
-      // Create a root comment with multiple replies using a unique message
       const uniqueMessage = `Parent with replies ${Date.now()}`;
       const parent = await postComment(projectId, token1, { message: uniqueMessage });
       await postComment(projectId, token2, { message: "Reply 1", parentId: parent.body.data.id });
@@ -255,13 +252,12 @@ describe("Comments API", () => {
       const res = await request(app).get(`/projects/${projectId}/comments`);
       expect(res.statusCode).toBe(200);
 
-      // Find our test comment in the results
       const testComment = res.body.data.find((c) => c.message === uniqueMessage);
       expect(testComment).toBeDefined();
       expect(testComment.replyCount).toBe(3);
       expect(testComment.replyPreview).toBeDefined();
       expect(Array.isArray(testComment.replyPreview)).toBe(true);
-      expect(testComment.replyPreview.length).toBeLessThanOrEqual(2); // Preview shows max 2
+      expect(testComment.replyPreview.length).toBeLessThanOrEqual(2);
     });
 
     it("handles pagination parameters", async () => {
@@ -278,7 +274,6 @@ describe("Comments API", () => {
     });
   });
 
-  // NEW: Test the comment replies endpoint
   describe("GET /comments/:id/replies", () => {
     let parentCommentId;
 
@@ -286,7 +281,6 @@ describe("Comments API", () => {
       const parent = await postComment(projectId, token1, { message: "Parent for replies test" });
       parentCommentId = parent.body.data.id;
 
-      // Create some replies
       await postComment(projectId, token2, { message: "Reply A", parentId: parentCommentId });
       await postComment(projectId, token1, { message: "Reply B", parentId: parentCommentId });
     });
@@ -306,8 +300,8 @@ describe("Comments API", () => {
       expect(res.statusCode).toBe(200);
 
       const replies = res.body.data;
-      expect(replies[0].message).toBe("Reply A"); // First reply
-      expect(replies[1].message).toBe("Reply B"); // Second reply
+      expect(replies[0].message).toBe("Reply A");
+      expect(replies[1].message).toBe("Reply B");
 
       // Check chronological order
       expect(new Date(replies[0].createdAt).getTime()).toBeLessThan(new Date(replies[1].createdAt).getTime());
