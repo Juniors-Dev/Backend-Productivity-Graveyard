@@ -4,38 +4,7 @@ var { toggleUpvote } = require("../controllers/voteController");
 var { authenticate, asyncHandler, validateParamSchema } = require("../middleware");
 var { projectIdSchema } = require("../schema/params");
 
-/**
- * @swagger
- * components:
- *   schemas:
- *     ToggleUpvoteResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: true
- *         status:
- *           type: string
- *           example: "success"
- *         statusCode:
- *           type: integer
- *           example: 200
- *         message:
- *           type: string
- *           description: Indicates whether upvote was added or removed
- *           example: "Project upvoted successfully"
- *         data:
- *           type: object
- *           properties:
- *             upvoted:
- *               type: boolean
- *               description: True if the user upvoted, false if removed
- *               example: true
- *             count:
- *               type: integer
- *               description: Project's total number of upvotes after toggling
- *               example: 22
- */
+router.post("/:projectId/toggle", validateParamSchema(projectIdSchema), authenticate, asyncHandler(toggleUpvote));
 
 /**
  * @swagger
@@ -94,7 +63,7 @@ var { projectIdSchema } = require("../schema/params");
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ProjectNotFoundResponse' #notFoundResponse
+ *               $ref: '#/components/schemas/ProjectNotFoundResponse'
  *       429:
  *         description: Too many requests - global rate limit exceeded
  *         content:
@@ -111,6 +80,37 @@ var { projectIdSchema } = require("../schema/params");
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
-router.post("/:projectId/toggle", validateParamSchema(projectIdSchema), authenticate, asyncHandler(toggleUpvote));
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     ToggleUpvoteResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         statusCode:
+ *           type: integer
+ *           example: 200
+ *         message:
+ *           type: string
+ *           description: Indicates whether upvote was added or removed
+ *           example: "Project upvoted successfully"
+ *         data:
+ *           type: object
+ *           properties:
+ *             upvoted:
+ *               type: boolean
+ *               description: True if the user upvoted, false if removed
+ *               example: true
+ *             count:
+ *               type: integer
+ *               description: Project's total number of upvotes after toggling
+ *               example: 22
+ */
 
 module.exports = router;

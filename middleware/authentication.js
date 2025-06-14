@@ -87,7 +87,7 @@ async function isAdmin(req, res, next) {
       return next();
     }
 
-    if (user.Role.role !== "admin") {
+    if (user.role !== "admin") {
       return next();
     }
 
@@ -104,7 +104,7 @@ const isSelfOrAdmin = async (req, res, next) => {
     const targetUser = req.params.id;
     const user = req.user;
 
-    if (targetUser === user.id || user.Role.role === "admin") {
+    if (targetUser === user.id || user.Role.name === "admin") {
       return next();
     }
 

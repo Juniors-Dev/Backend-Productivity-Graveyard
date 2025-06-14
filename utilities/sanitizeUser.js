@@ -4,7 +4,7 @@ function sanitizeUser(user, options = {}) {
   const base = {
     id: user.id,
     username: user.username,
-    displayName: user.displayName,
+    fullName: user.fullName,
     bio: user.bio,
     avatarUrl: user.avatarUrl,
     role: user.Role?.name || "user",

@@ -20,6 +20,13 @@ router.use(
   })
 );
 
+router.get("/", function (req, res, next) {
+  res.status(200).json({ message: "Welcome to the API" });
+});
+
+router.post("/register", validateSchema(registerSchema), asyncHandler(validateCredentials), asyncHandler(register));
+router.post("/login", validateSchema(loginSchema), asyncHandler(login));
+
 /**
  * @swagger
  * components:
@@ -172,10 +179,6 @@ router.use(
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
-router.get("/", function (req, res, next) {
-  res.status(200).json({ message: "Welcome to the API" });
-});
-
 /**
  * @swagger
  * /auth/register:
@@ -201,21 +204,38 @@ router.get("/", function (req, res, next) {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
+ *               $ref: '#/components/schemas/SimpleSuccessResponse'
  *             example:
+ *               success: true
  *               status: success
- *               data:
- *                 result: Account created successfully
+ *               statusCode: 201
+ *               message: Account created successfully.
  *       400:
  *         description: Bad request - validation error
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
  *             example:
+ *               success: false
  *               status: bad request
- *               data:
- *                 errors: [{field: "email", message: "Email is required"}, {field: "password", message: "Password must be at least 8 characters"}]
+ *               statusCode: 400
+ *               errors: [
+ *                 {field: "email", message: "Email is required"},
+ *                 {field: "password", message: "Password must be at least 8 characters"}
+ *               ]
+ *       409:
+ *         description: Conflict - user already exists
+ *         content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ConflictResponse'
+ *              example:
+ *                success: false
+ *                status: conflict
+ *                statusCode: 409
+ *                message: "Conflict, username already exists. Login or use a different username."
+ *                errors: null
  *       429:
  *         description: Too many authentication attempts - auth rate limit exceeded
  *         content:
@@ -231,8 +251,6 @@ router.get("/", function (req, res, next) {
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-
-router.post("/register", validateSchema(registerSchema), asyncHandler(validateCredentials), asyncHandler(register));
 
 /**
  * @swagger
@@ -258,29 +276,43 @@ router.post("/register", validateSchema(registerSchema), asyncHandler(validateCr
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
  *             example:
+ *               success: true
  *               status: success
+ *               statusCode: 200
+ *               message: "Login successful."
  *               data:
- *                 token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTYxNjIzOTAyMn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+ *                 id: "3f173b5c-8a0d-4e7f-90cb-4adf2b2c0001"
+ *                 email: john.doe@example.com
+ *                 username: johndoe123
+ *                 role: user
+ *                 token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *       400:
  *         description: Bad request - validation error
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
  *             example:
+ *               success: false
  *               status: bad request
- *               data:
- *                 errors: [{field: "email", message: "Email is required"}, {field: "password", message: "Password is required"}]
+ *               statusCode: 400
+ *               message: "Validation Error: Email is required"
+ *               errors: [
+ *                 {field: "email", message: "Email is required"},
+ *                 {field: "password", message: "Password is required"}
+ *               ]
  *       401:
  *         description: Unauthorized - invalid credentials
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example:
- *               status: unauthorized
- *               data:
- *                 errors: ["Invalid email or password"]
+ *               $ref: '#/components/schemas/UnauthorizedResponse'
+ *               example:
+ *                 success: false
+ *                 status: fail
+ *                 statusCode: 401
+ *                 message: "Invalid email or password, please try again."
+ *                 errors: null
  *       429:
  *         description: Too many authentication attempts - auth rate limit exceeded
  *         content:
@@ -296,7 +328,5 @@ router.post("/register", validateSchema(registerSchema), asyncHandler(validateCr
  *             schema:
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
-
-router.post("/login", validateSchema(loginSchema), asyncHandler(login));
 
 module.exports = router;
