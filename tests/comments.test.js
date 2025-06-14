@@ -449,7 +449,6 @@ describe("Comments API", () => {
     });
 
     it("prevents updating a soft-deleted comment", async () => {
-      // First, create and soft delete a comment
       const comment = await postComment(projectId, token1, { message: "Will be deleted" });
       const commentId = comment.body.data.id;
 
@@ -484,12 +483,11 @@ describe("Comments API", () => {
       expect(res.body.success).toBe(true);
       expect(res.body.message).toContain("deleted successfully");
 
-      // Verify it's soft deleted, not hard deleted
       const deletedComment = await db.Comment.findByPk(commentToDelete);
-      expect(deletedComment).not.toBeNull(); // Record should still exist
-      expect(deletedComment.isDeleted).toBe(true); // Should be marked as deleted
-      expect(deletedComment.userId).toBeNull(); // userId should be nulled out
-      expect(deletedComment.message).toBe("[deleted]"); // Message should be masked by getter
+      expect(deletedComment).not.toBeNull();
+      expect(deletedComment.isDeleted).toBe(true);
+      expect(deletedComment.userId).toBeNull();
+      expect(deletedComment.message).toBe("[deleted]");
     });
 
     it("rejects request without authentication", async () => {
@@ -535,13 +533,11 @@ describe("Comments API", () => {
     });
 
     it("masks message of soft-deleted comments", async () => {
-      // Create a comment, then soft delete it
       const comment = await postComment(projectId, token1, { message: "This will be masked" });
       const commentId = comment.body.data.id;
 
       await request(app).delete(`/comments/${commentId}`).set("Authorization", `Bearer ${token1}`);
 
-      // Verify the comment appears with masked message in project comments
       const res = await request(app).get(`/projects/${projectId}/comments`);
       const deletedComment = res.body.data.find((c) => c.id === commentId);
 
@@ -551,19 +547,15 @@ describe("Comments API", () => {
     });
 
     it("preserves comment structure after soft delete (for replies)", async () => {
-      // Create a parent comment with a reply
       const parent = await postComment(projectId, token1, { message: "Parent comment" });
       const reply = await postComment(projectId, token2, { message: "Reply comment", parentId: parent.body.data.id });
 
-      // Soft delete the parent
       await request(app).delete(`/comments/${parent.body.data.id}`).set("Authorization", `Bearer ${token1}`);
 
-      // Verify the parent still exists (for reply structure) but is marked deleted
       const parentInDb = await db.Comment.findByPk(parent.body.data.id);
       expect(parentInDb).not.toBeNull();
       expect(parentInDb.isDeleted).toBe(true);
 
-      // Verify replies can still reference the soft-deleted parent
       const replyInDb = await db.Comment.findByPk(reply.body.data.id);
       expect(replyInDb.parentId).toBe(parent.body.data.id);
     });
