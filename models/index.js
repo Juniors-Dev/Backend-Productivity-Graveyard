@@ -29,10 +29,10 @@ const sequelizeCrudUser = new Sequelize(
     dialectOptions: {
       decimalNumbers: true,
       // Uncomment the following lines if you need to use SSL to connect to your database
-      // ssl: {
-      //   require: true,
-      //   rejectUnauthorized: false,
-      // },
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
     },
   }
 );
@@ -55,6 +55,7 @@ async function ensureCrudUserPrivileges() {
 
     GRANT CONNECT ON DATABASE ${dbName} TO ${crudUser};
     GRANT USAGE ON SCHEMA public TO ${crudUser};
+    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO ${crudUser};
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${crudUser};
     ALTER DEFAULT PRIVILEGES IN SCHEMA public
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO ${crudUser};
