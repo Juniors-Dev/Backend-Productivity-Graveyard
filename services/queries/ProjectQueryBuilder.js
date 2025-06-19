@@ -176,13 +176,15 @@ class ProjectQueryBuilder {
 
   buildCountQuery() {
     return `
-      SELECT COUNT(DISTINCT p."id") AS count
+    SELECT COUNT(*) AS count FROM (
+      SELECT p."id"
       FROM "Projects" p
       ${this.buildJoins()}
       ${this.buildWhereClause()}
       GROUP BY ${this.buildGroupBy()}
       ${this.buildHavingClause()}
-    `;
+    ) AS sub
+  `;
   }
 }
 
