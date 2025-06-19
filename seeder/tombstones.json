@@ -17,7 +17,7 @@
   { "name": "Ghost", "imageUrl": "/images/ghost.png" },
   { "name": "Grim Reaper", "imageUrl": "/images/grimreaper.png" },
   { "name": "Merge Ducky", "imageUrl": "/images/merge_ducky.png" },
-  { "name": "PR Clock", "imageUrl": "/images/pr_clock.png" },
+  { "name": "PR Ducky", "imageUrl": "/images/pr_ducky.png" },
   { "name": "Resolver Ducky", "imageUrl": "/images/resolver_ducky.png" },
   { "name": "Rocket", "imageUrl": "/images/rocket.png" },
   { "name": "Skull", "imageUrl": "/images/skull.png" },
