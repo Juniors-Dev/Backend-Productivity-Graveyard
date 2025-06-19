@@ -180,6 +180,8 @@ class ProjectQueryBuilder {
       FROM "Projects" p
       ${this.buildJoins()}
       ${this.buildWhereClause()}
+      GROUP BY ${this.buildGroupBy()}
+      ${this.buildHavingClause()}
     `;
   }
 }
