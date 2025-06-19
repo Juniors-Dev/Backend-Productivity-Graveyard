@@ -11,10 +11,10 @@ const sequelize = new Sequelize(process.env.DATABASE_NAME, process.env.ADMIN_USE
   dialectOptions: {
     decimalNumbers: true,
     // Uncomment the following lines if you need to use SSL to connect to your database
-    // ssl: {
-    //   require: true,
-    //   rejectUnauthorized: false,
-    // },
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
+    },
   },
 });
 
