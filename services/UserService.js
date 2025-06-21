@@ -1,11 +1,15 @@
 const { Op } = require("sequelize");
 const sanitizeUser = require("../utilities/sanitizeUser");
+const ProjectService = require("./ProjectService.js");
+const StatsService = require("./StatsService.js");
 
 class UserService {
   constructor(db) {
     this.client = db.sequelize;
     this.User = db.User;
     this.Role = db.Role;
+    this.projectService = new ProjectService(db);
+    this.statsService = new StatsService(db);
   }
 
   async getAll() {
@@ -34,7 +38,7 @@ class UserService {
     });
   }
 
-  async getOneId(userId, options = {}) {
+  async getOneId(userId) {
     const user = await this.User.findOne({
       where: { id: userId },
       include: [{ model: this.Role }],
@@ -43,7 +47,25 @@ class UserService {
 
     if (!user) return null;
 
-    return sanitizeUser(user, options);
+    const sanitizedUser = sanitizeUser(user);
+    const { count, rows } = await this.projectService.getAll(10, 0, {
+      userId,
+      currentUserId: null,
+    });
+    const stats = await this.statsService.getUserStats(userId);
+
+    sanitizedUser.projects = {
+      data: rows,
+      meta: {
+        total: count,
+        limit: 10,
+        offset: 0,
+        hasNext: count > 10 + 0,
+      },
+    };
+    sanitizedUser.stats = stats;
+
+    return sanitizedUser;
   }
 
   async create({ firstName, lastName, username, email, hashedPassword, salt, roleId }) {
