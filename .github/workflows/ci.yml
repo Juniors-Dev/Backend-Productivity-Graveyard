@@ -52,6 +52,7 @@ jobs:
           ADMIN_PASSWORD: secret
           HOST: localhost
           DIALECT: postgres
+          FORCE_SYNC: true
           # Other necessary vars
           JWT_SECRET: ${{ secrets.JWT_SECRET || 'test_secret' }}
           NODE_ENV: test
