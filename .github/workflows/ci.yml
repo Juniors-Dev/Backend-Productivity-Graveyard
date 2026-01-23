@@ -47,6 +47,12 @@ jobs:
         env:
           # Match these to your .env.example / app setup
           DATABASE_URL: postgres://admin:secret@localhost:5432/productivity_graveyard_dev
+          DATABASE_NAME: productivity_graveyard_dev
+          ADMIN_USERNAME: admin
+          ADMIN_PASSWORD: secret
+          HOST: localhost
+          DIALECT: postgres
+          # Other necessary vars
           JWT_SECRET: ${{ secrets.JWT_SECRET || 'test_secret' }}
           NODE_ENV: test
         run: npm test
