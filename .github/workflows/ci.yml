@@ -48,8 +48,10 @@ jobs:
           # Match these to your .env.example / app setup
           DATABASE_URL: postgres://admin:secret@localhost:5432/productivity_graveyard_dev
           DATABASE_NAME: productivity_graveyard_dev
-          ADMIN_USERNAME: admin
-          ADMIN_PASSWORD: secret
+          ADMIN_USERNAME: "admin"
+          ADMIN_PASSWORD: "admin_password"
+          CRUD_USERNAME: "crud_user"
+          CRUD_PASSWORD: "crud_password"
           HOST: localhost
           DIALECT: postgres
           FORCE_SYNC: true
