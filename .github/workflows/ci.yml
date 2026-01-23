@@ -16,7 +16,7 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_USER: admin
-          POSTGRES_PASSWORD: secret
+          POSTGRES_PASSWORD: admin_password
           POSTGRES_DB: productivity_graveyard_dev
         ports:
           - 5432:5432
