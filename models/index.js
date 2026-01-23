@@ -4,37 +4,35 @@ const path = require("path");
 require("dotenv").config();
 
 const basename = path.basename(__filename);
-const sequelize = new Sequelize(process.env.DATABASE_NAME, process.env.ADMIN_USERNAME, process.env.ADMIN_PASSWORD, {
+
+const config = {
   host: process.env.HOST,
   dialect: process.env.DIALECT,
   logging: false, // Disable logging for production
   dialectOptions: {
     decimalNumbers: true,
-    // Uncomment the following lines if you need to use SSL to connect to your database
-    ssl: {
-      require: process.env.SSL_REQUIRED === "true" ? true : false,
-      rejectUnauthorized: false,
-    },
   },
-});
+};
+
+if (process.env.SSL_REQUIRED === "true") {
+  config.dialectOptions.ssl = {
+    require: process.env.SSL_REQUIRED === "true" ? true : false,
+    rejectUnauthorized: false,
+  };
+}
+
+const sequelize = new Sequelize(
+  process.env.DATABASE_NAME,
+  process.env.ADMIN_USERNAME,
+  process.env.ADMIN_PASSWORD,
+  config
+);
 
 const sequelizeCrudUser = new Sequelize(
   process.env.DATABASE_NAME,
   process.env.CRUD_USERNAME,
   process.env.CRUD_PASSWORD,
-  {
-    host: process.env.HOST,
-    dialect: process.env.DIALECT,
-    logging: false, // Disable logging for production
-    dialectOptions: {
-      decimalNumbers: true,
-      // Uncomment the following lines if you need to use SSL to connect to your database
-      ssl: {
-        require: process.env.SSL_REQUIRED === "true" ? true : false,
-        rejectUnauthorized: false,
-      },
-    },
-  }
+  config
 );
 
 async function ensureCrudUserPrivileges() {
