@@ -1,5 +1,7 @@
 const swaggerJSDoc = require("swagger-jsdoc");
 require("dotenv").config();
+const fs = require("fs");
+const path = require("path");
 
 const host = process.env.HOST && process.env.PORT ? `${process.env.HOST}:${process.env.PORT}` : "localhost:3000";
 
@@ -30,4 +32,8 @@ const options = {
 };
 
 const swaggerSpec = swaggerJSDoc(options);
+if (process.env.OUTPUT_SWAGGER === "true") {
+  const outputPath = path.join(__dirname, "./swagger-output.json");
+  fs.writeFileSync(outputPath, JSON.stringify(swaggerSpec, null, 2));
+}
 module.exports = swaggerSpec;

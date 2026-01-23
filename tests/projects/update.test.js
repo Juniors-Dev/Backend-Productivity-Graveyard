@@ -111,7 +111,9 @@ function updateTests({ app, db, testProject, updateProject, createTestUser, badT
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Name can't be empty");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: "name", message: "Name can't be empty" })])
+      );
     });
 
     it("should not update a projects startDate without a provided endDate", async () => {
@@ -123,7 +125,11 @@ function updateTests({ app, db, testProject, updateProject, createTestUser, badT
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Both startDate and endDate must be provided together");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "", message: "Both startDate and endDate must be provided together" }),
+        ])
+      );
     });
 
     it("should not update a projects endDate without a provided startDate", async () => {
@@ -134,8 +140,11 @@ function updateTests({ app, db, testProject, updateProject, createTestUser, badT
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
-      expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Both startDate and endDate must be provided together");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "", message: "Both startDate and endDate must be provided together" }),
+        ])
+      );
     });
 
     it("should not update a project with endDate before startDate", async () => {
@@ -147,7 +156,11 @@ function updateTests({ app, db, testProject, updateProject, createTestUser, badT
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("End date must be after start date");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "endDate", message: "End date must be after start date" }),
+        ])
+      );
     });
 
     it("should not update a project with invalid tombstoneId", async () => {
@@ -159,7 +172,11 @@ function updateTests({ app, db, testProject, updateProject, createTestUser, badT
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Tombstone ID must be a number");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "tombstoneId", message: "Tombstone ID must be a number" }),
+        ])
+      );
     });
 
     it("should not update a project with non-existent tombstoneId", async () => {
@@ -181,8 +198,14 @@ function updateTests({ app, db, testProject, updateProject, createTestUser, badT
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain(
-        "status must be one of the following values: inactive, active, buried, resurrected, completed, archived"
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            field: "status",
+            message:
+              "status must be one of the following values: inactive, active, buried, resurrected, completed, archived",
+          }),
+        ])
       );
     });
 

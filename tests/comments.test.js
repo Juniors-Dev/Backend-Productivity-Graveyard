@@ -157,9 +157,18 @@ describe("Comments API", () => {
 
       expect(res.body.errors).toBeDefined();
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Comment is required");
-      expect(res.body.errors).toContain("Comment cannot be empty");
-      expect(res.body.errors).toHaveLength(2);
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            field: "message",
+            message: "Comment is required",
+          }),
+          expect.objectContaining({
+            field: "message",
+            message: "Comment cannot be empty",
+          }),
+        ])
+      );
     });
 
     it("rejects missing message field", async () => {
@@ -312,9 +321,18 @@ describe("Comments API", () => {
 
       expect(res.body.errors).toBeDefined();
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Comment is required");
-      expect(res.body.errors).toContain("Comment cannot be empty");
-      expect(res.body.errors).toHaveLength(2);
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            field: "message",
+            message: "Comment is required",
+          }),
+          expect.objectContaining({
+            field: "message",
+            message: "Comment cannot be empty",
+          }),
+        ])
+      );
     });
 
     it("rejects missing message field", async () => {
