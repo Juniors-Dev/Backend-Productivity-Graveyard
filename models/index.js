@@ -12,7 +12,7 @@ const sequelize = new Sequelize(process.env.DATABASE_NAME, process.env.ADMIN_USE
     decimalNumbers: true,
     // Uncomment the following lines if you need to use SSL to connect to your database
     ssl: {
-      require: true,
+      require: process.env.SSL_REQUIRED === "true" ? true : false,
       rejectUnauthorized: false,
     },
   },
@@ -30,7 +30,7 @@ const sequelizeCrudUser = new Sequelize(
       decimalNumbers: true,
       // Uncomment the following lines if you need to use SSL to connect to your database
       ssl: {
-        require: true,
+        require: process.env.SSL_REQUIRED === "true" ? true : false,
         rejectUnauthorized: false,
       },
     },
