@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_NAME: productivity_graveyard_dev
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "admin_password"
+      CRUD_USERNAME: "crud_user"
+      CRUD_PASSWORD: "crud_password"
+      HOST: localhost
+      DIALECT: postgres
+      FORCE_SYNC: true
+      NODE_ENV: test
+      DATABASE_URL: postgres://admin:admin_password@localhost:5432/productivity_graveyard_dev
+      JWT_SECRET: ${{ secrets.JWT_SECRET || 'test_secret' }}
+    services:
+      # Start PostgreSQL to match your docker-compose.yml config
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin_password
+          POSTGRES_DB: productivity_graveyard_dev
+        ports:
+          - 5432:5432
+        # Ensure postgres is ready before starting the job
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Initialize Database
+        run: node ./scripts/cli-db-init.js
+
+      - name: Run Linting
+        run: npm run lint
+
+      - name: Run Tests
+        run: npm test

@@ -12,7 +12,10 @@ Built with:
 - ✨ ESLint + Prettier + Husky for clean commits
 
 ---
+## Tests
 
+[![CI](https://github.com/Juniors-Dev/Backend-Productivity-Graveyard/actions/workflows/ci.yml/badge.svg)](https://github.com/Juniors-Dev/Backend-Productivity-Graveyard/actions/workflows/ci.yml)
+---
 ## ⚙️ Requirements
 
 - [Node.js](https://nodejs.org/) v18+
