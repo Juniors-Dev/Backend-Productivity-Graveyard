@@ -8,6 +8,7 @@ function sanitizeUser(user, options = {}) {
     bio: user.bio,
     avatarUrl: user.avatarUrl,
     role: user.Role?.name || "user",
+    createdAt: user.createdAt,
   };
 
   if (includeId) {

@@ -32,7 +32,8 @@ const seed = require("./seeder/seed.js");
 (async () => {
   try {
     console.log("Syncing and seeding DB with admin privileges...");
-    await adminDb.sequelize.sync({ force: false });
+    const force = process.env.FORCE_SYNC === "true" ? true : false;
+    await adminDb.sequelize.sync({ force });
     await seed(adminDb);
     await ensureCrudUserPrivileges();
     await adminDb.sequelize.close();
