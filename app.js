@@ -109,7 +109,7 @@ app.use((err, req, res, next) => {
   const status = err.status || "error";
   const message = err.message || "Internal Server Error";
   const errors = err.errors || null;
-  if (statusCode >= 500) {
+  if (statusCode >= 500 && process.env.LOG_ERRORS === "true") {
     console.error("Server Error:", err);
   }
   const response = errorResponse({

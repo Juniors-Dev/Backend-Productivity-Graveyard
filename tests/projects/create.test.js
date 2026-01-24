@@ -93,7 +93,9 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Name is required");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: "name", message: "Name is required" })])
+      );
     });
 
     it("shouldn't create a project with too long name", async () => {
@@ -105,7 +107,11 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Name must be under 100 characters");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "name", message: "Name must be under 100 characters" }),
+        ])
+      );
     });
 
     it("shouldn't create a project without description", async () => {
@@ -117,7 +123,9 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Description is required");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: "description", message: "Description is required" })])
+      );
     });
 
     it("shouldn't create a project with too long description", async () => {
@@ -129,7 +137,11 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Description must be under 500 characters");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "description", message: "Description must be under 500 characters" }),
+        ])
+      );
     });
 
     it("shouldn't create a project without cause of death", async () => {
@@ -141,7 +153,11 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Cause of death is required");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "causeOfDeath", message: "Cause of death is required" }),
+        ])
+      );
     });
 
     it("shouldn't create a project with too long cause of death", async () => {
@@ -153,7 +169,11 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Keep cause of death under 100 characters");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "causeOfDeath", message: "Keep cause of death under 100 characters" }),
+        ])
+      );
     });
 
     it("shouldn't create a project without start date", async () => {
@@ -165,7 +185,9 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Start date is required");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: "startDate", message: "Start date is required" })])
+      );
     });
 
     it("shouldn't create a project with invalid start date", async () => {
@@ -177,7 +199,11 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Start date must be a valid date");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "startDate", message: "Start date must be a valid date" }),
+        ])
+      );
     });
 
     it("shouldn't create a project without end date", async () => {
@@ -191,7 +217,9 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("End date is required");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: "endDate", message: "End date is required" })])
+      );
     });
 
     it("shouldn't create a project with invalid end date", async () => {
@@ -203,7 +231,11 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("End date must be a valid date");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "endDate", message: "End date must be a valid date" }),
+        ])
+      );
     });
 
     it("shouldn't create a project with end date before start date", async () => {
@@ -215,7 +247,11 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("End date must be after start date");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "endDate", message: "End date must be after start date" }),
+        ])
+      );
     });
 
     it("shouldn't create a project without types", async () => {
@@ -227,7 +263,11 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("At least one type must be selected");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "types", message: "At least one type must be selected" }),
+        ])
+      );
     });
 
     it("shouldn't create a project with non-existent type", async () => {
@@ -249,7 +289,11 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Cannot contain duplicate types.");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "types", message: "Cannot contain duplicate types." }),
+        ])
+      );
     });
 
     it("shouldn't create a project with non-numeric tombstoneId", async () => {
@@ -261,7 +305,11 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
       expect(res.body.success).toBe(false);
       expect(res.body).toHaveProperty("message");
       expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors).toContain("Tombstone ID must be a number");
+      expect(res.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "tombstoneId", message: "Tombstone ID must be a number" }),
+        ])
+      );
     });
 
     it("shouldn't create a project with non-existent tombstoneId", async () => {
