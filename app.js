@@ -24,23 +24,14 @@ var {
   statsRouter,
 } = require("./routes/index");
 
-// database and seeder
-var { db, adminDb, ensureCrudUserPrivileges } = require("./models");
-const seed = require("./seeder/seed.js");
+const { initDb } = require("./scripts/db-init");
 
 // Setting up the database connection and ensuring the CRUD user has the necessary privileges
 (async () => {
   try {
-    console.log("Syncing and seeding DB with admin privileges...");
-    const force = process.env.FORCE_SYNC === "true" ? true : false;
-    await adminDb.sequelize.sync({ force });
-    await seed(adminDb);
-    await ensureCrudUserPrivileges();
-    await adminDb.sequelize.close();
-    console.log("Admin DB setup complete.");
-    console.log("Authenticating CRUD user...");
-    await db.sequelize.authenticate();
-    console.log("CRUD DB authenticated. Starting app...");
+    if (process.env.NODE_ENV !== "test") {
+      await initDb();
+    }
   } catch (err) {
     console.error("Fatal DB setup error:", err);
     process.exit(1);
