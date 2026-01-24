@@ -36,34 +36,34 @@ const sequelizeCrudUser = new Sequelize(
 );
 
 async function ensureCrudUserPrivileges() {
-  const crudUser = process.env.CRUD_USERNAME;
-  const crudPass = process.env.CRUD_PASSWORD;
-  const dbName = process.env.DATABASE_NAME;
+  const { CRUD_USERNAME, CRUD_PASSWORD, DATABASE_NAME } = process.env;
 
-  const createUserAndGrant = `
+  // Use a single DO block to ensure all logic is executed as one unit
+  const sql = `
     DO $$
     BEGIN
-      IF NOT EXISTS (
-        SELECT FROM pg_catalog.pg_roles WHERE rolname = '${crudUser}'
-      ) THEN
-        CREATE USER ${crudUser} WITH ENCRYPTED PASSWORD '${crudPass}';
+      -- Create User
+      IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${CRUD_USERNAME}') THEN
+        CREATE USER ${CRUD_USERNAME} WITH ENCRYPTED PASSWORD '${CRUD_PASSWORD}';
       END IF;
+
+      -- Assign Privileges
+      EXECUTE 'GRANT CONNECT ON DATABASE ${DATABASE_NAME} TO ${CRUD_USERNAME}';
+      GRANT USAGE ON SCHEMA public TO ${CRUD_USERNAME};
+      GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO ${CRUD_USERNAME};
+      GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${CRUD_USERNAME};
+      
+      ALTER DEFAULT PRIVILEGES IN SCHEMA public
+      GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO ${CRUD_USERNAME};
     END
     $$;
-
-    GRANT CONNECT ON DATABASE ${dbName} TO ${crudUser};
-    GRANT USAGE ON SCHEMA public TO ${crudUser};
-    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO ${crudUser};
-    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${crudUser};
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO ${crudUser};
   `;
 
   try {
-    await sequelize.query(createUserAndGrant);
-    console.log(`CRUD user "${crudUser}" created and granted limited privileges.`);
+    await sequelize.query(sql);
+    console.log(`CRUD user setup complete.`);
   } catch (err) {
-    console.error("Error creating CRUD user or assigning privileges:", err);
+    console.error("Fatal DB setup error:", err);
     throw err;
   }
 }
