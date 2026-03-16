@@ -379,6 +379,7 @@ describe("Users API - Complete Test Suite", () => {
         expect(res.body.data.id).toBe(user.id);
         expect(res.body.data.username).toBeDefined();
         expect(res.body.data.role).toBe("user");
+        expect(res.body.data.isEmailVerified).toBe(false);
       });
 
       it("should return owner-specific fields for current user", async () => {
