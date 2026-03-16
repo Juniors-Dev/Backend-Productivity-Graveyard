@@ -52,6 +52,11 @@ module.exports = (sequelize, Sequelize) => {
         allowNull: false,
         comment: "Bcrypt salt for password hashing",
       },
+      isEmailVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+      },
       avatarUrl: {
         type: DataTypes.STRING,
         allowNull: true,

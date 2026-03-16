@@ -8,10 +8,12 @@ function sanitizeUser(user, options = {}) {
     bio: user.bio,
     avatarUrl: user.avatarUrl,
     role: user.Role?.name || "user",
+    isEmailVerified: user.isEmailVerified,
     createdAt: user.createdAt,
   };
 
   if (includeId) {
+    // QUESTION: this is not needed as base now has user.id. Permission to remove? (unless we change base again?)
     base.id = user.id;
   }
 
