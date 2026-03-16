@@ -15,7 +15,7 @@ class UserService {
   async getAll() {
     return this.User.findAll({
       include: [{ model: this.Role }],
-      attributes: { exclude: ["encryptedPassword", "salt", "roleId"] },
+      attributes: { exclude: ["hashedPassword", "salt", "roleId"] },
     });
   }
 
@@ -34,7 +34,7 @@ class UserService {
     return this.User.findOne({
       where: { username },
       include: [{ model: this.Role }],
-      attributes: { exclude: ["encryptedPassword", "salt", "roleId"] },
+      attributes: { exclude: ["hashedPassword", "salt", "roleId"] },
     });
   }
 
