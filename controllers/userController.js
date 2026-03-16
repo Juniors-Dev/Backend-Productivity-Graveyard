@@ -54,14 +54,14 @@ async function updateMe(req, res, next) {
     });
   }
 
-  const user = await userService.getOneId(id);
-  if (!user) {
+  const updatedUser = await userService.update(id, req.body);
+
+  if (!updatedUser) {
     throw createError({
       statusCode: 404,
       message: "User not found",
     });
   }
-  const updatedUser = await userService.update(id, req.body);
 
   res.status(200).json(
     successResponse({
