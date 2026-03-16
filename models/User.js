@@ -96,6 +96,10 @@ module.exports = (sequelize, Sequelize) => {
       foreignKey: "userId",
       onDelete: "CASCADE",
     });
+    User.hasMany(models.Token, {
+      foreignKey: "userId",
+      onDelete: "CASCADE",
+    });
     User.belongsToMany(models.Achievement, {
       through: "UserAchievements",
       foreignKey: "userId",
