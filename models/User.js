@@ -45,12 +45,10 @@ module.exports = (sequelize, Sequelize) => {
       hashedPassword: {
         type: DataTypes.STRING,
         allowNull: false,
-        comment: "Bcrypt-hashed password",
       },
       salt: {
         type: DataTypes.STRING,
         allowNull: false,
-        comment: "Bcrypt salt for password hashing",
       },
       isEmailVerified: {
         type: DataTypes.BOOLEAN,
