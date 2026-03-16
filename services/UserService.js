@@ -46,6 +46,17 @@ class UserService {
     });
 
     if (!user) return null;
+    return sanitizeUser(user);
+  }
+
+  async getProfile(userId) {
+    const user = await this.User.findOne({
+      where: { id: userId },
+      include: [{ model: this.Role }],
+      attributes: { exclude: ["hashedPassword", "salt", "roleId"] },
+    });
+
+    if (!user) return null;
 
     const sanitizedUser = sanitizeUser(user);
     const { count, rows } = await this.projectService.getAll(10, 0, {
