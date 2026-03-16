@@ -47,7 +47,7 @@ async function getMe(req, res, next) {
 async function updateMe(req, res, next) {
   const id = req.user.id;
 
-  if (Object.keys(req.body).length === 0) {
+  if (!req.body || Object.keys(req.body).length === 0) {
     throw createError({
       statusCode: 400,
       message: "At least one field must be provided for update",
