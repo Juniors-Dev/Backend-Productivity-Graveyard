@@ -7,4 +7,8 @@ const verifyEmailSchema = yup
   .strict()
   .noUnknown(true, "Unknown field in request body");
 
-module.exports = { verifyEmailSchema };
+const resetEmailSchema = yup.object({
+  email: yup.string().email("Please provide a valid email").required("New email is required"),
+});
+
+module.exports = { verifyEmailSchema, resetEmailSchema };
