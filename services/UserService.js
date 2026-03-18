@@ -103,10 +103,7 @@ class UserService {
   }
 
   async softDelete(id) {
-    const user = await this.User.findByPk(id, {
-      include: [{ model: this.Role }],
-    });
-
+    const user = await this.User.findByPk(id);
     if (!user) {
       return null;
     }
