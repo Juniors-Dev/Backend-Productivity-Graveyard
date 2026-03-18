@@ -1,18 +1,20 @@
 const { db } = require("../models");
-const UserService = require("../services/UserService");
+const { sendVerificationEmail, sendPasswordResetEmail } = require("../services/emailService");
+const { UserService, RoleService, AuthService } = require("../services/index");
 const userService = new UserService(db);
-const RoleService = require("../services/RoleService");
+const authService = new AuthService(db);
 const roleService = new RoleService(db);
-const { generateToken, hashPassword, verifyPassword, createError, successResponse } = require("../utilities");
+
+const { generateToken: generateJwt } = require("../utilities/jwt");
+const { hashPassword, verifyPassword } = require("../utilities/hashing");
+const { createError, successResponse } = require("../utilities");
 
 async function register(req, res) {
   const { firstName, lastName, username, email, password } = req.body;
   const { salt, hashedPassword } = await hashPassword(password);
 
-  //Created a samll RoleService.
   const role = await roleService.getOneRole("user");
 
-  //creating the inital user
   const user = await userService.create({
     firstName,
     lastName,
@@ -23,49 +25,43 @@ async function register(req, res) {
     roleId: role.id,
   });
 
-  if (!user) {
-    throw createError({
-      status: "conflict",
-      statusCode: 409,
-      message: "Conflict, user not created.",
-    });
+  try {
+    const verificationToken = await authService.createVerificationToken(user.id);
+    await sendVerificationEmail(email, verificationToken);
+  } catch (error) {
+    // SMTP failure. User can resend via /auth/resend-verification
   }
+
   res.status(201).json(
     successResponse({
-      message: "Account created successfully.",
+      message: "Account created successfully. Please check your email to verify your account.",
       statusCode: 201,
     })
   );
 }
 
 async function login(req, res) {
-  // retrieving input
   const { email, password } = req.body;
 
-  // finding the user - note we pass false to include the password fields
   const user = await userService.getOneEmail(email, false, false);
 
-  //Cheking if the user exist
   if (!user) {
     throw createError({
-      status: "unauthorized",
       statusCode: 401,
       message: "Invalid email or password, please try again.",
     });
   }
 
-  // verifying the user - use hashedPassword instead of encryptedPassword
   const verifyUser = await verifyPassword(password, user.salt, user.hashedPassword);
 
   if (!verifyUser) {
     throw createError({
-      status: "unauthorized",
       statusCode: 401,
-      message: "Invalid password, please try again.",
+      message: "Invalid email or password, please try again.",
     });
   }
 
-  const token = generateToken({
+  const token = generateJwt({
     id: user.id,
     email: user.email,
     username: user.username,
@@ -80,6 +76,7 @@ async function login(req, res) {
         email: user.email,
         username: user.username,
         role: user.Role.name,
+        isEmailVerified: user.isEmailVerified,
         token,
       },
       statusCode: 200,
@@ -87,4 +84,70 @@ async function login(req, res) {
   );
 }
 
-module.exports = { register, login };
+async function verifyEmail(req, res) {
+  const { token } = req.body;
+  await authService.verifyEmail(token);
+
+  res.status(200).json(
+    successResponse({
+      message: "Email verified successfully.",
+      statusCode: 200,
+    })
+  );
+}
+
+async function resendVerification(req, res) {
+  const { email } = req.body;
+
+  const user = await userService.getOneEmail(email);
+  if (user && !user.isEmailVerified) {
+    try {
+      const token = await authService.createVerificationToken(user.id);
+      await sendVerificationEmail(email, token);
+    } catch (error) {
+      // SMTP failure. Swallow to preserve consistent 200 (anti-enumeration)
+    }
+  }
+
+  res.status(200).json(
+    successResponse({
+      message: "If that email is registered and unverified, a verification link has been sent.",
+      statusCode: 200,
+    })
+  );
+}
+
+async function forgotPassword(req, res) {
+  const { email } = req.body;
+
+  const user = await userService.getOneEmail(email);
+  if (user) {
+    try {
+      const token = await authService.createPasswordResetToken(user.id);
+      await sendPasswordResetEmail(email, token);
+    } catch (error) {
+      // SMTP failure. Swallow to preserve consistent 200 (anti-enumeration)
+    }
+  }
+
+  res.status(200).json(
+    successResponse({
+      message: "If that email is registered, a password reset link has been sent.",
+      statusCode: 200,
+    })
+  );
+}
+
+async function resetPassword(req, res) {
+  const { token, newPassword } = req.body;
+  await authService.resetPassword(token, newPassword);
+
+  res.status(200).json(
+    successResponse({
+      message: "Password reset successfully.",
+      statusCode: 200,
+    })
+  );
+}
+
+module.exports = { register, login, verifyEmail, resendVerification, forgotPassword, resetPassword };
