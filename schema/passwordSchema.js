@@ -25,4 +25,4 @@ const resetPasswordSchema = yup
   .strict()
   .noUnknown(true, "Unknown field in request body");
 
-module.exports = { updatePasswordSchema, resetPasswordSchema, forgotPasswordSchema };
+module.exports = { updatePasswordSchema, resetPasswordSchema };
