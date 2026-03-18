@@ -25,11 +25,4 @@ const resetPasswordSchema = yup
   .strict()
   .noUnknown(true, "Unknown field in request body");
 
-const forgotPasswordSchema = yup
-  .object({
-    email: yup.string().email("Please provide a valid email").required("Email is required"),
-  })
-  .strict()
-  .noUnknown(true, "Unknown field in request body");
-
 module.exports = { updatePasswordSchema, resetPasswordSchema, forgotPasswordSchema };
