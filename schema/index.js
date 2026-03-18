@@ -4,8 +4,8 @@ const { updateUserSchema } = require("./updateUserSchema");
 const { projectIdSchema, commentIdSchema, uuidSchema } = require("./params");
 const { projectSchema, projectUpdateSchema, typeIdSchema } = require("./projectSchema");
 const { createCommentSchema, updateCommentSchema } = require("./commentSchema");
-const { updatePasswordSchema, resetPasswordSchema, forgotPasswordSchema } = require("./passwordSchema");
-const { verifyEmailSchema, resetEmailSchema } = require("./emailSchema");
+const { updatePasswordSchema, resetPasswordSchema } = require("./passwordSchema");
+const { verifyEmailSchema, emailSchema } = require("./emailSchema");
 module.exports = {
   loginSchema,
   registerSchema,
@@ -20,7 +20,6 @@ module.exports = {
   typeIdSchema,
   updatePasswordSchema,
   resetPasswordSchema,
-  forgotPasswordSchema,
   verifyEmailSchema,
-  resetEmailSchema,
+  emailSchema,
 };
