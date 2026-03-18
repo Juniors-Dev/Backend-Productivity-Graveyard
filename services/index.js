@@ -1,3 +1,5 @@
+const AuthService = require("./AuthService");
+
 module.exports = {
   UserService: require("./UserService"),
   ProjectService: require("./ProjectService"),
@@ -7,6 +9,7 @@ module.exports = {
   CommentService: require("./CommentService"),
   TombstoneService: require("./TombstoneService"),
   StatsService: require("./StatsService"),
+  AuthService: require("./AuthService"),
 };
 
 //hello
