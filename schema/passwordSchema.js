@@ -21,7 +21,13 @@ const updatePasswordSchema = yup
   .noUnknown(true, "Unknown field in request body");
 
 const resetPasswordSchema = yup
-  .object({ token: yup.string().required("Reset token is required"), ...newPasswordFields })
+  .object({
+    token: yup
+      .string()
+      .matches(/^[a-f0-9]{64}$/, "Invalid token format")
+      .required("Reset token is required"),
+    ...newPasswordFields,
+  })
   .strict()
   .noUnknown(true, "Unknown field in request body");
 
