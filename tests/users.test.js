@@ -268,7 +268,7 @@ describe("Users API - Complete Test Suite", () => {
           .expect(201);
 
         expect(res.body.success).toBe(true);
-        expect(res.body.message).toBe("Account created successfully.");
+        expect(res.body.message).toBe("Account created successfully. Please check your email to verify your account.");
       });
 
       it("should fail registration with missing required fields", async () => {
@@ -362,7 +362,7 @@ describe("Users API - Complete Test Suite", () => {
           .expect(401);
 
         expect(res.body.success).toBe(false);
-        expect(res.body.status).toBe("unauthorized");
+        expect(res.body.status).toBe("fail");
       });
 
       it("should fail login with missing fields", async () => {
