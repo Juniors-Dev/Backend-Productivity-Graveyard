@@ -111,7 +111,7 @@ async function resendVerification(req, res) {
 
   res.status(200).json(
     successResponse({
-      message: "If that email is registered and unverified, a verification link has been sent.",
+      message: "If an account exists with that email and is unverified, a verification link has been sent.",
       statusCode: 200,
     })
   );
@@ -132,7 +132,7 @@ async function forgotPassword(req, res) {
 
   res.status(200).json(
     successResponse({
-      message: "If that email is registered, a password reset link has been sent.",
+      message: "If an account exists with that email, we've sent a password reset link.",
       statusCode: 200,
     })
   );
