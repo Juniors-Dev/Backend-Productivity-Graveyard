@@ -43,7 +43,7 @@ async function register(req, res) {
 async function login(req, res) {
   const { email, password } = req.body;
 
-  const user = await userService.getOneEmail(email, false, false);
+  const user = await userService.getOneEmail(email, false);
 
   if (!user) {
     throw createError({
