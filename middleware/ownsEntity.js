@@ -1,4 +1,4 @@
-var { createError, normalizeError } = require("../utilities");
+var { createError } = require("../utilities");
 
 /**
  *

@@ -1,5 +1,4 @@
 var createError = require("../utilities/createError");
-var { errorResponse } = require("../utilities/response.js");
 
 const validateSchema = (schema) => async (req, res, next) => {
   try {
