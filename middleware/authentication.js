@@ -43,26 +43,14 @@ async function isLoggedIn(req, res, next) {
   }
 }
 
-const hasRole = (role) => async (req, res, next) => {
-  try {
-    if (!req.user) {
-      throw createError({ statusCode: 401, message: "Unauthorized, token not found." });
-    }
-
-    const user = await userService.getOneId(req.user.id);
-
-    if (!user) {
-      throw createError({ statusCode: 401, message: "Unauthorized, user not found." });
-    }
-
-    if (user.role !== role) {
-      throw createError({ statusCode: 403, message: "Forbidden, insufficient permissions." });
-    }
-    req.user = user;
-    next();
-  } catch (error) {
-    next(normalizeError(error));
+const hasRole = (role) => (req, res, next) => {
+  if (!req.user) {
+    throw createError({ statusCode: 401, message: "Unauthorized, token not found." });
   }
+  if (req.user.role !== role) {
+    throw createError({ statusCode: 403, message: "Forbidden, insufficient permissions." });
+  }
+  next();
 };
 
 module.exports = { authenticate, isLoggedIn, hasRole };
