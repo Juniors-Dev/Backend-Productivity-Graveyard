@@ -25,7 +25,7 @@ class UserService {
       attributes: {
         exclude: exclude ? ["hashedPassword", "salt", "roleId"] : [],
       },
-      paranoid, // if paranoid is false, deletedAt will be null
+      paranoid,
     });
   }
 
