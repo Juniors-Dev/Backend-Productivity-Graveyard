@@ -1,9 +1,9 @@
-var express = require("express");
-var router = express.Router({ mergeParams: true });
+const express = require("express");
+const router = express.Router({ mergeParams: true });
 const { asyncHandler, authenticate, validateSchema, validateParamSchema } = require("../middleware");
-var { createCommentSchema } = require("../schema/commentSchema");
-var { projectIdSchema } = require("../schema/params");
-var { createComment, getProjectComments } = require("../controllers/commentController");
+const { createCommentSchema } = require("../schema/commentSchema");
+const { projectIdSchema } = require("../schema/params");
+const { createComment, getProjectComments } = require("../controllers/commentController");
 
 router.post(
   "/:projectId/comments",
