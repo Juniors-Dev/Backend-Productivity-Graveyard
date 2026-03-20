@@ -1,7 +1,4 @@
 const { verifyToken } = require("../utilities/jwt");
-const { db } = require("../models");
-const UserService = require("../services/UserService");
-const userService = new UserService(db);
 const { createError, normalizeError } = require("../utilities");
 
 async function authenticate(req, res, next) {
