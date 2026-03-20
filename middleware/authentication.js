@@ -65,23 +65,4 @@ const hasRole = (role) => async (req, res, next) => {
   }
 };
 
-//Check if the visited user is itsself or Admin
-const isSelfOrAdmin = async (req, res, next) => {
-  try {
-    const targetUser = req.params.id;
-    const user = req.user;
-
-    if (targetUser === user.id || user.Role.name === "admin") {
-      return next();
-    }
-
-    throw createError({
-      statusCode: 403,
-      message: "Forbidden, you don't have permission to access this resource.",
-    });
-  } catch (error) {
-    next(normalizeError(error));
-  }
-};
-
-module.exports = { authenticate, isLoggedIn, hasRole, isAdmin, isSelfOrAdmin };
+module.exports = { authenticate, isLoggedIn, hasRole };
