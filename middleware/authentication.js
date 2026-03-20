@@ -65,39 +65,6 @@ const hasRole = (role) => async (req, res, next) => {
   }
 };
 
-async function isAdmin(req, res, next) {
-  try {
-    const auth = req.headers["authorization"];
-    if (!auth) {
-      return next();
-    }
-
-    const token = auth.split(" ");
-    if (token[0] !== "Bearer" || token.length !== 2) {
-      return next();
-    }
-
-    const decoded = verifyToken(token[1]);
-    if (!decoded) {
-      return next();
-    }
-
-    const user = await userService.getOneId(decoded.id);
-    if (!user) {
-      return next();
-    }
-
-    if (user.role !== "admin") {
-      return next();
-    }
-
-    req.user = user;
-    next();
-  } catch (error) {
-    next(normalizeError(error));
-  }
-}
-
 //Check if the visited user is itsself or Admin
 const isSelfOrAdmin = async (req, res, next) => {
   try {
