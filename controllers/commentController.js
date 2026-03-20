@@ -1,9 +1,9 @@
-var { db } = require("../models");
-var CommentService = require("../services/CommentService");
-var commentService = new CommentService(db);
-var { successResponse } = require("../utilities/response");
-var createError = require("../utilities/createError");
-var { getLimitOffset } = require("../utilities/getPagination");
+const { db } = require("../models");
+const CommentService = require("../services/CommentService");
+const commentService = new CommentService(db);
+const { successResponse } = require("../utilities/response");
+const createError = require("../utilities/createError");
+const { getLimitOffset } = require("../utilities/getPagination");
 
 async function createComment(req, res) {
   const { message, parentId } = req.body;
