@@ -1,6 +1,12 @@
-var express = require("express");
-var router = express.Router();
-var { validateSchema, asyncHandler, validateCredentials, createRateLimiter, createSlowDown } = require("../middleware");
+const express = require("express");
+const router = express.Router();
+const {
+  validateSchema,
+  asyncHandler,
+  validateCredentials,
+  createRateLimiter,
+  createSlowDown,
+} = require("../middleware");
 const { loginSchema, registerSchema, verifyEmailSchema, emailSchema, resetPasswordSchema } = require("../schema");
 const {
   login,

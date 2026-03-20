@@ -1,7 +1,7 @@
-var { db } = require("../models");
-var UserService = require("../services/UserService");
-var userService = new UserService(db);
-var { createError } = require("../utilities");
+const { db } = require("../models");
+const UserService = require("../services/UserService");
+const userService = new UserService(db);
+const { createError } = require("../utilities");
 
 async function validateCredentials(req, res, next) {
   const { username, email } = req.body;

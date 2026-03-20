@@ -1,13 +1,13 @@
-var { hashPassword } = require("../utilities/hashing");
-var userRoles = require("./roles.json");
-var deathTypes = require("./types.json");
-var userAchievements = require("./achievements.json");
-var dummyUsers = require("./users.json");
-var projects = require("./projects.json");
-var userComments = require("./comments.json");
-var userVotes = require("./upVote.json");
-var resurrectedProjects = require("./ResurrectionEvent.json");
-var projectTombstones = require("./tombstones.json");
+const { hashPassword } = require("../utilities/hashing");
+const userRoles = require("./roles.json");
+const deathTypes = require("./types.json");
+const userAchievements = require("./achievements.json");
+const dummyUsers = require("./users.json");
+const projects = require("./projects.json");
+const userComments = require("./comments.json");
+const userVotes = require("./upVote.json");
+const resurrectedProjects = require("./ResurrectionEvent.json");
+const projectTombstones = require("./tombstones.json");
 
 async function basicSeed(db) {
   let transaction;

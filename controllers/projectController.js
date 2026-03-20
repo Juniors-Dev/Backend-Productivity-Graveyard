@@ -1,10 +1,10 @@
-var { db } = require("../models");
-var { ProjectService, TypeService, TombstoneService } = require("../services");
-var projectService = new ProjectService(db);
-var typeService = new TypeService(db);
-var tombstoneService = new TombstoneService(db);
-var { successResponse, errorResponse, createError } = require("../utilities");
-var { getLimitOffset } = require("../utilities/getPagination.js");
+const { db } = require("../models");
+const { ProjectService, TypeService, TombstoneService } = require("../services");
+const projectService = new ProjectService(db);
+const typeService = new TypeService(db);
+const tombstoneService = new TombstoneService(db);
+const { successResponse, errorResponse, createError } = require("../utilities");
+const { getLimitOffset } = require("../utilities/getPagination.js");
 
 async function getAll(req, res) {
   const { limit, offset } = getLimitOffset(req);

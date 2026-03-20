@@ -1,7 +1,7 @@
-var { db } = require("../models");
-var { StatsService } = require("../services");
-var statsService = new StatsService(db);
-var { successResponse, createError } = require("../utilities");
+const { db } = require("../models");
+const { StatsService } = require("../services");
+const statsService = new StatsService(db);
+const { successResponse, createError } = require("../utilities");
 
 async function getAll(req, res) {
   const data = await statsService.getAll();

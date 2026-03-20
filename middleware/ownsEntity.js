@@ -1,4 +1,4 @@
-var { createError } = require("../utilities");
+const { createError } = require("../utilities");
 
 /**
  *

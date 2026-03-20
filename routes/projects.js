@@ -1,6 +1,6 @@
-var express = require("express");
-var router = express.Router();
-var {
+const express = require("express");
+const router = express.Router();
+const {
   getAll,
   getOneId,
   create,
@@ -11,13 +11,13 @@ var {
   removeType,
   getAllTombstones,
 } = require("../controllers/projectController");
-var asyncHandler = require("../middleware/asyncHandler");
-var { authenticate, hasRole, validateSchema, validateParamSchema, ownsEntity, isLoggedIn } = require("../middleware");
-var { projectSchema, projectUpdateSchema, typeIdSchema, uuidSchema } = require("../schema");
-var { ProjectService } = require("../services");
-var { db } = require("../models");
-var projectService = new ProjectService(db);
-var projectComments = require("./projectComments");
+const asyncHandler = require("../middleware/asyncHandler");
+const { authenticate, hasRole, validateSchema, validateParamSchema, ownsEntity, isLoggedIn } = require("../middleware");
+const { projectSchema, projectUpdateSchema, typeIdSchema, uuidSchema } = require("../schema");
+const { ProjectService } = require("../services");
+const { db } = require("../models");
+const projectService = new ProjectService(db);
+const projectComments = require("./projectComments");
 
 router.get("/", isLoggedIn, asyncHandler(getAll));
 router.get("/types", asyncHandler(getAllTypes));

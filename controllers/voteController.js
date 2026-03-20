@@ -1,8 +1,8 @@
-var { db } = require("../models");
-var { VoteService, ProjectService } = require("../services/index");
-var voteService = new VoteService(db);
-var projectService = new ProjectService(db);
-var { successResponse, errorResponse, createError } = require("../utilities");
+const { db } = require("../models");
+const { VoteService, ProjectService } = require("../services/index");
+const voteService = new VoteService(db);
+const projectService = new ProjectService(db);
+const { successResponse, errorResponse, createError } = require("../utilities");
 
 async function toggleUpvote(req, res) {
   const { projectId } = req.params;

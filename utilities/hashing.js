@@ -1,4 +1,4 @@
-var crypto = require("crypto");
+const crypto = require("crypto");
 
 async function hashPassword(password, salt = null) {
   if (!salt) {

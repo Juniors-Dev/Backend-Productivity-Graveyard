@@ -1,4 +1,4 @@
-var createError = require("../utilities/createError");
+const createError = require("../utilities/createError");
 
 const validateSchema = (schema) => async (req, res, next) => {
   try {
