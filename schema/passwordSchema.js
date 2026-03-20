@@ -7,8 +7,8 @@ const updatePasswordSchema = yup
       .string()
       .min(8, "Password must be at least 8 characters")
       .matches(
-        /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/,
-        "Password must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
+        "Password must be at least 8 characters and contain at least one uppercase letter, one lowercase letter and one number"
       )
       .required("New password is required"),
     confirmPassword: yup
@@ -18,8 +18,5 @@ const updatePasswordSchema = yup
   })
   .strict()
   .noUnknown(true, "Unknown field in request body");
-
-// Optional: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
-// 8 char, at least one uppercase letter, one lowercase letter, one number
 
 module.exports = { updatePasswordSchema };
