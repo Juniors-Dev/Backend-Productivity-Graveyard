@@ -3,7 +3,7 @@ const app = require("../app");
 const { generateToken } = require("../utilities/jwt");
 const { db } = require("../models");
 const { registerSchema, loginSchema } = require("../schema");
-const { hashPassword } = require("../utilities/hashing.js");
+//const { hashPassword } = require("../utilities/hashing.js");
 
 const rn = (n2) => {
   const n1 = Math.floor(Math.random() * 10);
@@ -392,7 +392,6 @@ describe("Users API - Complete Test Suite", () => {
 
         expect(res.body.success).toBe(true);
         expect(res.body.data.id).toBe(user.id);
-        console.warn(res.body.data);
         // Owner-specific fields that sanitizeUser should include
         //TODO expand user output if own profile
         //expect(res.body.data.email).toBeDefined();
@@ -429,14 +428,10 @@ describe("Users API - Complete Test Suite", () => {
       });
 
       it("should NOT return owner-specific fields for other users", async () => {
-        const res = await request(app)
-          .get(`/users/${user.id}`) // Public profile endpoint
-          .expect(200);
+        const res = await request(app).get(`/users/${user.id}`).expect(200);
 
         expect(res.body.data.username).toBeDefined();
         expect(res.body.data.bio).toBeDefined();
-
-        // Should NOT include owner-specific fields
         expect(res.body.data.email).toBeUndefined();
         expect(res.body.data.firstName).toBeUndefined();
         expect(res.body.data.lastName).toBeUndefined();
