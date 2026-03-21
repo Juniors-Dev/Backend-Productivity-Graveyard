@@ -18,10 +18,11 @@ async function initDb() {
 
   // Verify crud connection works (optional but useful)
   await db.sequelize.authenticate();
+}
 
-  // Cleanup so CI doesn't hang on open handles
+async function closeDb() {
   await adminDb.sequelize.close();
   await db.sequelize.close();
 }
 
-module.exports = { initDb };
+module.exports = { initDb, closeDb };
