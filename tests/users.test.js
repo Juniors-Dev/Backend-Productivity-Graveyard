@@ -62,14 +62,14 @@ describe("Users API - Complete Test Suite", () => {
       id: user.id,
       email: user.email,
       username: user.username,
-      roleId: user.roleId,
+      role: userRole.name,
     });
 
     adminToken = generateToken({
       id: admin.id,
       email: admin.email,
       username: admin.username,
-      roleId: admin.roleId,
+      role: adminRole.name,
     });
   });
 
@@ -595,7 +595,7 @@ describe("Users API - Complete Test Suite", () => {
           id: testUser.id,
           email: testUser.email,
           username: testUser.username,
-          roleId: testUser.roleId,
+          role: userRole.name,
         });
       });
 
