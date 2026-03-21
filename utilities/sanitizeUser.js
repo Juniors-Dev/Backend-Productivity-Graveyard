@@ -1,5 +1,5 @@
 function sanitizeUser(user, options = {}) {
-  const { isOwner = false, isAdmin = false, includeId = false } = options;
+  const { isOwner = false, isAdmin = false } = options;
 
   const base = {
     id: user.id,
