@@ -19,7 +19,7 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  * @swagger
  * components:
  *   schemas:
- *     UserResponse:
+ *     PublicUserResponse:
  *       type: object
  *       properties:
  *         id:
@@ -29,19 +29,9 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *         fullName:
  *           type: string
  *           example: "John Doe"
- *         firstName:
- *           type: string
- *           example: John
- *         lastName:
- *           type: string
- *           example: Doe
  *         username:
  *           type: string
  *           example: johndoe123
- *         email:
- *           type: string
- *           format: email
- *           example: john.doe@example.com
  *         bio:
  *           type: string
  *           nullable: true
@@ -54,17 +44,29 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *         role:
  *           type: string
  *           example: user
- *         isEmailVerified:
- *           type: boolean
- *           example: true
  *         createdAt:
  *           type: string
  *           format: date-time
  *           example: "2024-04-30T12:00:00Z"
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           example: "2024-04-30T12:00:00Z"
+ *
+ *     OwnerUserResponse:
+ *       allOf:
+ *         - $ref: '#/components/schemas/PublicUserResponse'
+ *         - type: object
+ *           properties:
+ *             firstName:
+ *               type: string
+ *               example: John
+ *             lastName:
+ *               type: string
+ *               example: Doe
+ *             email:
+ *               type: string
+ *               format: email
+ *               example: john.doe@example.com
+ *             isEmailVerified:
+ *               type: boolean
+ *               example: true
  *
  *     SoftDeletedUser:
  *       type: object
@@ -190,7 +192,7 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *                 message:
  *                   type: string
  *                 data:
- *                   $ref: '#/components/schemas/UserResponse'
+ *                   $ref: '#/components/schemas/OwnerUserResponse'
  *             example:
  *               success: true
  *               status: success
@@ -298,7 +300,7 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *                 message:
  *                   type: string
  *                 data:
- *                   $ref: '#/components/schemas/UserResponse'
+ *                   $ref: '#/components/schemas/PublicUserResponse'
  *             example:
  *               success: true
  *               status: success
@@ -311,7 +313,7 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *                 bio: "My best friend is a rubber duck!"
  *                 avatarUrl: "https://cdn.example.com/avatar/johndoe.jpg"
  *                 role: user
- *                 isEmailVerified: true
+ *                 createdAt: "2026-03-30T12:00:00Z"
  *       404:
  *         description: User not found
  *         content:
@@ -372,7 +374,7 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *                 message:
  *                   type: string
  *                 data:
- *                   $ref: '#/components/schemas/UserResponse'
+ *                   $ref: '#/components/schemas/OwnerUserResponse'
  *             example:
  *               success: true
  *               status: success
