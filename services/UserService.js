@@ -50,6 +50,8 @@ class UserService {
   }
 
   async getProfile(userId, options = {}) {
+    const { currentUserId = null, ...sanitizeOptions } = options;
+
     const user = await this.User.findOne({
       where: { id: userId },
       include: [{ model: this.Role }],
@@ -58,11 +60,12 @@ class UserService {
 
     if (!user) return null;
 
-    const sanitizedUser = sanitizeUser(user, options);
+    const sanitizedUser = sanitizeUser(user, sanitizeOptions);
     const { count, rows } = await this.projectService.getAll(10, 0, {
       userId,
-      currentUserId: null,
+      currentUserId,
     });
+
     const stats = await this.statsService.getUserStats(userId);
 
     sanitizedUser.projects = {
