@@ -55,7 +55,7 @@ async function updateMe(req, res) {
     });
   }
 
-  const updatedUser = await userService.update(id, req.body);
+  const updatedUser = await userService.update(id, req.body, { isOwner: true });
 
   if (!updatedUser) {
     throw createError({
