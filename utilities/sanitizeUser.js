@@ -1,5 +1,5 @@
 function sanitizeUser(user, options = {}) {
-  const { isOwner = false, isAdmin = false, includeId = false } = options;
+  const { isOwner = false, isAdmin = false } = options;
 
   const base = {
     id: user.id,
@@ -8,14 +8,8 @@ function sanitizeUser(user, options = {}) {
     bio: user.bio,
     avatarUrl: user.avatarUrl,
     role: user.Role?.name || "user",
-    isEmailVerified: user.isEmailVerified,
     createdAt: user.createdAt,
   };
-
-  if (includeId) {
-    // QUESTION: this is not needed as base now has user.id. Permission to remove? (unless we change base again?)
-    base.id = user.id;
-  }
 
   if (isOwner || isAdmin) {
     return {
@@ -23,6 +17,7 @@ function sanitizeUser(user, options = {}) {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      isEmailVerified: user.isEmailVerified,
     };
   }
 
