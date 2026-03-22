@@ -6,7 +6,7 @@ const { createError, successResponse } = require("../utilities");
 //This for getting the user based of Id.
 async function getUser(req, res, next) {
   const id = req.params.id;
-  const user = await userService.getProfile(id);
+  const user = await userService.getProfile(id, { currentUserId: req.user?.id ?? null });
 
   if (!user) {
     throw createError({
@@ -26,7 +26,7 @@ async function getUser(req, res, next) {
 
 async function getMe(req, res, next) {
   const id = req.user.id;
-  const user = await userService.getProfile(id, { isOwner: true });
+  const user = await userService.getProfile(id, { isOwner: true, currentUserId: req.user.id });
 
   if (!user) {
     throw createError({

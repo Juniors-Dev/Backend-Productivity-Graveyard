@@ -1,5 +1,5 @@
 function sanitizeUser(user, options = {}) {
-  const { isOwner = false, isAdmin = false, includeId = false } = options;
+  const { isOwner = false, isAdmin = false } = options;
 
   const base = {
     id: user.id,
@@ -11,16 +11,13 @@ function sanitizeUser(user, options = {}) {
     createdAt: user.createdAt,
   };
 
-  if (includeId) {
-    base.id = user.id;
-  }
-
   if (isOwner || isAdmin) {
     return {
       ...base,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      isEmailVerified: user.isEmailVerified,
     };
   }
 

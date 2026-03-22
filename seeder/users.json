@@ -5,6 +5,7 @@
     "username": "admin_user",
     "email": "ada.admin@example.com",
     "password": "admin123",
+    "isEmailVerified ": false,
     "bio": "Can override your code and your will to live. Handles bans with a smile.",
     "roleId": 3,
     "achievement": [1]
@@ -15,6 +16,7 @@
     "username": "jake_the_junior",
     "email": "jake@example.com",
     "password": "user123",
+    "isEmailVerified ": false,
     "bio": "Junior dev. Broke production once, now writes poetry in commit messages.",
     "roleId": 1,
     "achievement": [1]
@@ -25,6 +27,7 @@
     "username": "nina_null",
     "email": "nina@example.com",
     "password": "user123",
+    "isEmailVerified ": false,
     "bio": "Frontend fan. Has 42 design systems and still hates all buttons.",
     "roleId": 1,
     "achievement": [1]
@@ -35,6 +38,7 @@
     "username": "trev_dev",
     "email": "trev@example.com",
     "password": "user123",
+    "isEmailVerified ": false,
     "bio": "Backend builder. Once Dockerized his breakfast. Loves indexes and chili.",
     "roleId": 1,
     "achievement": [1]
@@ -45,6 +49,7 @@
     "username": "moderator_ally",
     "email": "alice.smith@example.com",
     "password": "mod123",
+    "isEmailVerified ": false,
     "bio": "Moderator with an iron fist and CSS-laced gloves. Speaks fluent regex.",
     "roleId": 2,
     "achievement": [1]
@@ -55,6 +60,7 @@
     "username": "bruno_burnout",
     "email": "bruno@example.com",
     "password": "user123",
+    "isEmailVerified ": false,
     "bio": "Former startup hero turned side-project ghost. Maintainer of 0 repos.",
     "roleId": 1,
     "achievement": [1]
@@ -65,6 +71,7 @@
     "username": "sasha_scopecreep",
     "email": "sasha@example.com",
     "password": "user123",
+    "isEmailVerified ": false,
     "bio": "Started a to-do app. It now powers a space agency. Easily distracted.",
     "roleId": 1,
     "achievement": [1]

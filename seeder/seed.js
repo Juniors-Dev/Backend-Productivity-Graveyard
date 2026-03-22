@@ -66,6 +66,7 @@ async function usersSeed(db) {
           username: dummyUsers[i].username,
           email: dummyUsers[i].email,
           salt: salt,
+          isEmailVerified: false,
           hashedPassword: hashedPassword,
         },
         { transaction }
