@@ -175,23 +175,28 @@ describe("Users API - Complete Test Suite", () => {
       it("should reject too long lastName", async () => {
         const invalidData = {
           firstName: "John",
-          lastName: `DoeVeryLongname${Date.now()}`,
+          lastName: "DoeVeryLongLastNameThatExceedsLimit",
           username,
           email,
           password,
         };
-        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Last name must be at most 15 characters");
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Last name must be at most 30 characters");
       });
 
       it("should reject too long username", async () => {
         const invalidData = {
           firstName: "John",
           lastName: "Doe",
-          username: `johnuser${Date.now()}`,
+          username: "thisusernameiswaytoolongtobevalid",
           email,
           password,
         };
-        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Username must be at most 15 characters");
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Username must be at most 30 characters");
+      });
+
+      it("should reject firstName too short", async () => {
+        const invalidData = { firstName: "J", lastName: "Doe", username, email, password };
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("First name must be at least 2 characters");
       });
 
       it("should reject too long password", async () => {
@@ -200,9 +205,9 @@ describe("Users API - Complete Test Suite", () => {
           lastName: "Doe",
           username,
           email,
-          password: `ThisisaveryLongPassword13!`,
+          password: "ThisIsAVeryLongPasswordThatExceedsTheSixtyFourCharacterLimitABC123",
         };
-        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Password must be at most 20 characters");
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Password must be at most 64 characters");
       });
     });
 

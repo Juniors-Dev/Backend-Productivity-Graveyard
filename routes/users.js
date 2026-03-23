@@ -1,6 +1,6 @@
 var express = require("express");
 var router = express.Router();
-const { getUser, updateMe, getMe, softDeletedUser, getAllSoftDeleted } = require("../controllers/userController");
+const { getUser, updateMe, getMe, softDeletedUser } = require("../controllers/userController");
 const { authenticate, hasRole, isAdmin, isSelfOrAdmin } = require("../middleware/authentication");
 var { validateSchema, asyncHandler, validateCredentials } = require("../middleware");
 const { loginSchema, registerSchema, updateUserSchema } = require("../schema");
@@ -13,7 +13,6 @@ router.get("/me", asyncHandler(authenticate), asyncHandler(getMe));
 router.get("/:id", asyncHandler(getUser));
 router.put("/me", asyncHandler(authenticate), validateSchema(updateUserSchema), asyncHandler(updateMe));
 router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
-/*router.get("/deleted", asyncHandler(authenticate), asyncHandler(isAdmin), asyncHandler(getAllSoftDeleted));*/
 
 /**
  * @swagger
@@ -92,18 +91,18 @@ router.delete("/me", asyncHandler(authenticate), asyncHandler(softDeletedUser));
  *       properties:
  *         firstName:
  *           type: string
- *           maxLength: 15
+ *           maxLength: 30
  *           minLength: 2
  *           example: John
  *         lastName:
  *           type: string
- *           maxLength: 15
+ *           maxLength: 30
  *           minLength: 2
  *           example: Doe
  *         username:
  *           type: string
  *           minLength: 3
- *           maxLength: 20
+ *           maxLength: 30
  *           pattern: "^[a-zA-Z0-9_]+$"
  *           example: johndoe123
  *         bio:
