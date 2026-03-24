@@ -1,10 +1,11 @@
-const { UserService } = require("../services/index");
 const { db } = require("../models");
+const { UserService, AuthService } = require("../services/index");
 const userService = new UserService(db);
+const authService = new AuthService(db);
 const { createError, successResponse } = require("../utilities");
 
 //This for getting the user based of Id.
-async function getUser(req, res, next) {
+async function getUser(req, res) {
   const id = req.params.id;
   const user = await userService.getProfile(id, { currentUserId: req.user?.id ?? null });
 
@@ -24,14 +25,14 @@ async function getUser(req, res, next) {
   );
 }
 
-async function getMe(req, res, next) {
+async function getMe(req, res) {
   const id = req.user.id;
   const user = await userService.getProfile(id, { isOwner: true, currentUserId: req.user.id });
 
   if (!user) {
     throw createError({
       statusCode: 404,
-      message: "Failed to retrive user",
+      message: "User not found",
     });
   }
 
@@ -44,7 +45,7 @@ async function getMe(req, res, next) {
   );
 }
 
-async function updateMe(req, res, next) {
+async function updateMe(req, res) {
   const id = req.user.id;
 
   if (!req.body || Object.keys(req.body).length === 0) {
@@ -54,7 +55,7 @@ async function updateMe(req, res, next) {
     });
   }
 
-  const updatedUser = await userService.update(id, req.body);
+  const updatedUser = await userService.update(id, req.body, { isOwner: true });
 
   if (!updatedUser) {
     throw createError({
@@ -72,7 +73,21 @@ async function updateMe(req, res, next) {
   );
 }
 
-async function softDeletedUser(req, res, next) {
+async function changePassword(req, res) {
+  const userId = req.user.id;
+  const { currentPassword, newPassword } = req.body;
+
+  await authService.changePassword(userId, currentPassword, newPassword);
+
+  res.status(200).json(
+    successResponse({
+      message: "Password updated successfully.",
+      statusCode: 200,
+    })
+  );
+}
+
+async function softDeletedUser(req, res) {
   const id = req.user.id;
   const deletedUser = await userService.softDelete(id);
 
@@ -103,4 +118,4 @@ async function softDeletedUser(req, res, next) {
   });
 }*/
 
-module.exports = { getUser, updateMe, getMe, softDeletedUser };
+module.exports = { getUser, updateMe, getMe, softDeletedUser, changePassword };

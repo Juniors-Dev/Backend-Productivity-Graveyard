@@ -1,4 +1,3 @@
-const { Op } = require("sequelize");
 const sanitizeUser = require("../utilities/sanitizeUser");
 const ProjectService = require("./ProjectService.js");
 const StatsService = require("./StatsService.js");
@@ -38,7 +37,7 @@ class UserService {
     });
   }
 
-  async getOneId(userId) {
+  async getOneId(userId, options = {}) {
     const user = await this.User.findOne({
       where: { id: userId },
       include: [{ model: this.Role }],
@@ -46,7 +45,7 @@ class UserService {
     });
 
     if (!user) return null;
-    return sanitizeUser(user);
+    return sanitizeUser(user, options);
   }
 
   async getProfile(userId, options = {}) {
@@ -94,7 +93,7 @@ class UserService {
     });
   }
 
-  async update(id, args) {
+  async update(id, args, options = {}) {
     const updated = await this.User.update(
       { ...args },
       {
@@ -102,15 +101,12 @@ class UserService {
       }
     );
 
-    const updatedUser = await this.getOneId(id);
+    const updatedUser = await this.getOneId(id, options);
     return updatedUser;
   }
 
   async softDelete(id) {
-    const user = await this.User.findByPk(id, {
-      include: [{ model: this.Role }],
-    });
-
+    const user = await this.User.findByPk(id);
     if (!user) {
       return null;
     }
