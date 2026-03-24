@@ -83,6 +83,8 @@ class AuthService {
         type,
         createdAt: { [Op.gt]: new Date(Date.now() - cooldownMs) },
       },
+      order: [["createdAt", "DESC"]],
+      attributes: ["createdAt"],
     });
 
     if (recentToken) {
