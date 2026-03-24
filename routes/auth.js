@@ -473,13 +473,39 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  *                 {field: "email", message: "Please provide a valid email"}
  *               ]
  *       429:
- *         description: Too many authentication attempts - auth rate limit exceeded
+ *         description: Rate limited - either auth rate limit, per-user cooldown, or daily email limit
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/AuthRateLimitResponse'
+ *             examples:
+ *               authRateLimit:
+ *                 summary: Auth route rate limit (15 req / 10 min)
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 429
+ *                   message: "Too many authentication attempts, please try again in 10 minutes."
+ *               cooldown:
+ *                 summary: Per-user cooldown (5 minutes between emails)
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 429
+ *                   message: "Please wait before requesting another email."
+ *               dailyLimit:
+ *                 summary: Daily email limit reached (5 per day)
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 429
+ *                   message: "Daily email limit reached. Please try again later."
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           Retry-After:
+ *             description: Seconds until next request is allowed (present on cooldown only, not on daily limit or auth rate limit)
+ *             schema:
+ *               type: integer
+ *               example: 240
  *       500:
  *         description: Internal server error
  *         content:
@@ -530,13 +556,39 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  *                 {field: "email", message: "Please provide a valid email"}
  *               ]
  *       429:
- *         description: Too many authentication attempts - auth rate limit exceeded
+ *         description: Rate limited - either auth rate limit, per-user cooldown, or daily email limit
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/AuthRateLimitResponse'
+ *             examples:
+ *               authRateLimit:
+ *                 summary: Auth route rate limit (15 req / 10 min)
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 429
+ *                   message: "Too many authentication attempts, please try again in 10 minutes."
+ *               cooldown:
+ *                 summary: Per-user cooldown (5 minutes between emails)
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 429
+ *                   message: "Please wait before requesting another email."
+ *               dailyLimit:
+ *                 summary: Daily email limit reached (5 per day)
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 429
+ *                   message: "Daily email limit reached. Please try again later."
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           Retry-After:
+ *             description: Seconds until next request is allowed (present on cooldown only, not on daily limit or auth rate limit)
+ *             schema:
+ *               type: integer
+ *               example: 240
  *       500:
  *         description: Internal server error
  *         content:
