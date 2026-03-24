@@ -29,6 +29,7 @@ async function register(req, res) {
     const verificationToken = await authService.createVerificationToken(user.id);
     await sendVerificationEmail(email, verificationToken);
   } catch (error) {
+    console.error("Failed to send verification email:", error.message, error.name);
     // SMTP failure. User can resend via /auth/resend-verification
   }
 
@@ -106,6 +107,7 @@ async function resendVerification(req, res) {
       await sendVerificationEmail(email, token);
     } catch (error) {
       if (error.statusCode === 429) throw error;
+      console.error("Failed to send verification email:", error.message, error.name);
     }
   }
 
@@ -127,6 +129,7 @@ async function forgotPassword(req, res) {
       await sendPasswordResetEmail(email, token);
     } catch (error) {
       if (error.statusCode === 429) throw error;
+      console.error("Failed to send password reset email:", error.message, error.name);
     }
   }
 
