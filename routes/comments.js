@@ -1,12 +1,12 @@
-var express = require("express");
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
 const { asyncHandler, authenticate, validateSchema, validateParamSchema, ownsEntity } = require("../middleware");
-var { updateCommentSchema } = require("../schema/commentSchema");
-var { commentIdSchema } = require("../schema/params");
-var { updateComment, deleteComment } = require("../controllers/commentController");
-var CommentService = require("../services/CommentService");
-var { db } = require("../models");
-var commentService = new CommentService(db);
+const { updateCommentSchema } = require("../schema/commentSchema");
+const { commentIdSchema } = require("../schema/params");
+const { updateComment, deleteComment } = require("../controllers/commentController");
+const CommentService = require("../services/CommentService");
+const { db } = require("../models");
+const commentService = new CommentService(db);
 
 router.put(
   "/:id",

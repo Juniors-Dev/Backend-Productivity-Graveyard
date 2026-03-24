@@ -1,6 +1,6 @@
-var jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
-var createError = require("./createError");
+const createError = require("./createError");
 
 function generateToken(data) {
   return jwt.sign(data, process.env.JWT_SECRET, { expiresIn: "2h" });
@@ -8,7 +8,7 @@ function generateToken(data) {
 
 function verifyToken(token) {
   try {
-    var decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     return decoded;
   } catch (error) {
     if (error.name === "TokenExpiredError") {

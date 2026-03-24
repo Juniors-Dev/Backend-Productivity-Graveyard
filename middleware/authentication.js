@@ -1,8 +1,8 @@
-var { verifyToken } = require("../utilities/jwt");
-var { db } = require("../models");
-var UserService = require("../services/UserService");
-var userService = new UserService(db);
-var { createError, normalizeError } = require("../utilities");
+const { verifyToken } = require("../utilities/jwt");
+const { db } = require("../models");
+const UserService = require("../services/UserService");
+const userService = new UserService(db);
+const { createError, normalizeError } = require("../utilities");
 
 async function authenticate(req, res, next) {
   try {

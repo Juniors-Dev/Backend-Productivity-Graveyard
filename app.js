@@ -1,20 +1,20 @@
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var cors = require("cors");
+const createError = require("http-errors");
+const express = require("express");
+const path = require("path");
+const cors = require("cors");
 const logger = require("morgan");
 const dotenv = require("dotenv");
 dotenv.config();
-var { errorResponse } = require("./utilities/response");
-var { createRateLimiter, createSlowDown } = require("./middleware");
-var helmet = require("helmet");
+const { errorResponse } = require("./utilities/response");
+const { createRateLimiter, createSlowDown } = require("./middleware");
+const helmet = require("helmet");
 
 //swagger
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./swagger");
 
 // routers
-var {
+const {
   indexRouter,
   usersRouter,
   projectsRouter,
@@ -38,7 +38,7 @@ const { initDb } = require("./scripts/db-init");
   }
 })();
 
-var app = express();
+const app = express();
 
 // Middlewarres for setting up the application
 // Enable CORS if needed

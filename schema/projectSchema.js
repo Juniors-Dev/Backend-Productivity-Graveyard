@@ -1,4 +1,4 @@
-var { object, string, array, number, date } = require("yup");
+const { object, string, array, number, date } = require("yup");
 
 const projectSchema = object({
   name: string()

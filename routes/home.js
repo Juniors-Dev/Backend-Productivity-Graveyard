@@ -1,6 +1,6 @@
-var express = require("express");
-var router = express.Router();
-var { db } = require("../models");
+const express = require("express");
+const router = express.Router();
+const { db } = require("../models");
 
 router.get("/", function (req, res, next) {
   res.status(200).json({ message: "Welcome to the API" });

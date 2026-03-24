@@ -1,7 +1,7 @@
-var express = require("express");
-var router = express.Router();
-var { getAll, getUserStats, getCurrentUserStats } = require("../controllers/statsController");
-var { authenticate, asyncHandler } = require("../middleware");
+const express = require("express");
+const router = express.Router();
+const { getAll, getUserStats, getCurrentUserStats } = require("../controllers/statsController");
+const { authenticate, asyncHandler } = require("../middleware");
 
 router.get("/", asyncHandler(getAll));
 router.get("/user/me", authenticate, asyncHandler(getCurrentUserStats));
