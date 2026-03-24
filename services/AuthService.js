@@ -86,7 +86,11 @@ class AuthService {
     });
 
     if (recentToken) {
-      const retryAfterSeconds = Math.ceil((cooldownMs - (Date.now() - recentToken.createdAt.getTime())) / 1000);
+      const elapsedMs = Date.now() - recentToken.createdAt.getTime();
+      const remainingMs = cooldownMs - elapsedMs;
+      const maxSeconds = Math.ceil(cooldownMs / 1000);
+      const retryAfterSeconds = Math.min(Math.max(Math.ceil(remainingMs / 1000), 1), maxSeconds);
+
       const error = createError({
         statusCode: 429,
         message: "Please wait before requesting another email.",
