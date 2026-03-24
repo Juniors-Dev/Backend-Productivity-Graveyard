@@ -7,6 +7,16 @@ const TOKEN_EXPIRY_MS = new Map([
   ["password_reset", 30 * 60 * 1000],
 ]);
 
+const TOKEN_COOLDOWN_MS = new Map([
+  ["email_verification", 5 * 60 * 1000],
+  ["password_reset", 5 * 60 * 1000],
+]);
+
+const TOKEN_DAILY_LIMIT = new Map([
+  ["email_verification", 5],
+  ["password_reset", 5],
+]);
+
 class AuthService {
   constructor(db) {
     this.client = db.sequelize;
@@ -60,7 +70,46 @@ class AuthService {
     );
   }
 
+  async _enforceTokenLimits(userId, type) {
+    const cooldownMs = TOKEN_COOLDOWN_MS.get(type);
+    const dailyLimit = TOKEN_DAILY_LIMIT.get(type);
+
+    const recentToken = await this.Token.findOne({
+      where: {
+        userId,
+        type,
+        createdAt: { [Op.gt]: new Date(Date.now() - cooldownMs) },
+      },
+    });
+
+    if (recentToken) {
+      const retryAfterSeconds = Math.ceil((cooldownMs - (Date.now() - recentToken.createdAt.getTime())) / 1000);
+      const error = createError({
+        statusCode: 429,
+        message: "Please wait before requesting another email.",
+      });
+      error.retryAfter = retryAfterSeconds;
+      throw error;
+    }
+
+    const dailyCount = await this.Token.count({
+      where: {
+        userId,
+        type,
+        createdAt: { [Op.gt]: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+      },
+    });
+
+    if (dailyCount >= dailyLimit) {
+      throw createError({
+        statusCode: 429,
+        message: "Daily email limit reached. Please try again later.",
+      });
+    }
+  }
+
   async createVerificationToken(userId) {
+    await this._enforceTokenLimits(userId, "email_verification");
     await this._invalidateTokens(userId, "email_verification");
     const { plaintext } = await this._createToken(userId, "email_verification");
     return plaintext;
@@ -86,6 +135,7 @@ class AuthService {
   }
 
   async createPasswordResetToken(userId) {
+    await this._enforceTokenLimits(userId, "password_reset");
     await this._invalidateTokens(userId, "password_reset");
     const { plaintext } = await this._createToken(userId, "password_reset");
     return plaintext;

@@ -43,7 +43,7 @@ async function register(req, res) {
 async function login(req, res) {
   const { email, password } = req.body;
 
-  const user = await userService.getOneEmail(email, false, false);
+  const user = await userService.getOneEmail(email, false);
 
   if (!user) {
     throw createError({
@@ -65,7 +65,7 @@ async function login(req, res) {
     id: user.id,
     email: user.email,
     username: user.username,
-    roleId: user.roleId,
+    role: user.Role.name,
   });
 
   res.status(200).json(
@@ -105,7 +105,7 @@ async function resendVerification(req, res) {
       const token = await authService.createVerificationToken(user.id);
       await sendVerificationEmail(email, token);
     } catch (error) {
-      // SMTP failure. Swallow to preserve consistent 200 (anti-enumeration)
+      if (error.statusCode === 429) throw error;
     }
   }
 
@@ -126,7 +126,7 @@ async function forgotPassword(req, res) {
       const token = await authService.createPasswordResetToken(user.id);
       await sendPasswordResetEmail(email, token);
     } catch (error) {
-      // SMTP failure. Swallow to preserve consistent 200 (anti-enumeration)
+      if (error.statusCode === 429) throw error;
     }
   }
 
