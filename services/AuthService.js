@@ -73,6 +73,9 @@ class AuthService {
   async _enforceTokenLimits(userId, type) {
     const cooldownMs = TOKEN_COOLDOWN_MS.get(type);
     const dailyLimit = TOKEN_DAILY_LIMIT.get(type);
+    if (cooldownMs == null || dailyLimit == null) {
+      throw new Error(`Unknown token type: ${type}`);
+    }
 
     const recentToken = await this.Token.findOne({
       where: {
