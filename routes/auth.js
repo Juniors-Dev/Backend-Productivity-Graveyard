@@ -436,7 +436,7 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  * /auth/resend-verification:
  *   post:
  *     summary: Resend verification email
- *     description: Sends a new verification email if the address is registered and unverified. Always returns 200 regardless of whether the email exists to prevent email enumeration.
+ *     description: Sends a new verification email if the address is registered and unverified. Returns 200 regardless of whether the email exists to prevent email enumeration. Returns 429 if the per-user cooldown or daily email limit is reached.
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -448,7 +448,7 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  *             email: john.doe@example.com
  *     responses:
  *       200:
- *         description: Request processed (always returns success to prevent email enumeration)
+ *         description: Request processed (returns success regardless of email existence to prevent enumeration)
  *         content:
  *           application/json:
  *             schema:
@@ -483,7 +483,7 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  *                 summary: Auth route rate limit (15 req / 10 min)
  *                 value:
  *                   success: false
- *                   status: "fail"
+ *                   status: "error"
  *                   statusCode: 429
  *                   message: "Too many authentication attempts, please try again in 10 minutes."
  *               cooldown:
@@ -502,7 +502,7 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  *                   message: "Daily email limit reached. Please try again later."
  *         headers:
  *           Retry-After:
- *             description: Seconds until next request is allowed (present on cooldown only, not on daily limit or auth rate limit)
+ *             description: Seconds until next request is allowed. Present on per-user cooldown responses and may also be present on auth rate limit responses.
  *             schema:
  *               type: integer
  *               example: 240
@@ -519,7 +519,7 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  * /auth/forgot-password:
  *   post:
  *     summary: Request password reset
- *     description: Sends a password reset email if the address is registered. Always returns 200 regardless of whether the email exists to prevent email enumeration. Reset link is valid for 30 minutes.
+ *     description: Sends a password reset email if the address is registered. Returns 200 regardless of whether the email exists to prevent email enumeration. Returns 429 if the per-user cooldown or daily email limit is reached. Reset link is valid for 30 minutes.
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -531,7 +531,7 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  *             email: john.doe@example.com
  *     responses:
  *       200:
- *         description: Request processed (always returns success to prevent email enumeration)
+ *         description: Request processed (returns success regardless of email existence to prevent enumeration)
  *         content:
  *           application/json:
  *             schema:
@@ -566,7 +566,7 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  *                 summary: Auth route rate limit (15 req / 10 min)
  *                 value:
  *                   success: false
- *                   status: "fail"
+ *                   status: "error"
  *                   statusCode: 429
  *                   message: "Too many authentication attempts, please try again in 10 minutes."
  *               cooldown:
@@ -585,7 +585,7 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  *                   message: "Daily email limit reached. Please try again later."
  *         headers:
  *           Retry-After:
- *             description: Seconds until next request is allowed (present on cooldown only, not on daily limit or auth rate limit)
+ *             description: Seconds until next request is allowed. Present on per-user cooldown responses and may also be present on auth rate limit responses.
  *             schema:
  *               type: integer
  *               example: 240
