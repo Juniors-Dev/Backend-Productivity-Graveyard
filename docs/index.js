@@ -30,21 +30,26 @@
  *
  *   headers:
  *     RateLimitHeaders:
- *       X-RateLimit-Limit:
+ *       RateLimit-Policy:
+ *         description: The rate limit policy (limit and window size in seconds)
+ *         schema:
+ *           type: string
+ *         example: "600;w=600"
+ *       RateLimit-Limit:
  *         description: The number of allowed requests in the current period
  *         schema:
  *           type: integer
  *         example: 600
- *       X-RateLimit-Remaining:
+ *       RateLimit-Remaining:
  *         description: The number of remaining requests in the current period
  *         schema:
  *           type: integer
  *         example: 599
- *       X-RateLimit-Reset:
- *         description: The time at which the current rate limit window resets (UTC epoch seconds)
+ *       RateLimit-Reset:
+ *         description: Seconds remaining until the current rate limit window resets
  *         schema:
  *           type: integer
- *         example: 1640995200
+ *         example: 600
  *
  * #-------------------------------
  * # Reusable Error Responses
