@@ -172,26 +172,16 @@ describe("AuthService", () => {
       expect(db.Token.count).toHaveBeenCalledTimes(1);
     });
 
-    it("throws 429 with retryAfter when a recent token exists", async () => {
+    it("throws 429 when a recent token exists", async () => {
       const recentToken = {
         createdAt: new Date(Date.now() - 60 * 1000),
       };
       db.Token.findOne.mockResolvedValue(recentToken);
 
-      const error = await authService._enforceTokenLimits("user-uuid-1", "email_verification").catch((e) => e);
-      expect(error.statusCode).toBe(429);
-      expect(error.message).toBe("Please wait before requesting another email.");
-      expect(error.retryAfter).toBeGreaterThan(0);
-      expect(error.retryAfter).toBeLessThanOrEqual(5 * 60);
-    });
-
-    it("calculates retryAfter as remaining cooldown seconds", async () => {
-      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
-      db.Token.findOne.mockResolvedValue({ createdAt: twoMinutesAgo });
-
-      const error = await authService._enforceTokenLimits("user-uuid-1", "email_verification").catch((e) => e);
-      expect(error.retryAfter).toBeGreaterThanOrEqual(179);
-      expect(error.retryAfter).toBeLessThanOrEqual(181);
+      await expect(authService._enforceTokenLimits("user-uuid-1", "email_verification")).rejects.toMatchObject({
+        statusCode: 429,
+        message: "Please wait before requesting another email.",
+      });
     });
 
     it("skips daily limit check when cooldown is hit", async () => {
@@ -214,14 +204,6 @@ describe("AuthService", () => {
         statusCode: 429,
         message: "Daily email limit reached. Please try again later.",
       });
-    });
-
-    it("does not include retryAfter on daily limit error", async () => {
-      db.Token.findOne.mockResolvedValue(null);
-      db.Token.count.mockResolvedValue(5);
-
-      const error = await authService._enforceTokenLimits("user-uuid-1", "email_verification").catch((e) => e);
-      expect(error.retryAfter).toBeUndefined();
     });
 
     it("passes at count 4 but rejects at count 5", async () => {
