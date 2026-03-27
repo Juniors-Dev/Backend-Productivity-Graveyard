@@ -112,6 +112,114 @@ module.exports = router;
  * @swagger
  * components:
  *   schemas:
+ *     MostVotedProject:
+ *       type: object
+ *       nullable: true
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           example: "aa177205-6aec-4f7c-934c-ebcbfdcb9df9"
+ *         name:
+ *           type: string
+ *           example: "Book Reading List"
+ *         votes:
+ *           type: integer
+ *           example: 1
+ *
+ *     GlobalStatsData:
+ *       type: object
+ *       properties:
+ *         totalUsers:
+ *           type: integer
+ *           example: 78
+ *         totalComments:
+ *           type: integer
+ *           example: 2
+ *         totalProjects:
+ *           type: integer
+ *           example: 26
+ *         averageLifespan:
+ *           type: number
+ *           format: float
+ *           example: 7
+ *         mostCommonCause:
+ *           type: string
+ *           nullable: true
+ *           example: "Bored"
+ *         funeralsToday:
+ *           type: integer
+ *           example: 0
+ *         totalVotes:
+ *           type: integer
+ *           example: 2
+ *         votesToday:
+ *           type: integer
+ *           example: 0
+ *         averageEulogyLength:
+ *           type: number
+ *           format: float
+ *           example: 137.88
+ *         rageQuitRate:
+ *           type: number
+ *           format: float
+ *           example: 23.08
+ *         topBurialDay:
+ *           type: string
+ *           nullable: true
+ *           example: "Wednesday"
+ *         topBurialMonth:
+ *           type: string
+ *           nullable: true
+ *           example: "January"
+ *         mostVotedProject:
+ *           $ref: "#/components/schemas/MostVotedProject"
+ *
+ *     UserStatsData:
+ *       type: object
+ *       properties:
+ *         totalComments:
+ *           type: integer
+ *           example: 1
+ *         totalProjects:
+ *           type: integer
+ *           example: 4
+ *         averageLifespan:
+ *           type: number
+ *           format: float
+ *           example: 23.75
+ *         mostCommonCause:
+ *           type: string
+ *           nullable: true
+ *           example: null
+ *         funeralsToday:
+ *           type: integer
+ *           example: 0
+ *         totalVotes:
+ *           type: integer
+ *           example: 1
+ *         votesToday:
+ *           type: integer
+ *           example: 0
+ *         averageEulogyLength:
+ *           type: number
+ *           format: float
+ *           example: 218.75
+ *         rageQuitRate:
+ *           type: number
+ *           format: float
+ *           example: 50
+ *         topBurialDay:
+ *           type: string
+ *           nullable: true
+ *           example: "Wednesday"
+ *         topBurialMonth:
+ *           type: string
+ *           nullable: true
+ *           example: "August"
+ *         mostVotedProject:
+ *           $ref: "#/components/schemas/MostVotedProject"
+ *
  *     GlobalStatsResponse:
  *       type: object
  *       properties:
@@ -128,57 +236,8 @@ module.exports = router;
  *           type: string
  *           example: Success
  *         data:
- *           type: object
- *           properties:
- *             totalUsers:
- *               type: string
- *               example: "78"
- *             totalComments:
- *               type: string
- *               example: "2"
- *             totalProjects:
- *               type: string
- *               example: "26"
- *             averageLifespan:
- *               type: string
- *               example: "7.0000000000000000"
- *             mostCommonCause:
- *               type: string
- *               example: "Bored"
- *             funeralsToday:
- *               type: string
- *               example: "0"
- *             totalVotes:
- *               type: string
- *               example: "2"
- *             votesToday:
- *               type: string
- *               example: "0"
- *             averageEulogyLength:
- *               type: string
- *               example: "137.8846153846153846"
- *             rageQuitRate:
- *               type: string
- *               example: "23.0769230769230769"
- *             topBurialDay:
- *               type: string
- *               example: "Wednesday"
- *             topBurialMonth:
- *               type: string
- *               example: "January"
- *             mostVotedProject:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   format: uuid
- *                   example: "aa177205-6aec-4f7c-934c-ebcbfdcb9df9"
- *                 name:
- *                   type: string
- *                   example: "Book Reading List"
- *                 votes:
- *                   type: integer
- *                   example: 1
+ *           $ref: "#/components/schemas/GlobalStatsData"
+ *
  *     UserStatsResponse:
  *       type: object
  *       properties:
@@ -195,52 +254,5 @@ module.exports = router;
  *           type: string
  *           example: Success
  *         data:
- *           type: object
- *           properties:
- *             totalComments:
- *               type: string
- *               example: "1"
- *             totalProjects:
- *               type: string
- *               example: "4"
- *             averageLifespan:
- *               type: string
- *               example: "23.7500000000000000"
- *             mostCommonCause:
- *               type: string
- *               example: null
- *             funeralsToday:
- *               type: string
- *               example: "0"
- *             totalVotes:
- *               type: string
- *               example: "1"
- *             votesToday:
- *               type: string
- *               example: "0"
- *             averageEulogyLength:
- *               type: string
- *               example: "218.7500000000000000"
- *             rageQuitRate:
- *               type: string
- *               example: "50.0000000000000000"
- *             topBurialDay:
- *               type: string
- *               example: "Wednesday"
- *             topBurialMonth:
- *               type: string
- *               example: "August"
- *             mostVotedProject:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   format: uuid
- *                   example: "0cfbfa35-70a7-4d18-b1ff-1d198cf425b0"
- *                 name:
- *                   type: string
- *                   example: "Diet Tracker"
- *                 votes:
- *                   type: integer
- *                   example: 1
+ *           $ref: "#/components/schemas/UserStatsData"
  */
