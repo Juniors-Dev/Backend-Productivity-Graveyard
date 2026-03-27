@@ -110,9 +110,9 @@ router.use("/", projectComments);
  *           format: date
  *           example: "2025-01-15"
  *         tombstoneId:
- *           type: string
- *           format: uuid
+ *           type: integer
  *           nullable: true
+ *           example: 1
  *         userId:
  *           type: string
  *           format: uuid
