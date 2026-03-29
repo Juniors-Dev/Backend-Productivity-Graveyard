@@ -45,7 +45,7 @@ const hasRole = (role) => (req, res, next) => {
     throw createError({ statusCode: 401, message: "Unauthorized, token not found." });
   }
   if (req.user.role !== role) {
-    throw createError({ statusCode: 403, message: "Forbidden, you do not own this entity." });
+    throw createError({ statusCode: 403, message: "Forbidden, insufficient permissions." });
   }
   next();
 };
