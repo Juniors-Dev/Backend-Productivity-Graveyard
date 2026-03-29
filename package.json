@@ -11,6 +11,7 @@
     "test:votes": "jest --verbose --forceExit tests/votes.test.js",
     "test:comments": "jest --verbose --forceExit tests/comments.test.js",
     "test:auth": "jest --verbose --forceExit tests/auth.test.js",
+    "test:tokens": "jest --verbose --forceExit tests/tokens.test.js",
     "start": "node ./bin/www",
     "dev": "node --watch ./bin/www",
     "prepare": "husky install",
