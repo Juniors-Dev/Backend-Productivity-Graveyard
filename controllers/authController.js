@@ -1,8 +1,9 @@
 const { db } = require("../models");
 const { sendVerificationEmail, sendPasswordResetEmail } = require("../services/emailService");
-const { UserService, RoleService, AuthService } = require("../services/index");
+const { UserService, RoleService, AuthService, TokenService } = require("../services/index");
 const userService = new UserService(db);
 const authService = new AuthService(db);
+const tokenService = new TokenService(db);
 const roleService = new RoleService(db);
 
 const { generateToken: generateJwt } = require("../utilities/jwt");
@@ -26,10 +27,10 @@ async function register(req, res) {
   });
 
   try {
-    const verificationToken = await authService.createVerificationToken(user.id);
+    const verificationToken = await tokenService.createVerificationToken(user.id);
     await sendVerificationEmail(email, verificationToken);
   } catch (error) {
-    // SMTP failure. User can resend via /auth/resend-verification
+    console.error("Failed to send verification email:", error.message, error.name);
   }
 
   res.status(201).json(
@@ -43,7 +44,7 @@ async function register(req, res) {
 async function login(req, res) {
   const { email, password } = req.body;
 
-  const user = await userService.getOneEmail(email, false, false);
+  const user = await userService.getOneEmail(email, false);
 
   if (!user) {
     throw createError({
@@ -65,7 +66,7 @@ async function login(req, res) {
     id: user.id,
     email: user.email,
     username: user.username,
-    roleId: user.roleId,
+    role: user.Role.name,
   });
 
   res.status(200).json(
@@ -102,10 +103,10 @@ async function resendVerification(req, res) {
   const user = await userService.getOneEmail(email);
   if (user && !user.isEmailVerified) {
     try {
-      const token = await authService.createVerificationToken(user.id);
+      const token = await tokenService.createVerificationToken(user.id);
       await sendVerificationEmail(email, token);
     } catch (error) {
-      // SMTP failure. Swallow to preserve consistent 200 (anti-enumeration)
+      console.error("Failed to send verification email:", error.message, error.name);
     }
   }
 
@@ -123,10 +124,10 @@ async function forgotPassword(req, res) {
   const user = await userService.getOneEmail(email);
   if (user) {
     try {
-      const token = await authService.createPasswordResetToken(user.id);
+      const token = await tokenService.createPasswordResetToken(user.id);
       await sendPasswordResetEmail(email, token);
     } catch (error) {
-      // SMTP failure. Swallow to preserve consistent 200 (anti-enumeration)
+      console.error("Failed to send password reset email:", error.message, error.name);
     }
   }
 
