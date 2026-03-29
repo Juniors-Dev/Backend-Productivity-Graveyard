@@ -44,7 +44,6 @@ module.exports = (sequelize, Sequelize) => {
     {
       timestamps: true,
       tableName: "Tokens",
-      paranoid: false,
       indexes: [{ fields: ["tokenHash"] }, { fields: ["userId", "type"] }],
     }
   );
