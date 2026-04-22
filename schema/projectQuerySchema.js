@@ -7,7 +7,7 @@ const VALID_ORDER = ["ASC", "DESC"];
 const projectQuerySchema = yup.object({
   status: yup.string().oneOf(VALID_STATUSES, "Invalid status value").optional(),
   orderBy: yup.string().oneOf(VALID_ORDER_BY, "Invalid orderBy field").optional(),
-  order: yup.string().oneOf(VALID_ORDER, "Must be asc or desc").optional(),
+  order: yup.string().oneOf(VALID_ORDER, "Must be ASC or DESC").optional(),
   userId: yup.string().uuid("userId must be a valid UUID").optional(),
   types: yup
     .string()
