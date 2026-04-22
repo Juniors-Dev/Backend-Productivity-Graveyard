@@ -531,8 +531,8 @@ router.use("/", projectComments);
  *         description: Sort direction.
  *         schema:
  *           type: string
- *           enum: [asc, desc]
- *           default: desc
+ *           enum: [ASC, DESC]
+ *           default: DESC
  *       - in: query
  *         name: userId
  *         required: false
