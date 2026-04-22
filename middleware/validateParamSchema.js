@@ -2,7 +2,7 @@ const { createError } = require("../utilities");
 
 const validateParamSchema = (schema) => async (req, res, next) => {
   try {
-    await schema.validate(req.params, { abortEarly: false });
+    req.params = await schema.validate(req.params, { abortEarly: false });
     next();
   } catch (error) {
     if (error.name === "ValidationError") {
