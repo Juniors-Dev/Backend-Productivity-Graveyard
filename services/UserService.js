@@ -2,6 +2,8 @@ const sanitizeUser = require("../utilities/sanitizeUser");
 const ProjectService = require("./ProjectService.js");
 const StatsService = require("./StatsService.js");
 
+const UPDATABLE_FIELDS = ["firstName", "lastName", "username", "bio", "avatarUrl"];
+
 class UserService {
   constructor(db) {
     this.client = db.sequelize;
@@ -25,7 +27,7 @@ class UserService {
       attributes: {
         exclude: exclude ? ["hashedPassword", "salt", "roleId"] : [],
       },
-      paranoid, // if paranoid is false, deletedAt will be null
+      paranoid,
     });
   }
 
@@ -93,16 +95,13 @@ class UserService {
     });
   }
 
-  async update(id, args, options = {}) {
-    const updated = await this.User.update(
-      { ...args },
-      {
-        where: { id },
-      }
-    );
+  async update(id, data, options = {}) {
+    const fields = Object.fromEntries(Object.entries(data).filter(([key]) => UPDATABLE_FIELDS.includes(key)));
 
-    const updatedUser = await this.getOneId(id, options);
-    return updatedUser;
+    if (Object.keys(fields).length === 0) return null;
+
+    await this.User.update(fields, { where: { id } });
+    return this.getOneId(id, options);
   }
 
   async softDelete(id) {

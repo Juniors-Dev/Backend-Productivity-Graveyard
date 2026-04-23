@@ -1,5 +1,3 @@
-const AuthService = require("./AuthService");
-
 module.exports = {
   UserService: require("./UserService"),
   ProjectService: require("./ProjectService"),

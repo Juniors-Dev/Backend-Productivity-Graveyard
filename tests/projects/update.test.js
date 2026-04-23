@@ -31,7 +31,7 @@ function updateTests({ app, db, testProject, updateProject, createTestUser, badT
           id: user.id,
           email: user.email,
           username: user.username,
-          roleId: user.roleId,
+          role: role.name,
         });
       }
 
@@ -40,7 +40,7 @@ function updateTests({ app, db, testProject, updateProject, createTestUser, badT
           id: user2.id,
           email: user2.email,
           username: user2.username,
-          roleId: user2.roleId,
+          role: role.name,
         });
       }
     });

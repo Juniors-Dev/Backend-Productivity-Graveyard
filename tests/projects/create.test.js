@@ -19,7 +19,7 @@ function createTests({ app, db, testProject, createTestUser, badToken, expiredTo
         id: user.id,
         email: user.email,
         username: user.username,
-        roleId: user.roleId,
+        role: role.name,
       });
     });
 
