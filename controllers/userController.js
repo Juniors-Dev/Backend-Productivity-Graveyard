@@ -4,7 +4,6 @@ const userService = new UserService(db);
 const authService = new AuthService(db);
 const { createError, successResponse } = require("../utilities");
 
-//This for getting the user based of Id.
 async function getUser(req, res) {
   const id = req.params.id;
   const user = await userService.getProfile(id, { currentUserId: req.user?.id ?? null });
@@ -106,16 +105,5 @@ async function softDeletedUser(req, res) {
     })
   );
 }
-
-// This should be added to a AdminController
-/*async function getAllSoftDeleted(req, res, next) {
-  const deletedUsers = await userService.getAllDeleted({ isAdmin: true });
-
-  res.status(200).json({
-    status: "success",
-    statusCode: 200,
-    data: deletedUsers,
-  });
-}*/
 
 module.exports = { getUser, updateMe, getMe, softDeletedUser, changePassword };
