@@ -29,7 +29,7 @@ async function register(req, res) {
     const verificationToken = await authService.createVerificationToken(user.id);
     await sendVerificationEmail(email, verificationToken);
   } catch (error) {
-    // SMTP failure. User can resend via /auth/resend-verification
+    console.error("Failed to send verification email:", error.message, error.name);
   }
 
   res.status(201).json(
@@ -105,7 +105,7 @@ async function resendVerification(req, res) {
       const token = await authService.createVerificationToken(user.id);
       await sendVerificationEmail(email, token);
     } catch (error) {
-      // SMTP failure. Swallow to preserve consistent 200 (anti-enumeration)
+      console.error("Failed to send verification email:", error.message, error.name);
     }
   }
 
@@ -126,7 +126,7 @@ async function forgotPassword(req, res) {
       const token = await authService.createPasswordResetToken(user.id);
       await sendPasswordResetEmail(email, token);
     } catch (error) {
-      // SMTP failure. Swallow to preserve consistent 200 (anti-enumeration)
+      console.error("Failed to send password reset email:", error.message, error.name);
     }
   }
 
