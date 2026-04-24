@@ -108,6 +108,9 @@ app.use((err, req, res, next) => {
   if (statusCode >= 500 && process.env.LOG_ERRORS === "true") {
     console.error("Server Error:", err);
   }
+  if (statusCode === 429 && err.retryAfter) {
+    res.set("Retry-After", String(err.retryAfter));
+  }
   const response = errorResponse({
     message,
     status,

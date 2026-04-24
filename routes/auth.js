@@ -436,7 +436,7 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  * /auth/resend-verification:
  *   post:
  *     summary: Resend verification email
- *     description: Sends a new verification email if the address is registered and unverified. Always returns 200 regardless of whether the email exists to prevent email enumeration.
+ *     description: Sends a new verification email if the address is registered and unverified. Always returns 200 regardless of whether the email exists to prevent email enumeration. Per-user cooldown and daily limits are enforced server-side but do not surface as distinct responses.
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -493,7 +493,7 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  * /auth/forgot-password:
  *   post:
  *     summary: Request password reset
- *     description: Sends a password reset email if the address is registered. Always returns 200 regardless of whether the email exists to prevent email enumeration. Reset link is valid for 30 minutes.
+ *     description: Sends a password reset email if the address is registered. Always returns 200 regardless of whether the email exists to prevent email enumeration. Per-user cooldown and daily limits are enforced server-side but do not surface as distinct responses. Reset link is valid for 30 minutes.
  *     tags: [Auth]
  *     requestBody:
  *       required: true

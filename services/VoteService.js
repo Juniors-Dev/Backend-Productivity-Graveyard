@@ -1,4 +1,3 @@
-const { createError } = require("../utilities");
 class VoteService {
   constructor(db) {
     this.client = db.sequelize;
