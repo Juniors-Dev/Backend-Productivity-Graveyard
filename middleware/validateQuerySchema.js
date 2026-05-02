@@ -20,7 +20,7 @@ const validateQuerySchema = (schema) => async (req, res, next) => {
       throw createError({
         statusCode: 500,
         status: "error",
-        message: "Internal Server Error: ${error.message}",
+        message: "Internal Server Error",
       });
     }
   }
