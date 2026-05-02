@@ -12,14 +12,22 @@ const {
   getAllTombstones,
 } = require("../controllers/projectController");
 const asyncHandler = require("../middleware/asyncHandler");
-const { authenticate, hasRole, validateSchema, validateParamSchema, ownsEntity, isLoggedIn } = require("../middleware");
-const { projectSchema, projectUpdateSchema, typeIdSchema, uuidSchema } = require("../schema");
+const {
+  authenticate,
+  hasRole,
+  validateSchema,
+  validateParamSchema,
+  validateQuerySchema,
+  ownsEntity,
+  isLoggedIn,
+} = require("../middleware");
+const { projectSchema, projectUpdateSchema, typeIdSchema, uuidSchema, projectQuerySchema } = require("../schema");
 const { ProjectService } = require("../services");
 const { db } = require("../models");
 const projectService = new ProjectService(db);
 const projectComments = require("./projectComments");
 
-router.get("/", isLoggedIn, asyncHandler(getAll));
+router.get("/", isLoggedIn, validateQuerySchema(projectQuerySchema), asyncHandler(getAll));
 router.get("/types", asyncHandler(getAllTypes));
 router.get("/tombstones", asyncHandler(getAllTombstones));
 router.get("/:id", validateParamSchema(uuidSchema), isLoggedIn, asyncHandler(getOneId));
@@ -531,8 +539,8 @@ router.use("/", projectComments);
  *         description: Sort direction.
  *         schema:
  *           type: string
- *           enum: [asc, desc]
- *           default: desc
+ *           enum: [ASC, DESC]
+ *           default: DESC
  *       - in: query
  *         name: userId
  *         required: false

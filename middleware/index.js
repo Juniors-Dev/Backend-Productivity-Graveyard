@@ -8,6 +8,7 @@ module.exports = {
   hasRole: auth.hasRole,
   validateSchema: require("./validateSchema"),
   validateParamSchema: require("./validateParamSchema"),
+  validateQuerySchema: require("./validateQuerySchema"),
   validateCredentials: require("./validateCredentials"),
   ownsEntity: require("./ownsEntity"),
   createRateLimiter,

@@ -2,7 +2,7 @@ const createError = require("../utilities/createError");
 
 const validateSchema = (schema) => async (req, res, next) => {
   try {
-    await schema.validate(req.body, { abortEarly: false });
+    req.body = await schema.validate(req.body, { abortEarly: false });
     next();
   } catch (error) {
     if (error.name === "ValidationError") {
@@ -23,7 +23,7 @@ const validateSchema = (schema) => async (req, res, next) => {
       throw createError({
         statusCode: 500,
         status: "internal server error",
-        message: `Internal Server Error: ${error.message}`,
+        message: "Internal Server Error",
       });
     }
   }

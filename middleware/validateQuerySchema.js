@@ -1,8 +1,8 @@
 const { createError } = require("../utilities");
 
-const validateParamSchema = (schema) => async (req, res, next) => {
+const validateQuerySchema = (schema) => async (req, res, next) => {
   try {
-    req.params = await schema.validate(req.params, { abortEarly: false });
+    req.query = await schema.validate(req.query, { abortEarly: false });
     next();
   } catch (error) {
     if (error.name === "ValidationError") {
@@ -14,17 +14,16 @@ const validateParamSchema = (schema) => async (req, res, next) => {
         statusCode: 400,
         status: "bad request",
         message: `Validation Error: ${error.message}`,
-        errors: errors,
+        errors,
       });
     } else {
-      // probably going to happen when passing invalid schema
       throw createError({
         statusCode: 500,
-        status: "internal server error",
+        status: "error",
         message: "Internal Server Error",
       });
     }
   }
 };
 
-module.exports = validateParamSchema;
+module.exports = validateQuerySchema;
