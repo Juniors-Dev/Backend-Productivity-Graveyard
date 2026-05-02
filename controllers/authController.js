@@ -3,7 +3,7 @@ const { sendVerificationEmail, sendPasswordResetEmail } = require("../services/e
 const { UserService, RoleService, AuthService, TokenService } = require("../services/index");
 const userService = new UserService(db);
 const tokenService = new TokenService(db);
-const authService = new AuthService(db, tokenService );
+const authService = new AuthService(db, tokenService);
 const roleService = new RoleService(db);
 
 const { generateToken: generateJwt } = require("../utilities/jwt");
