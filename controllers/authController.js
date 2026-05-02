@@ -2,8 +2,8 @@ const { db } = require("../models");
 const { sendVerificationEmail, sendPasswordResetEmail } = require("../services/emailService");
 const { UserService, RoleService, AuthService, TokenService } = require("../services/index");
 const userService = new UserService(db);
-const authService = new AuthService(db);
 const tokenService = new TokenService(db);
+const authService = new AuthService(db, tokenService );
 const roleService = new RoleService(db);
 
 const { generateToken: generateJwt } = require("../utilities/jwt");
