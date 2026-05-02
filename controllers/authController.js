@@ -1,13 +1,21 @@
 const { db } = require("../models");
 const { sendVerificationEmail, sendPasswordResetEmail } = require("../services/emailService");
-const { UserService, RoleService, AuthService } = require("../services/index");
+const { UserService, RoleService, AuthService, TokenService } = require("../services/index");
 const userService = new UserService(db);
-const authService = new AuthService(db);
+const tokenService = new TokenService(db);
+const authService = new AuthService(db, tokenService);
 const roleService = new RoleService(db);
 
 const { generateToken: generateJwt } = require("../utilities/jwt");
 const { hashPassword, verifyPassword } = require("../utilities/hashing");
 const { createError, successResponse } = require("../utilities");
+
+function tokenOpts(req) {
+  return {
+    ipAddress: req.ip,
+    userAgent: req.get("User-Agent"),
+  };
+}
 
 async function register(req, res) {
   const { firstName, lastName, username, email, password } = req.body;
@@ -26,7 +34,7 @@ async function register(req, res) {
   });
 
   try {
-    const verificationToken = await authService.createVerificationToken(user.id);
+    const verificationToken = await tokenService.createVerificationToken(user.id, tokenOpts(req));
     await sendVerificationEmail(email, verificationToken);
   } catch (error) {
     console.error("Failed to send verification email:", error.message, error.name);
@@ -102,7 +110,7 @@ async function resendVerification(req, res) {
   const user = await userService.getOneEmail(email);
   if (user && !user.isEmailVerified) {
     try {
-      const token = await authService.createVerificationToken(user.id);
+      const token = await tokenService.createVerificationToken(user.id, tokenOpts(req));
       await sendVerificationEmail(email, token);
     } catch (error) {
       console.error("Failed to send verification email:", error.message, error.name);
@@ -123,7 +131,7 @@ async function forgotPassword(req, res) {
   const user = await userService.getOneEmail(email);
   if (user) {
     try {
-      const token = await authService.createPasswordResetToken(user.id);
+      const token = await tokenService.createPasswordResetToken(user.id, tokenOpts(req));
       await sendPasswordResetEmail(email, token);
     } catch (error) {
       console.error("Failed to send password reset email:", error.message, error.name);

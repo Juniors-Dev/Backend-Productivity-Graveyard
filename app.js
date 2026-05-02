@@ -41,6 +41,11 @@ const { initDb } = require("./scripts/db-init");
 const app = express();
 
 // Middlewarres for setting up the application
+
+// TODO: Set trust proxy once deployment topology is known
+// https://expressjs.com/en/guide/behind-proxies.html
+//app.set("trust proxy", 1); // trust first proxy, adjust as needed for production
+
 // Enable CORS if needed
 if (process.env.CORS === "true") {
   app.use(cors());

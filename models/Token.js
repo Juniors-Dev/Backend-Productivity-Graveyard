@@ -30,11 +30,20 @@ module.exports = (sequelize, Sequelize) => {
         allowNull: true,
         defaultValue: null,
       },
+      ipAddress: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
+      userAgent: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null,
+      },
     },
     {
       timestamps: true,
       tableName: "Tokens",
-      paranoid: false,
       indexes: [{ fields: ["tokenHash"] }, { fields: ["userId", "type"] }],
     }
   );

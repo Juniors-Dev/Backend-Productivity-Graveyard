@@ -8,6 +8,7 @@ module.exports = {
   TombstoneService: require("./TombstoneService"),
   StatsService: require("./StatsService"),
   AuthService: require("./AuthService"),
+  TokenService: require("./TokenService"),
 };
 
 //hello
