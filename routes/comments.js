@@ -15,14 +15,15 @@ const CommentService = require("../services/CommentService");
 const { db } = require("../models");
 const commentService = new CommentService(db);
 
-//disable during testing
-router.use(
-  createRateLimiter({
-    max: parseInt(process.env.RATE_LIMIT_MAX) || 10,
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 1 * 60 * 1000,
-    message: "Too many comments, please try again later",
-  })
-);
+if (process.env.NODE_ENV !== "test") {
+  router.use(
+    createRateLimiter({
+      max: parseInt(process.env.RATE_LIMIT_MAX) || 10,
+      windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 1 * 60 * 1000,
+      message: "Too many comments, please try again later",
+    })
+  );
+}
 
 router.get("/:id/replies", validateParamSchema(commentIdSchema), asyncHandler(getCommentReplies));
 
