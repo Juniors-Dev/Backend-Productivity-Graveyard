@@ -47,8 +47,8 @@ describe("Comments API", () => {
     user1 = await db.User.create({ ...createTestUser("1"), roleId: role.id });
     user2 = await db.User.create({ ...createTestUser("2"), roleId: role.id });
 
-    token1 = generateToken({ id: user1.id, email: user1.email, username: user1.username, roleId: user1.roleId });
-    token2 = generateToken({ id: user2.id, email: user2.email, username: user2.username, roleId: user2.roleId });
+    token1 = generateToken({ id: user1.id, email: user1.email, username: user1.username, roleId: role.name });
+    token2 = generateToken({ id: user2.id, email: user2.email, username: user2.username, roleId: role.name });
 
     const project = await db.Project.create(createTestProject(user1.id));
     projectId = project.id;
