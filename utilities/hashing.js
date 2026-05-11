@@ -1,4 +1,4 @@
-var crypto = require("crypto");
+const crypto = require("crypto");
 
 async function hashPassword(password, salt = null) {
   if (!salt) {
@@ -33,4 +33,14 @@ async function verifyPassword(inputPassword, storedSalt, storedPassword) {
   }
 }
 
-module.exports = { hashPassword, verifyPassword };
+function generateToken() {
+  const plaintext = crypto.randomBytes(32).toString("hex");
+  const hash = crypto.createHash("sha256").update(plaintext).digest("hex");
+  return { plaintext, hash };
+}
+
+function hashToken(plaintext) {
+  return crypto.createHash("sha256").update(plaintext).digest("hex");
+}
+
+module.exports = { hashPassword, verifyPassword, generateToken, hashToken };

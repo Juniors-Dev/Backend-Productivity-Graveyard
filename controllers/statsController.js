@@ -1,28 +1,15 @@
-var { db } = require("../models");
-var { StatsService } = require("../services");
-var statsService = new StatsService(db);
-var { successResponse, createError } = require("../utilities");
+const { db } = require("../models");
+const { StatsService } = require("../services");
+const statsService = new StatsService(db);
+const { successResponse, createError, mapGlobalStats, mapUserStats } = require("../utilities");
 
 async function getAll(req, res) {
   const data = await statsService.getAll();
+
   res.status(200).json(
     successResponse({
       message: "Success",
-      data: {
-        totalUsers: data.totalusers,
-        totalComments: data.totalcomments,
-        totalProjects: data.totalprojects,
-        averageLifespan: data.averagelifespan,
-        mostCommonCause: data.mostcommoncause,
-        funeralsToday: data.funeralstoday,
-        totalVotes: data.totalvotes,
-        votesToday: data.votestoday,
-        averageEulogyLength: data.averageeulogylength,
-        rageQuitRate: data.ragequitrate,
-        topBurialDay: data.topburialday,
-        topBurialMonth: data.topburialmonth,
-        mostVotedProject: data.topvotedproject,
-      },
+      data: mapGlobalStats(data),
       statusCode: 200,
     })
   );
@@ -39,24 +26,11 @@ async function getUserStats(req, res) {
   }
 
   const data = await statsService.getUserStats(userId);
+
   res.status(200).json(
     successResponse({
       message: "Success",
-      data: {
-        totalUsers: data.totalusers,
-        totalComments: data.totalcomments,
-        totalProjects: data.totalprojects,
-        averageLifespan: data.averagelifespan,
-        mostCommonCause: data.mostcommoncause,
-        funeralsToday: data.funeralstoday,
-        totalVotes: data.totalvotes,
-        votesToday: data.votestoday,
-        averageEulogyLength: data.averageeulogylength,
-        rageQuitRate: data.ragequitrate,
-        topBurialDay: data.topburialday,
-        topBurialMonth: data.topburialmonth,
-        mostVotedProject: data.topvotedproject,
-      },
+      data: mapUserStats(data),
       statusCode: 200,
     })
   );
@@ -73,24 +47,11 @@ async function getCurrentUserStats(req, res) {
   }
 
   const data = await statsService.getUserStats(userId);
+
   res.status(200).json(
     successResponse({
       message: "Success",
-      data: {
-        totalUsers: data.totalusers,
-        totalComments: data.totalcomments,
-        totalProjects: data.totalprojects,
-        averageLifespan: data.averagelifespan,
-        mostCommonCause: data.mostcommoncause,
-        funeralsToday: data.funeralstoday,
-        totalVotes: data.totalvotes,
-        votesToday: data.votestoday,
-        averageEulogyLength: data.averageeulogylength,
-        rageQuitRate: data.ragequitrate,
-        topBurialDay: data.topburialday,
-        topBurialMonth: data.topburialmonth,
-        mostVotedProject: data.topvotedproject,
-      },
+      data: mapUserStats(data),
       statusCode: 200,
     })
   );

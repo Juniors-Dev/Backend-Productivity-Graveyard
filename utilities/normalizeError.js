@@ -51,8 +51,11 @@ function normalizeError(err) {
   }
 
   // Unknown errors, fallback to prevent unexpected generic errors
+  if (process.env.LOG_ERRORS === "true") {
+    console.error("Unhandled error:", err);
+  }
   return createError({
-    message: err.message || "Unexpected error occurred.",
+    message: "Internal Server Error",
     statusCode: 500,
     status: "error",
     errors: null,

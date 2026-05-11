@@ -47,11 +47,11 @@ async function cleanUp(usersIds = []) {
 }
 
 describe("Projects API", () => {
-  const badToken = jwt.sign({ id: "invalid", email: "a@a.com", username: "baduser", roleId: 1 }, "invalidsecret", {
+  const badToken = jwt.sign({ id: "invalid", email: "a@a.com", username: "baduser", role: "user" }, "invalidsecret", {
     expiresIn: "1h",
   });
   const expiredToken = jwt.sign(
-    { id: "expired", email: "a@a.com", username: "expireduser", roleId: 1, exp: Math.floor(Date.now() / 1000) - 1 },
+    { id: "expired", email: "a@a.com", username: "expireduser", role: "user", exp: Math.floor(Date.now() / 1000) - 1 },
     process.env.JWT_SECRET
   );
 

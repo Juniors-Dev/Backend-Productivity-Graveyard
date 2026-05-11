@@ -1,29 +1,23 @@
-var express = require("express");
-var router = express.Router();
-var { db } = require("../models");
+const express = require("express");
+const router = express.Router();
+const { db } = require("../models");
+const { successResponse, createError } = require("../utilities");
+const { asyncHandler } = require("../middleware");
 
 router.get("/", function (req, res, next) {
-  res.status(200).json({ message: "Welcome to the API" });
+  res.status(200).json(successResponse({ message: "Welcome to the API", statusCode: 200 }));
 });
 
-router.get("/healthz", async (req, res) => {
-  try {
+router.get(
+  "/healthz",
+  asyncHandler(async (req, res) => {
     await db.sequelize.query("SELECT 1;");
 
-    // Check counts of essential tables
-    const [roleCount, typeCount, achievementCount] = await Promise.all([
-      db.Role.count(),
-      db.Type.count(),
-      db.Achievement.count(),
-    ]);
+    const counts = await Promise.all([db.Role.count(), db.Type.count(), db.Achievement.count()]);
+    const isSeeded = counts.every((count) => count > 0);
 
-    if (roleCount === 0 || typeCount === 0 || achievementCount === 0) {
-      return res.status(500).json({
-        status: "incomplete seed",
-        roleCount,
-        typeCount,
-        achievementCount,
-      });
+    if (!isSeeded) {
+      throw createError({ statusCode: 500, message: "Service unavailable" });
     }
 
     const seconds = Math.floor(process.uptime());
@@ -31,18 +25,14 @@ router.get("/healthz", async (req, res) => {
     const hours = Math.floor(minutes / 60);
     const friendlyUptime = `${hours}h ${minutes % 60}m ${seconds % 60}s`;
 
-    res.status(200).json({
-      status: "ok",
-      uptime: process.uptime(),
-      friendlyUptime,
-      roleCount,
-      typeCount,
-      achievementCount,
-    });
-  } catch (err) {
-    console.error("Health check failed:", err);
-    res.status(500).json({ status: "db unavailable", error: "An internal server error occurred" });
-  }
-});
+    res.status(200).json(
+      successResponse({
+        message: "OK",
+        statusCode: 200,
+        data: { uptime: seconds, friendlyUptime },
+      })
+    );
+  })
+);
 
 module.exports = router;

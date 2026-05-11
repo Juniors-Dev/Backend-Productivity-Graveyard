@@ -1,4 +1,4 @@
-var { object, string, array, number, date } = require("yup");
+const { object, string, array, number, date } = require("yup");
 
 const projectSchema = object({
   name: string()
@@ -29,7 +29,7 @@ const projectSchema = object({
     )
     .required("Types are required"),
   tombstoneId: number("Tombstone ID must be a number").typeError("Tombstone ID must be a number").nullable(),
-});
+}).noUnknown(true, "Unknown field in request body");
 
 const projectUpdateSchema = object()
   .shape({
@@ -70,9 +70,11 @@ const projectUpdateSchema = object()
       value.tombstoneId ||
       value.status
     );
-  });
+  })
+  .noUnknown(true, "Unknown field in request body");
+
 const typeIdSchema = object({
   typeId: number().required("Type ID is required"),
-});
+}).noUnknown(true, "Unknown field in request body");
 
 module.exports = { projectSchema, projectUpdateSchema, typeIdSchema };

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+<<<<<<< feat/comments-thread
 const {
   asyncHandler,
   authenticate,
@@ -26,6 +27,15 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 router.get("/:id/replies", validateParamSchema(commentIdSchema), asyncHandler(getCommentReplies));
+=======
+const { asyncHandler, authenticate, validateSchema, validateParamSchema, ownsEntity } = require("../middleware");
+const { updateCommentSchema } = require("../schema/commentSchema");
+const { commentIdSchema } = require("../schema/params");
+const { updateComment, deleteComment } = require("../controllers/commentController");
+const CommentService = require("../services/CommentService");
+const { db } = require("../models");
+const commentService = new CommentService(db);
+>>>>>>> dev
 
 router.put(
   "/:id",

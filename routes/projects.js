@@ -1,6 +1,6 @@
-var express = require("express");
-var router = express.Router();
-var {
+const express = require("express");
+const router = express.Router();
+const {
   getAll,
   getOneId,
   create,
@@ -11,15 +11,23 @@ var {
   removeType,
   getAllTombstones,
 } = require("../controllers/projectController");
-var asyncHandler = require("../middleware/asyncHandler");
-var { authenticate, hasRole, validateSchema, validateParamSchema, ownsEntity, isLoggedIn } = require("../middleware");
-var { projectSchema, projectUpdateSchema, typeIdSchema, uuidSchema } = require("../schema");
-var { ProjectService } = require("../services");
-var { db } = require("../models");
-var projectService = new ProjectService(db);
-var projectComments = require("./projectComments");
+const asyncHandler = require("../middleware/asyncHandler");
+const {
+  authenticate,
+  hasRole,
+  validateSchema,
+  validateParamSchema,
+  validateQuerySchema,
+  ownsEntity,
+  isLoggedIn,
+} = require("../middleware");
+const { projectSchema, projectUpdateSchema, typeIdSchema, uuidSchema, projectQuerySchema } = require("../schema");
+const { ProjectService } = require("../services");
+const { db } = require("../models");
+const projectService = new ProjectService(db);
+const projectComments = require("./projectComments");
 
-router.get("/", isLoggedIn, asyncHandler(getAll));
+router.get("/", isLoggedIn, validateQuerySchema(projectQuerySchema), asyncHandler(getAll));
 router.get("/types", asyncHandler(getAllTypes));
 router.get("/tombstones", asyncHandler(getAllTombstones));
 router.get("/:id", validateParamSchema(uuidSchema), isLoggedIn, asyncHandler(getOneId));
@@ -70,17 +78,43 @@ router.use("/", projectComments);
  * @swagger
  * components:
  *   schemas:
+ *     ProjectUser:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         username:
+ *           type: string
+ *         avatarUrl:
+ *           type: string
+ *           nullable: true
+ *
+ *     ProjectType:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 6
+ *         name:
+ *           type: string
+ *           example: "Feature Creep"
+ *
+ *     ProjectTombstone:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         name:
+ *           type: string
+ *           example: "Feature Creep"
+ *         imageUrl:
+ *           type: string
+ *           example: "/images/tombstone1.png"
+ *
  *     Project:
  *       type: object
- *       required:
- *         - name
- *         - description
- *         - types
- *         - userId
- *         - eulogy
- *         - causeOfDeath
- *         - startDate
- *         - endDate
  *       properties:
  *         id:
  *           type: string
@@ -110,47 +144,31 @@ router.use("/", projectComments);
  *           format: date
  *           example: "2025-01-15"
  *         tombstoneId:
- *           type: string
- *           format: uuid
- *           nullable: true
+ *           type: integer
+ *           example: 1
  *         userId:
  *           type: string
  *           format: uuid
  *         types:
  *           type: array
  *           items:
- *             type: integer
- *             example: 1
+ *             $ref: '#/components/schemas/ProjectType'
  *         user:
- *           type: object
- *           properties:
- *             id:
- *               type: string
- *               format: uuid
- *             username:
- *               type: string
- *             avatarUrl:
- *               type: string
- *               nullable: true
+ *           $ref: '#/components/schemas/ProjectUser'
  *         tombstone:
- *           type: object
- *           properties:
- *             id:
- *               type: integer
- *               example: 1
- *             name:
- *               type: string
- *               example: "Feature Creep"
- *             imageUrl:
- *               type: string
- *               example: "/images/tombstone1.png"
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/ProjectTombstone'
  *         commentCount:
  *           type: integer
+ *           example: 3
  *         upvoteCount:
  *           type: integer
+ *           example: 7
  *         userHasVoted:
  *           type: boolean
  *           nullable: true
+ *           description: Null when the request is unauthenticated, otherwise true or false.
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -158,11 +176,102 @@ router.use("/", projectComments);
  *           type: string
  *           format: date-time
  *
+ *     ProjectCreateBody:
+ *       type: object
+ *       required:
+ *         - name
+ *         - description
+ *         - types
+ *         - eulogy
+ *         - causeOfDeath
+ *         - startDate
+ *         - endDate
+ *         - tombstoneId
+ *       properties:
+ *         name:
+ *           type: string
+ *           example: "Feature Creeper Codex"
+ *         description:
+ *           type: string
+ *           example: "A parody app showing how simple ideas spiral into feature-bloated chaos."
+ *         eulogy:
+ *           type: string
+ *           example: "Laid to rest after haunting VS Code for too long."
+ *         causeOfDeath:
+ *           type: string
+ *           example: "Dog Puked on the server"
+ *         status:
+ *           type: string
+ *           enum: [inactive, active, buried, resurrected, completed, archived]
+ *           example: "buried"
+ *         startDate:
+ *           type: string
+ *           format: date
+ *           example: "2024-10-01"
+ *         endDate:
+ *           type: string
+ *           format: date
+ *           example: "2025-01-15"
+ *         tombstoneId:
+ *           type: integer
+ *           example: 1
+ *         types:
+ *           type: array
+ *           items:
+ *             type: integer
+ *             example: 1
+ *
+ *     ProjectUpdateBody:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *           example: "Feature Creeper Codex"
+ *         description:
+ *           type: string
+ *           example: "A parody app showing how simple ideas spiral into feature-bloated chaos."
+ *         eulogy:
+ *           type: string
+ *           example: "Laid to rest after haunting VS Code for too long."
+ *         causeOfDeath:
+ *           type: string
+ *           example: "Dog Puked on the server"
+ *         status:
+ *           type: string
+ *           enum: [inactive, active, buried, resurrected, completed, archived]
+ *           example: "archived"
+ *         startDate:
+ *           type: string
+ *           format: date
+ *           example: "2024-10-01"
+ *         endDate:
+ *           type: string
+ *           format: date
+ *           example: "2025-01-15"
+ *         tombstoneId:
+ *           type: integer
+ *           example: 1
+ *         types:
+ *           type: array
+ *           items:
+ *             type: integer
+ *             example: 1
+ *
+ *     TypeId:
+ *       type: object
+ *       required:
+ *         - typeId
+ *       properties:
+ *         typeId:
+ *           type: integer
+ *           example: 1
+ *
  *     ProjectArrayResponse:
  *       type: object
  *       properties:
  *         success:
  *           type: boolean
+ *           example: true
  *         status:
  *           type: string
  *           example: "success"
@@ -181,26 +290,108 @@ router.use("/", projectComments);
  *           properties:
  *             total:
  *               type: integer
+ *               example: 42
  *             offset:
  *               type: integer
+ *               example: 0
  *             limit:
  *               type: integer
+ *               example: 20
  *             hasNext:
  *               type: boolean
+ *               example: true
  *
  *     ProjectSingleResponse:
  *       type: object
  *       properties:
  *         success:
  *           type: boolean
+ *           example: true
  *         status:
  *           type: string
+ *           example: "success"
  *         statusCode:
  *           type: integer
+ *           example: 200
  *         message:
  *           type: string
+ *           example: "Success"
  *         data:
  *           $ref: '#/components/schemas/Project'
+ *
+ *     ProjectDeleteResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         statusCode:
+ *           type: integer
+ *           example: 200
+ *         message:
+ *           type: string
+ *           example: "Project deleted successfully"
+ *         data:
+ *           nullable: true
+ *           example: null
+ *
+ *     ProjectTypesResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         statusCode:
+ *           type: integer
+ *           example: 200
+ *         message:
+ *           type: string
+ *           example: "Success"
+ *         data:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *                 example: 6
+ *               name:
+ *                 type: string
+ *                 example: "Feature Creep"
+ *               createdAt:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2025-05-07T20:30:17.974Z"
+ *               updatedAt:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2025-05-07T20:30:17.974Z"
+ *
+ *     ProjectTombstonesResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         statusCode:
+ *           type: integer
+ *           example: 200
+ *         message:
+ *           type: string
+ *           example: "Success"
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/ProjectTombstone'
  *
  *     ProjectErrorResponse:
  *       type: object
@@ -230,7 +421,7 @@ router.use("/", projectComments);
  *           example: false
  *         status:
  *           type: string
- *           example: "bad request"
+ *           example: "bad_request"
  *         statusCode:
  *           type: integer
  *           example: 400
@@ -239,16 +430,16 @@ router.use("/", projectComments);
  *           example: "Validation Error: X errors occurred"
  *         errors:
  *           type: array
+ *           description: List of validation errors with field names and messages
  *           items:
  *             type: object
  *             properties:
  *               field:
  *                 type: string
- *                 example: "fieldName"
+ *                 example: "name"
  *               message:
  *                 type: string
- *                 example: "Error message"
- *           description: List of validation errors with field names and messages
+ *                 example: "Name is required"
  *           example:
  *             - field: "name"
  *               message: "Name is required"
@@ -294,19 +485,18 @@ router.use("/", projectComments);
  *           type: array
  *           items:
  *             type: string
- *
  */
 
 /**
  * @swagger
  * /projects:
  *   get:
- *     summary: Retrieve a list of buried projects
+ *     summary: Retrieve a list of projects
  *     description: >
- *       Returns a paginated list of all projects in the graveyard.
- *       Supports filtering by status, type, user, and supports sorting and search queries.
- *       This endpoint is publicly accessible and returns metadata for pagination.
- *       A logged in user, it will return true for the userHasVoted field if the user has voted on the project.
+ *       Returns a paginated list of projects.
+ *       Supports filtering by status, user, type, sorting, and project name search.
+ *       This endpoint is publicly accessible and returns pagination metadata.
+ *       If the request is authenticated, userHasVoted indicates whether the current user has voted on each project.
  *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
@@ -315,75 +505,77 @@ router.use("/", projectComments);
  *       - in: query
  *         name: limit
  *         required: false
- *         description: Number of projects to return
+ *         description: Number of projects to return. Maximum value is 100.
  *         schema:
  *           type: integer
  *           default: 100
+ *           maximum: 100
  *       - in: query
  *         name: offset
  *         required: false
- *         description: Number of projects to skip (for pagination)
+ *         description: Number of projects to skip for pagination.
  *         schema:
  *           type: integer
  *           default: 0
+ *           minimum: 0
  *       - in: query
  *         name: status
  *         required: false
- *         description: Filter projects by status
+ *         description: Filter projects by status.
  *         schema:
  *           type: string
  *           enum: [inactive, active, buried, resurrected, completed, archived]
  *       - in: query
  *         name: orderBy
  *         required: false
- *         description: Field to sort by
+ *         description: Field to sort by.
  *         schema:
  *           type: string
- *           enum: [status, createdAt, updatedAt, name, etc..]
+ *           enum: [status, createdAt, updatedAt, name]
  *           default: createdAt
  *       - in: query
  *         name: order
  *         required: false
- *         description: Sort direction (asc or desc)
+ *         description: Sort direction.
  *         schema:
  *           type: string
- *           enum: [asc, desc]
- *           default: desc
+ *           enum: [ASC, DESC]
+ *           default: DESC
  *       - in: query
  *         name: userId
  *         required: false
- *         description: Filter projects by user ID
+ *         description: Filter projects by user ID.
  *         schema:
  *           type: string
  *           format: uuid
  *       - in: query
  *         name: types
  *         required: false
- *         description: Comma-separated list of type IDs to filter by (e.g., 1,2,3)
+ *         description: Comma-separated list of type IDs. Returns projects that include any of the provided types.
  *         schema:
  *           type: string
  *           example: "1,2,3"
  *       - in: query
  *         name: query
  *         required: false
- *         description: Search by project name
+ *         description: Search by project name.
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: List of filtered projects
+ *         description: List of filtered projects.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectArrayResponse'
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UnauthorizedResponse'
  *       429:
- *         description: Too many requests
+ *         description: Too many requests.
  *         content:
  *           application/json:
  *             schema:
@@ -391,7 +583,7 @@ router.use("/", projectComments);
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Internal server error
+ *         description: Internal server error.
  *         content:
  *           application/json:
  *             schema:
@@ -403,49 +595,17 @@ router.use("/", projectComments);
  * /projects/types:
  *   get:
  *     summary: Get all project types
- *     description: Returns a list of all predefined reasons a project was discontinued. Useful for building dropdown menus in forms.
+ *     description: Returns a list of predefined project types or causes of death. Useful for form dropdowns and filters.
  *     tags: [Projects]
  *     responses:
  *       200:
- *         description: List of project types
+ *         description: List of project types.
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 status:
- *                   type: string
- *                   example: success
- *                 statusCode:
- *                   type: integer
- *                   example: 200
- *                 message:
- *                   type: string
- *                   example: Success
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: integer
- *                         example: 6
- *                       name:
- *                         type: string
- *                         example: Feature Creep
- *                       createdAt:
- *                         type: string
- *                         format: date-time
- *                         example: "2025-05-07T20:30:17.974Z"
- *                       updatedAt:
- *                         type: string
- *                         format: date-time
- *                         example: "2025-05-07T20:30:17.974Z"
+ *               $ref: '#/components/schemas/ProjectTypesResponse'
  *       429:
- *         description: Too many requests
+ *         description: Too many requests.
  *         content:
  *           application/json:
  *             schema:
@@ -453,7 +613,7 @@ router.use("/", projectComments);
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Internal server error
+ *         description: Internal server error.
  *         content:
  *           application/json:
  *             schema:
@@ -465,44 +625,17 @@ router.use("/", projectComments);
  * /projects/tombstones:
  *   get:
  *     summary: Get all tombstones
- *     description: Returns a list of all tombstones (reasons for project discontinuation).
+ *     description: Returns a list of predefined tombstone icons/styles used to visually represent projects.
  *     tags: [Projects]
  *     responses:
  *       200:
- *         description: List of tombstones
+ *         description: List of tombstones.
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 status:
- *                   type: string
- *                   example: success
- *                 statusCode:
- *                   type: integer
- *                   example: 200
- *                 message:
- *                   type: string
- *                   example: Success
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: integer
- *                         example: 1
- *                       name:
- *                         type: string
- *                         example: Feature Creep
- *                       imageUrl:
- *                         type: string
- *                         example: "/images/tombstone1.png"
+ *               $ref: '#/components/schemas/ProjectTombstonesResponse'
  *       429:
- *         description: Too many requests
+ *         description: Too many requests.
  *         content:
  *           application/json:
  *             schema:
@@ -510,7 +643,7 @@ router.use("/", projectComments);
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Internal server error
+ *         description: Internal server error.
  *         content:
  *           application/json:
  *             schema:
@@ -529,31 +662,32 @@ router.use("/", projectComments);
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
+ *         description: UUID of the project.
  *         schema:
  *           type: string
- *         required: true
- *         description: UUID of the project
+ *           format: uuid
  *     responses:
  *       200:
- *         description: Project found
+ *         description: Project found.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectSingleResponse'
  *       401:
- *         description: Unauthorized or bad token
+ *         description: Unauthorized or bad token.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UnauthorizedResponse'
  *       404:
- *         description: Project not found
+ *         description: Project not found.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/NotFoundResponse'
  *       429:
- *         description: Too many requests
+ *         description: Too many requests.
  *         content:
  *           application/json:
  *             schema:
@@ -561,7 +695,7 @@ router.use("/", projectComments);
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Internal server error
+ *         description: Internal server error.
  *         content:
  *           application/json:
  *             schema:
@@ -581,28 +715,28 @@ router.use("/", projectComments);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Project'
+ *             $ref: '#/components/schemas/ProjectCreateBody'
  *     responses:
- *       200:
- *         description: Project created successfully
+ *       201:
+ *         description: Project created successfully.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectSingleResponse'
  *       400:
- *         description: Validation error
+ *         description: Validation error.
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *               $ref: '#/components/schemas/ProjectValidationErrorResponse'
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UnauthorizedResponse'
  *       429:
- *         description: Too many requests
+ *         description: Too many requests.
  *         content:
  *           application/json:
  *             schema:
@@ -610,7 +744,7 @@ router.use("/", projectComments);
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Internal server error
+ *         description: Internal server error.
  *         content:
  *           application/json:
  *             schema:
@@ -629,8 +763,10 @@ router.use("/", projectComments);
  *       - in: path
  *         name: id
  *         required: true
+ *         description: UUID of the project.
  *         schema:
  *           type: string
+ *           format: uuid
  *     requestBody:
  *       required: true
  *       content:
@@ -639,37 +775,37 @@ router.use("/", projectComments);
  *             $ref: '#/components/schemas/ProjectUpdateBody'
  *     responses:
  *       200:
- *         description: Project created successfully
+ *         description: Project updated successfully.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectSingleResponse'
  *       400:
- *         description: Validation error
+ *         description: Validation error.
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *               $ref: '#/components/schemas/ProjectValidationErrorResponse'
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UnauthorizedResponse'
  *       403:
- *         description: Forbidden
+ *         description: Forbidden.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ForbiddenResponse'
  *       404:
- *         description: Project not found
+ *         description: Project not found.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/NotFoundResponse'
  *       429:
- *         description: Too many requests
+ *         description: Too many requests.
  *         content:
  *           application/json:
  *             schema:
@@ -677,7 +813,7 @@ router.use("/", projectComments);
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Internal server error
+ *         description: Internal server error.
  *         content:
  *           application/json:
  *             schema:
@@ -696,50 +832,37 @@ router.use("/", projectComments);
  *       - in: path
  *         name: id
  *         required: true
+ *         description: UUID of the project.
  *         schema:
  *           type: string
+ *           format: uuid
  *     responses:
  *       200:
- *         description: Project deleted
+ *         description: Project deleted successfully.
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                  success:
- *                    type: boolean
- *                    example: true
- *                  status:
- *                    type: string
- *                    example: success
- *                  statusCode:
- *                    type: integer
- *                    example: 200
- *                  message:
- *                    type: string
- *                    example: Project deleted successfully
- *                  data:
- *                    type: null
+ *               $ref: '#/components/schemas/ProjectDeleteResponse'
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UnauthorizedResponse'
  *       403:
- *         description: Forbidden
+ *         description: Forbidden.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ForbiddenResponse'
  *       404:
- *         description: Project not found
+ *         description: Project not found.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/NotFoundResponse'
  *       429:
- *         description: Too many requests
+ *         description: Too many requests.
  *         content:
  *           application/json:
  *             schema:
@@ -747,7 +870,7 @@ router.use("/", projectComments);
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Internal server error
+ *         description: Internal server error.
  *         content:
  *           application/json:
  *             schema:
@@ -758,9 +881,9 @@ router.use("/", projectComments);
  * @swagger
  * /projects/{id}/type:
  *   put:
- *     summary: Add a type (tag) to a project
+ *     summary: Add a type to a project
  *     description: >
- *       Adds a type (tag) to the specified project. The type should be provided in the request body as a type ID.
+ *       Adds a type to the specified project. The type ID must be provided in the request body.
  *       Only the project owner or users with the appropriate role can add a type to a project.
  *     tags: [Projects]
  *     security:
@@ -769,9 +892,10 @@ router.use("/", projectComments);
  *       - in: path
  *         name: id
  *         required: true
- *         description: UUID of the project
+ *         description: UUID of the project.
  *         schema:
  *           type: string
+ *           format: uuid
  *     requestBody:
  *       required: true
  *       content:
@@ -780,43 +904,43 @@ router.use("/", projectComments);
  *             $ref: '#/components/schemas/TypeId'
  *     responses:
  *       200:
- *         description: Type added to project
+ *         description: Type added to project.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectSingleResponse'
  *       400:
- *         description: Validation error
+ *         description: Validation error.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectValidationErrorResponse'
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UnauthorizedResponse'
  *       403:
- *         description: Forbidden
+ *         description: Forbidden.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ForbiddenResponse'
  *       404:
- *         description: Project or type not found
+ *         description: Project or type not found.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectNotFoundResponse'
  *       409:
- *         description: Type already exists on project
+ *         description: Type already exists on project.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectErrorResponse'
  *       429:
- *         description: Too many requests
+ *         description: Too many requests.
  *         content:
  *           application/json:
  *             schema:
@@ -824,7 +948,7 @@ router.use("/", projectComments);
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Internal server error
+ *         description: Internal server error.
  *         content:
  *           application/json:
  *             schema:
@@ -835,9 +959,9 @@ router.use("/", projectComments);
  * @swagger
  * /projects/{id}/type:
  *   delete:
- *     summary: Remove a type (tag) from a project
+ *     summary: Remove a type from a project
  *     description: >
- *       Removes a type (tag) from the specified project. The type should be provided in the request body as a type ID.
+ *       Removes a type from the specified project. The type ID must be provided in the request body.
  *       Only the project owner or users with the appropriate role can remove a type from a project.
  *     tags: [Projects]
  *     security:
@@ -846,9 +970,10 @@ router.use("/", projectComments);
  *       - in: path
  *         name: id
  *         required: true
- *         description: UUID of the project
+ *         description: UUID of the project.
  *         schema:
  *           type: string
+ *           format: uuid
  *     requestBody:
  *       required: true
  *       content:
@@ -857,37 +982,37 @@ router.use("/", projectComments);
  *             $ref: '#/components/schemas/TypeId'
  *     responses:
  *       200:
- *         description: Type removed from project
+ *         description: Type removed from project.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectSingleResponse'
  *       400:
- *         description: Validation error
+ *         description: Validation error.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectValidationErrorResponse'
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UnauthorizedResponse'
  *       403:
- *         description: Forbidden
+ *         description: Forbidden.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ForbiddenResponse'
  *       404:
- *         description: Project or type not found
+ *         description: Project or type not found.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectNotFoundResponse'
  *       429:
- *         description: Too many requests
+ *         description: Too many requests.
  *         content:
  *           application/json:
  *             schema:
@@ -895,11 +1020,10 @@ router.use("/", projectComments);
  *         headers:
  *           $ref: '#/components/headers/RateLimitHeaders'
  *       500:
- *         description: Internal server error
+ *         description: Internal server error.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectServerErrorResponse'
  */
-
 module.exports = router;

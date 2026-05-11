@@ -45,12 +45,15 @@ module.exports = (sequelize, Sequelize) => {
       hashedPassword: {
         type: DataTypes.STRING,
         allowNull: false,
-        comment: "Bcrypt-hashed password",
       },
       salt: {
         type: DataTypes.STRING,
         allowNull: false,
-        comment: "Bcrypt salt for password hashing",
+      },
+      isEmailVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
       },
       avatarUrl: {
         type: DataTypes.STRING,
@@ -90,6 +93,10 @@ module.exports = (sequelize, Sequelize) => {
       onDelete: "SET NULL",
     });
     User.hasMany(models.Upvote, {
+      foreignKey: "userId",
+      onDelete: "CASCADE",
+    });
+    User.hasMany(models.Token, {
       foreignKey: "userId",
       onDelete: "CASCADE",
     });

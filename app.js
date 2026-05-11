@@ -1,20 +1,20 @@
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var cors = require("cors");
+const createError = require("http-errors");
+const express = require("express");
+const path = require("path");
+const cors = require("cors");
 const logger = require("morgan");
 const dotenv = require("dotenv");
 dotenv.config();
-var { errorResponse } = require("./utilities/response");
-var { createRateLimiter, createSlowDown } = require("./middleware");
-var helmet = require("helmet");
+const { errorResponse } = require("./utilities/response");
+const { createRateLimiter, createSlowDown } = require("./middleware");
+const helmet = require("helmet");
 
 //swagger
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./swagger");
 
 // routers
-var {
+const {
   indexRouter,
   usersRouter,
   projectsRouter,
@@ -38,9 +38,14 @@ const { initDb } = require("./scripts/db-init");
   }
 })();
 
-var app = express();
+const app = express();
 
 // Middlewarres for setting up the application
+
+// TODO: Set trust proxy once deployment topology is known
+// https://expressjs.com/en/guide/behind-proxies.html
+//app.set("trust proxy", 1); // trust first proxy, adjust as needed for production
+
 // Enable CORS if needed
 if (process.env.CORS === "true") {
   app.use(cors());
@@ -102,6 +107,9 @@ app.use((err, req, res, next) => {
   const errors = err.errors || null;
   if (statusCode >= 500 && process.env.LOG_ERRORS === "true") {
     console.error("Server Error:", err);
+  }
+  if (statusCode === 429 && err.retryAfter) {
+    res.set("Retry-After", String(err.retryAfter));
   }
   const response = errorResponse({
     message,

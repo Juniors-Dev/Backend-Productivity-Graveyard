@@ -3,7 +3,7 @@ const app = require("../app");
 const { generateToken } = require("../utilities/jwt");
 const { db } = require("../models");
 const { registerSchema, loginSchema } = require("../schema");
-const { hashPassword } = require("../utilities/hashing.js");
+//const { hashPassword } = require("../utilities/hashing.js");
 
 const rn = (n2) => {
   const n1 = Math.floor(Math.random() * 10);
@@ -62,14 +62,14 @@ describe("Users API - Complete Test Suite", () => {
       id: user.id,
       email: user.email,
       username: user.username,
-      roleId: user.roleId,
+      role: userRole.name,
     });
 
     adminToken = generateToken({
       id: admin.id,
       email: admin.email,
       username: admin.username,
-      roleId: admin.roleId,
+      role: adminRole.name,
     });
   });
 
@@ -175,23 +175,28 @@ describe("Users API - Complete Test Suite", () => {
       it("should reject too long lastName", async () => {
         const invalidData = {
           firstName: "John",
-          lastName: `DoeVeryLongname${Date.now()}`,
+          lastName: "DoeVeryLongLastNameThatExceedsLimit",
           username,
           email,
           password,
         };
-        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Last name must be at most 15 characters");
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Last name must be at most 30 characters");
       });
 
       it("should reject too long username", async () => {
         const invalidData = {
           firstName: "John",
           lastName: "Doe",
-          username: `johnuser${Date.now()}`,
+          username: "thisusernameiswaytoolongtobevalid",
           email,
           password,
         };
-        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Username must be at most 15 characters");
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Username must be at most 30 characters");
+      });
+
+      it("should reject firstName too short", async () => {
+        const invalidData = { firstName: "J", lastName: "Doe", username, email, password };
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("First name must be at least 2 characters");
       });
 
       it("should reject too long password", async () => {
@@ -200,9 +205,9 @@ describe("Users API - Complete Test Suite", () => {
           lastName: "Doe",
           username,
           email,
-          password: `ThisisaveryLongPassword13!`,
+          password: "ThisIsAVeryLongPasswordThatExceedsTheSixtyFourCharacterLimitABC123",
         };
-        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Password must be at most 20 characters");
+        await expect(registerSchema.validate(invalidData)).rejects.toThrow("Password must be at most 64 characters");
       });
     });
 
@@ -263,7 +268,7 @@ describe("Users API - Complete Test Suite", () => {
           .expect(201);
 
         expect(res.body.success).toBe(true);
-        expect(res.body.message).toBe("Account created successfully.");
+        expect(res.body.message).toBe("Account created successfully. Please check your email to verify your account.");
       });
 
       it("should fail registration with missing required fields", async () => {
@@ -357,7 +362,7 @@ describe("Users API - Complete Test Suite", () => {
           .expect(401);
 
         expect(res.body.success).toBe(false);
-        expect(res.body.status).toBe("unauthorized");
+        expect(res.body.status).toBe("fail");
       });
 
       it("should fail login with missing fields", async () => {
@@ -379,6 +384,7 @@ describe("Users API - Complete Test Suite", () => {
         expect(res.body.data.id).toBe(user.id);
         expect(res.body.data.username).toBeDefined();
         expect(res.body.data.role).toBe("user");
+        expect(res.body.data.isEmailVerified).toBe(false);
       });
 
       it("should return owner-specific fields for current user", async () => {
@@ -386,7 +392,6 @@ describe("Users API - Complete Test Suite", () => {
 
         expect(res.body.success).toBe(true);
         expect(res.body.data.id).toBe(user.id);
-        console.warn(res.body.data);
         // Owner-specific fields that sanitizeUser should include
         //TODO expand user output if own profile
         //expect(res.body.data.email).toBeDefined();
@@ -423,14 +428,10 @@ describe("Users API - Complete Test Suite", () => {
       });
 
       it("should NOT return owner-specific fields for other users", async () => {
-        const res = await request(app)
-          .get(`/users/${user.id}`) // Public profile endpoint
-          .expect(200);
+        const res = await request(app).get(`/users/${user.id}`).expect(200);
 
         expect(res.body.data.username).toBeDefined();
         expect(res.body.data.bio).toBeDefined();
-
-        // Should NOT include owner-specific fields
         expect(res.body.data.email).toBeUndefined();
         expect(res.body.data.firstName).toBeUndefined();
         expect(res.body.data.lastName).toBeUndefined();
@@ -594,7 +595,7 @@ describe("Users API - Complete Test Suite", () => {
           id: testUser.id,
           email: testUser.email,
           username: testUser.username,
-          roleId: testUser.roleId,
+          role: userRole.name,
         });
       });
 

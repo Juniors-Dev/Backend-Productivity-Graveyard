@@ -1,8 +1,21 @@
-var express = require("express");
-var router = express.Router();
-var { login, register } = require("../controllers/authController");
-var { validateSchema, asyncHandler, validateCredentials, createRateLimiter, createSlowDown } = require("../middleware");
-const { loginSchema, registerSchema, updateUserSchema } = require("../schema");
+const express = require("express");
+const router = express.Router();
+const {
+  validateSchema,
+  asyncHandler,
+  validateCredentials,
+  createRateLimiter,
+  createSlowDown,
+} = require("../middleware");
+const { loginSchema, registerSchema, verifyEmailSchema, emailSchema, resetPasswordSchema } = require("../schema");
+const {
+  login,
+  register,
+  verifyEmail,
+  resendVerification,
+  forgotPassword,
+  resetPassword,
+} = require("../controllers/authController");
 
 router.use(
   createRateLimiter({
@@ -20,12 +33,14 @@ router.use(
   })
 );
 
-router.get("/", function (req, res, next) {
-  res.status(200).json({ message: "Welcome to the API" });
-});
-
 router.post("/register", validateSchema(registerSchema), asyncHandler(validateCredentials), asyncHandler(register));
 router.post("/login", validateSchema(loginSchema), asyncHandler(login));
+
+router.post("/verify-email", validateSchema(verifyEmailSchema), asyncHandler(verifyEmail));
+router.post("/resend-verification", validateSchema(emailSchema), asyncHandler(resendVerification));
+
+router.post("/forgot-password", validateSchema(emailSchema), asyncHandler(forgotPassword));
+router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler(resetPassword));
 
 /**
  * @swagger
@@ -42,14 +57,20 @@ router.post("/login", validateSchema(loginSchema), asyncHandler(login));
  *       properties:
  *         firstName:
  *           type: string
+ *           minLength: 2
+ *           maxLength: 30
  *           description: User's first name
  *           example: John
  *         lastName:
  *           type: string
+ *           minLength: 2
+ *           maxLength: 30
  *           description: User's last name
  *           example: Doe
  *         username:
  *           type: string
+ *           minLength: 3
+ *           maxLength: 30
  *           description: User's unique username
  *           example: johndoe123
  *         email:
@@ -60,8 +81,12 @@ router.post("/login", validateSchema(loginSchema), asyncHandler(login));
  *         password:
  *           type: string
  *           format: password
- *           description: User's password (must be at least 8 characters, contain uppercase, lowercase, and numbers)
+ *           minLength: 8
+ *           maxLength: 64
+ *           description: User's password (must contain at least one uppercase letter, one lowercase letter, and one number)
  *           example: StrongPassword123
+ *       additionalProperties: false
+ *
  *     LoginSchema:
  *       type: object
  *       required:
@@ -78,50 +103,80 @@ router.post("/login", validateSchema(loginSchema), asyncHandler(login));
  *           format: password
  *           description: User's password
  *           example: StrongPassword123
- *     UpdateUserSchema:
+ *
+ *     VerifyEmailSchema:
+ *       type: object
+ *       required:
+ *         - token
+ *       properties:
+ *         token:
+ *           type: string
+ *           pattern: "^[a-f0-9]{64}$"
+ *           description: 64-character hex verification token received via email
+ *           example: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+ *       additionalProperties: false
+ *
+ *     EmailSchema:
+ *       type: object
+ *       required:
+ *         - email
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: User's email address
+ *           example: john.doe@example.com
+ *       additionalProperties: false
+ *
+ *     ResetPasswordSchema:
+ *       type: object
+ *       required:
+ *         - token
+ *         - newPassword
+ *         - confirmPassword
+ *       properties:
+ *         token:
+ *           type: string
+ *           description: Password reset token received via email
+ *           example: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+ *         newPassword:
+ *           type: string
+ *           format: password
+ *           minLength: 8
+ *           maxLength: 64
+ *           description: New password (must contain at least one uppercase letter, one lowercase letter, and one number)
+ *           example: NewStrongPassword123
+ *         confirmPassword:
+ *           type: string
+ *           format: password
+ *           description: Must match newPassword
+ *           example: NewStrongPassword123
+ *       additionalProperties: false
+ *
+ *     LoginDataResponse:
  *       type: object
  *       properties:
- *         firstName:
+ *         id:
  *           type: string
- *           description: User's first name
- *         lastName:
+ *           format: uuid
+ *           example: "3f173b5c-8a0d-4e7f-90cb-4adf2b2c0001"
+ *         email:
  *           type: string
- *           description: User's last name
+ *           format: email
+ *           example: john.doe@example.com
  *         username:
  *           type: string
- *           description: User's unique username
- *     ErrorResponse:
- *       type: object
- *       properties:
- *         status:
+ *           example: johndoe123
+ *         role:
  *           type: string
- *           enum: [bad request, unauthorized, fail]
- *           example: bad request
- *         data:
- *           type: object
- *           properties:
- *             errors:
- *               type: array
- *               items:
- *                 type: string
- *               example: ["Last name is required", "Password must be at least 8 characters"]
- *     SuccessResponse:
- *       type: object
- *       properties:
- *         status:
+ *           example: user
+ *         isEmailVerified:
+ *           type: boolean
+ *           example: true
+ *         token:
  *           type: string
- *           enum: [success]
- *           example: success
- *         data:
- *           type: object
- *           properties:
- *             result:
- *               type: string
- *               example: Account created successfully
- *             token:
- *               type: string
- *               description: JWT token for authenticated requests
- *               example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTYxNjIzOTAyMn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+ *           description: JWT access token
+ *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *
  *     AuthRateLimitResponse:
  *       type: object
@@ -147,44 +202,10 @@ router.post("/login", validateSchema(loginSchema), asyncHandler(login));
 
 /**
  * @swagger
- * /auth:
- *   get:
- *     summary: Welcome endpoint
- *     description: Returns a welcome message
- *     tags: [Auth]
- *     responses:
- *       200:
- *         description: Welcome message
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Welcome to the API
- *       429:
- *         description: Too many requests - global rate limit exceeded
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/RateLimitResponse'
- *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/InternalErrorResponse'
- */
-
-/**
- * @swagger
  * /auth/register:
  *   post:
  *     summary: Register a new user
- *     description: Creates a new user account with the provided information
+ *     description: Creates a new user account and sends a verification email. The user must verify their email before full access is granted.
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -200,7 +221,7 @@ router.post("/login", validateSchema(loginSchema), asyncHandler(login));
  *             password: StrongPassword123
  *     responses:
  *       201:
- *         description: User created successfully
+ *         description: User created successfully. A verification email is sent (email delivery failures are silent — the user can resend via /auth/resend-verification).
  *         content:
  *           application/json:
  *             schema:
@@ -209,7 +230,7 @@ router.post("/login", validateSchema(loginSchema), asyncHandler(login));
  *               success: true
  *               status: success
  *               statusCode: 201
- *               message: Account created successfully.
+ *               message: "Account created successfully. Please check your email to verify your account."
  *       400:
  *         description: Bad request - validation error
  *         content:
@@ -220,22 +241,23 @@ router.post("/login", validateSchema(loginSchema), asyncHandler(login));
  *               success: false
  *               status: bad request
  *               statusCode: 400
+ *               message: "Validation Error: 2 errors occurred"
  *               errors: [
  *                 {field: "email", message: "Email is required"},
  *                 {field: "password", message: "Password must be at least 8 characters"}
  *               ]
  *       409:
- *         description: Conflict - user already exists
+ *         description: Conflict - username or email already exists
  *         content:
- *          application/json:
- *            schema:
- *              $ref: '#/components/schemas/ConflictResponse'
- *              example:
- *                success: false
- *                status: conflict
- *                statusCode: 409
- *                message: "Conflict, username already exists. Login or use a different username."
- *                errors: null
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ConflictResponse'
+ *             example:
+ *               success: false
+ *               status: conflict
+ *               statusCode: 409
+ *               message: "Conflict, username already exists. Login or use a different username."
+ *               errors: null
  *       429:
  *         description: Too many authentication attempts - auth rate limit exceeded
  *         content:
@@ -257,7 +279,7 @@ router.post("/login", validateSchema(loginSchema), asyncHandler(login));
  * /auth/login:
  *   post:
  *     summary: Login user
- *     description: Authenticates a user and returns a JWT token
+ *     description: Authenticates a user and returns a JWT token with user details including email verification status.
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -274,7 +296,18 @@ router.post("/login", validateSchema(loginSchema), asyncHandler(login));
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 status:
+ *                   type: string
+ *                 statusCode:
+ *                   type: integer
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/LoginDataResponse'
  *             example:
  *               success: true
  *               status: success
@@ -285,6 +318,7 @@ router.post("/login", validateSchema(loginSchema), asyncHandler(login));
  *                 email: john.doe@example.com
  *                 username: johndoe123
  *                 role: user
+ *                 isEmailVerified: true
  *                 token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *       400:
  *         description: Bad request - validation error
@@ -299,7 +333,7 @@ router.post("/login", validateSchema(loginSchema), asyncHandler(login));
  *               message: "Validation Error: Email is required"
  *               errors: [
  *                 {field: "email", message: "Email is required"},
- *                 {field: "password", message: "Password is required"}
+ *                 {field: "password", message: "Please provide a valid password"}
  *               ]
  *       401:
  *         description: Unauthorized - invalid credentials
@@ -307,12 +341,274 @@ router.post("/login", validateSchema(loginSchema), asyncHandler(login));
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UnauthorizedResponse'
- *               example:
- *                 success: false
- *                 status: fail
- *                 statusCode: 401
- *                 message: "Invalid email or password, please try again."
- *                 errors: null
+ *             example:
+ *               success: false
+ *               status: fail
+ *               statusCode: 401
+ *               message: "Invalid email or password, please try again."
+ *               errors: null
+ *       429:
+ *         description: Too many authentication attempts - auth rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthRateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
+ */
+
+/**
+ * @swagger
+ * /auth/verify-email:
+ *   post:
+ *     summary: Verify email address
+ *     description: Verifies a user's email address using the token sent during registration. The token is single-use and expires after 24 hours.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VerifyEmailSchema'
+ *           example:
+ *             token: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SimpleSuccessResponse'
+ *             example:
+ *               success: true
+ *               status: success
+ *               statusCode: 200
+ *               message: "Email verified successfully."
+ *       400:
+ *         description: Invalid or expired token, or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *             examples:
+ *               invalidToken:
+ *                 summary: Token is invalid, expired, or already used
+ *                 value:
+ *                   success: false
+ *                   status: "bad request"
+ *                   statusCode: 400
+ *                   message: "Invalid or expired token."
+ *                   errors: null
+ *               badFormat:
+ *                 summary: Token format validation failed
+ *                 value:
+ *                   success: false
+ *                   status: "bad request"
+ *                   statusCode: 400
+ *                   message: "Validation Error: 1 errors occurred"
+ *                   errors: [
+ *                     {field: "token", message: "Invalid token format"}
+ *                   ]
+ *       429:
+ *         description: Too many authentication attempts - auth rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthRateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
+ */
+
+/**
+ * @swagger
+ * /auth/resend-verification:
+ *   post:
+ *     summary: Resend verification email
+ *     description: Sends a new verification email if the address is registered and unverified. Always returns 200 regardless of whether the email exists to prevent email enumeration. Per-user cooldown and daily limits are enforced server-side but do not surface as distinct responses.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/EmailSchema'
+ *           example:
+ *             email: john.doe@example.com
+ *     responses:
+ *       200:
+ *         description: Request processed (always returns success to prevent email enumeration)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SimpleSuccessResponse'
+ *             example:
+ *               success: true
+ *               status: success
+ *               statusCode: 200
+ *               message: "If that email is registered and unverified, a verification link has been sent."
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *             example:
+ *               success: false
+ *               status: "bad request"
+ *               statusCode: 400
+ *               message: "Validation Error: 1 errors occurred"
+ *               errors: [
+ *                 {field: "email", message: "Please provide a valid email"}
+ *               ]
+ *       429:
+ *         description: Too many authentication attempts - auth rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthRateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
+ */
+
+/**
+ * @swagger
+ * /auth/forgot-password:
+ *   post:
+ *     summary: Request password reset
+ *     description: Sends a password reset email if the address is registered. Always returns 200 regardless of whether the email exists to prevent email enumeration. Per-user cooldown and daily limits are enforced server-side but do not surface as distinct responses. Reset link is valid for 30 minutes.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/EmailSchema'
+ *           example:
+ *             email: john.doe@example.com
+ *     responses:
+ *       200:
+ *         description: Request processed (always returns success to prevent email enumeration)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SimpleSuccessResponse'
+ *             example:
+ *               success: true
+ *               status: success
+ *               statusCode: 200
+ *               message: "If that email is registered, a password reset link has been sent."
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *             example:
+ *               success: false
+ *               status: "bad request"
+ *               statusCode: 400
+ *               message: "Validation Error: 1 errors occurred"
+ *               errors: [
+ *                 {field: "email", message: "Please provide a valid email"}
+ *               ]
+ *       429:
+ *         description: Too many authentication attempts - auth rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthRateLimitResponse'
+ *         headers:
+ *           $ref: '#/components/headers/RateLimitHeaders'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
+ */
+
+/**
+ * @swagger
+ * /auth/reset-password:
+ *   post:
+ *     summary: Reset password with token
+ *     description: Resets the user's password using a valid reset token from the forgot-password email. The token is single-use and expires after 30 minutes.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ResetPasswordSchema'
+ *           example:
+ *             token: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+ *             newPassword: NewStrongPassword123
+ *             confirmPassword: NewStrongPassword123
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SimpleSuccessResponse'
+ *             example:
+ *               success: true
+ *               status: success
+ *               statusCode: 200
+ *               message: "Password reset successfully."
+ *       400:
+ *         description: Invalid or expired token, or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *             examples:
+ *               invalidToken:
+ *                 summary: Token is invalid, expired, or already used
+ *                 value:
+ *                   success: false
+ *                   status: "bad request"
+ *                   statusCode: 400
+ *                   message: "Invalid or expired token."
+ *                   errors: null
+ *               weakPassword:
+ *                 summary: Password does not meet requirements
+ *                 value:
+ *                   success: false
+ *                   status: "bad request"
+ *                   statusCode: 400
+ *                   message: "Validation Error: 1 errors occurred"
+ *                   errors: [
+ *                     {field: "newPassword", message: "Password must be at least 8 characters"}
+ *                   ]
+ *               mismatch:
+ *                 summary: Passwords do not match
+ *                 value:
+ *                   success: false
+ *                   status: "bad request"
+ *                   statusCode: 400
+ *                   message: "Validation Error: 1 errors occurred"
+ *                   errors: [
+ *                     {field: "confirmPassword", message: "Passwords must match"}
+ *                   ]
  *       429:
  *         description: Too many authentication attempts - auth rate limit exceeded
  *         content:

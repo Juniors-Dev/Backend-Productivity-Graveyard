@@ -1,7 +1,8 @@
-const { Op } = require("sequelize");
 const sanitizeUser = require("../utilities/sanitizeUser");
 const ProjectService = require("./ProjectService.js");
 const StatsService = require("./StatsService.js");
+
+const UPDATABLE_FIELDS = ["firstName", "lastName", "username", "bio", "avatarUrl"];
 
 class UserService {
   constructor(db) {
@@ -15,7 +16,7 @@ class UserService {
   async getAll() {
     return this.User.findAll({
       include: [{ model: this.Role }],
-      attributes: { exclude: ["encryptedPassword", "salt", "roleId"] },
+      attributes: { exclude: ["hashedPassword", "salt", "roleId"] },
     });
   }
 
@@ -26,7 +27,7 @@ class UserService {
       attributes: {
         exclude: exclude ? ["hashedPassword", "salt", "roleId"] : [],
       },
-      paranoid, // if paranoid is false, deletedAt will be null
+      paranoid,
     });
   }
 
@@ -34,11 +35,24 @@ class UserService {
     return this.User.findOne({
       where: { username },
       include: [{ model: this.Role }],
-      attributes: { exclude: ["encryptedPassword", "salt", "roleId"] },
+      attributes: { exclude: ["hashedPassword", "salt", "roleId"] },
     });
   }
 
-  async getOneId(userId) {
+  async getOneId(userId, options = {}) {
+    const user = await this.User.findOne({
+      where: { id: userId },
+      include: [{ model: this.Role }],
+      attributes: { exclude: ["hashedPassword", "salt", "roleId"] },
+    });
+
+    if (!user) return null;
+    return sanitizeUser(user, options);
+  }
+
+  async getProfile(userId, options = {}) {
+    const { currentUserId = null, ...sanitizeOptions } = options;
+
     const user = await this.User.findOne({
       where: { id: userId },
       include: [{ model: this.Role }],
@@ -47,11 +61,12 @@ class UserService {
 
     if (!user) return null;
 
-    const sanitizedUser = sanitizeUser(user);
+    const sanitizedUser = sanitizeUser(user, sanitizeOptions);
     const { count, rows } = await this.projectService.getAll(10, 0, {
       userId,
-      currentUserId: null,
+      currentUserId,
     });
+
     const stats = await this.statsService.getUserStats(userId);
 
     sanitizedUser.projects = {
@@ -80,23 +95,17 @@ class UserService {
     });
   }
 
-  async update(id, args) {
-    const updated = await this.User.update(
-      { ...args },
-      {
-        where: { id },
-      }
-    );
+  async update(id, data, options = {}) {
+    const fields = Object.fromEntries(Object.entries(data).filter(([key]) => UPDATABLE_FIELDS.includes(key)));
 
-    const updatedUser = await this.getOneId(id);
-    return updatedUser;
+    if (Object.keys(fields).length === 0) return null;
+
+    await this.User.update(fields, { where: { id } });
+    return this.getOneId(id, options);
   }
 
   async softDelete(id) {
-    const user = await this.User.findByPk(id, {
-      include: [{ model: this.Role }],
-    });
-
+    const user = await this.User.findByPk(id);
     if (!user) {
       return null;
     }
@@ -113,23 +122,6 @@ class UserService {
       throw error;
     }
   }
-
-  /*async getAllDeleted(options = {}) {
-    const users = await this.User.findAll({
-      where: {
-        deletedAt: {
-          [Op.ne]: null,
-        },
-      },
-      paranoid: false,
-    });
-
-    return users.map((user) => sanitizeUser(user, options));
-  }
-
-  async restore(id) {
-    return this.User.restore({ where: { id } });
-  }*/
 }
 
 module.exports = UserService;

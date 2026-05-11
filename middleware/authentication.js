@@ -1,8 +1,5 @@
-var { verifyToken } = require("../utilities/jwt");
-var { db } = require("../models");
-var UserService = require("../services/UserService");
-var userService = new UserService(db);
-var { createError, normalizeError } = require("../utilities");
+const { verifyToken } = require("../utilities/jwt");
+const { createError, normalizeError } = require("../utilities");
 
 async function authenticate(req, res, next) {
   try {
@@ -43,78 +40,14 @@ async function isLoggedIn(req, res, next) {
   }
 }
 
-const hasRole = (role) => async (req, res, next) => {
-  try {
-    if (!req.user) {
-      throw createError({ statusCode: 401, message: "Unauthorized, token not found." });
-    }
-
-    const user = await userService.getOneId(req.user.id);
-
-    if (!user) {
-      throw createError({ statusCode: 401, message: "Unauthorized, user not found." });
-    }
-
-    if (user.role !== role) {
-      throw createError({ statusCode: 403, message: "Forbidden, insufficient permissions." });
-    }
-    req.user = user;
-    next();
-  } catch (error) {
-    next(normalizeError(error));
+const hasRole = (role) => (req, res, next) => {
+  if (!req.user) {
+    throw createError({ statusCode: 401, message: "Unauthorized, token not found." });
   }
+  if (req.user.role !== role) {
+    throw createError({ statusCode: 403, message: "Forbidden, insufficient permissions." });
+  }
+  next();
 };
 
-async function isAdmin(req, res, next) {
-  try {
-    const auth = req.headers["authorization"];
-    if (!auth) {
-      return next();
-    }
-
-    const token = auth.split(" ");
-    if (token[0] !== "Bearer" || token.length !== 2) {
-      return next();
-    }
-
-    const decoded = verifyToken(token[1]);
-    if (!decoded) {
-      return next();
-    }
-
-    const user = await userService.getOneId(decoded.id);
-    if (!user) {
-      return next();
-    }
-
-    if (user.role !== "admin") {
-      return next();
-    }
-
-    req.user = user;
-    next();
-  } catch (error) {
-    next(normalizeError(error));
-  }
-}
-
-//Check if the visited user is itsself or Admin
-const isSelfOrAdmin = async (req, res, next) => {
-  try {
-    const targetUser = req.params.id;
-    const user = req.user;
-
-    if (targetUser === user.id || user.Role.name === "admin") {
-      return next();
-    }
-
-    throw createError({
-      statusCode: 403,
-      message: "Forbidden, you don't have permission to access this resource.",
-    });
-  } catch (error) {
-    next(normalizeError(error));
-  }
-};
-
-module.exports = { authenticate, isLoggedIn, hasRole, isAdmin, isSelfOrAdmin };
+module.exports = { authenticate, isLoggedIn, hasRole };

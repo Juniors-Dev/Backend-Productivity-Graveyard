@@ -48,7 +48,7 @@ function getTests({ app, db, testProject, createTestUser, badToken, expiredToken
           id: user.id,
           email: user.email,
           username: user.username,
-          roleId: user.roleId,
+          role: role.name,
         });
       }
 
@@ -57,7 +57,7 @@ function getTests({ app, db, testProject, createTestUser, badToken, expiredToken
           id: user2.id,
           email: user2.email,
           username: user2.username,
-          roleId: user2.roleId,
+          role: role.name,
         });
       }
     });
@@ -137,7 +137,7 @@ function getTests({ app, db, testProject, createTestUser, badToken, expiredToken
         const res = await request(app)
           .get("/projects")
           .set("Authorization", `Bearer ${token}`)
-          .query({ orderBy: "createdAt", order: "desc" });
+          .query({ orderBy: "createdAt", order: "DESC" });
         expect(res.statusCode).toBe(200);
         expect(res.body.success).toBe(true);
         expect(Array.isArray(res.body.data)).toBe(true);
@@ -148,7 +148,7 @@ function getTests({ app, db, testProject, createTestUser, badToken, expiredToken
         const res = await request(app)
           .get("/projects")
           .set("Authorization", `Bearer ${token}`)
-          .query({ orderBy: "name", order: "asc" });
+          .query({ orderBy: "name", order: "ASC" });
         expect(res.statusCode).toBe(200);
         expect(res.body.success).toBe(true);
         expect(Array.isArray(res.body.data)).toBe(true);

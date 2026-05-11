@@ -1,8 +1,8 @@
-var express = require("express");
-var router = express.Router();
-var { toggleUpvote } = require("../controllers/voteController");
-var { authenticate, asyncHandler, validateParamSchema } = require("../middleware");
-var { projectIdSchema } = require("../schema/params");
+const express = require("express");
+const router = express.Router();
+const { toggleUpvote } = require("../controllers/voteController");
+const { authenticate, asyncHandler, validateParamSchema } = require("../middleware");
+const { projectIdSchema } = require("../schema/params");
 
 router.post("/:projectId/toggle", validateParamSchema(projectIdSchema), authenticate, asyncHandler(toggleUpvote));
 
