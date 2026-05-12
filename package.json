@@ -4,6 +4,7 @@
   "description": "Productivity graveyard backend application",
   "main": "./bin/www",
   "type": "commonjs",
+  "packageManager": "pnpm@10.28.1",
   "scripts": {
     "test": "jest --verbose --coverage --forceExit --testMatch='**/tests/*.test.js'",
     "test:projects": "jest --verbose --forceExit tests/projects.test.js",
