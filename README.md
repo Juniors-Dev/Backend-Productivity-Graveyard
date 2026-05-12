@@ -12,13 +12,15 @@ Built with:
 - ✨ ESLint + Prettier + Husky for clean commits
 
 ---
+
 ## Tests
 
-[![CI](https://github.com/Juniors-Dev/Backend-Productivity-Graveyard/actions/workflows/ci.yml/badge.svg)](https://github.com/Juniors-Dev/Backend-Productivity-Graveyard/actions/workflows/ci.yml)
----
+## [![CI](https://github.com/Juniors-Dev/Backend-Productivity-Graveyard/actions/workflows/ci.yml/badge.svg)](https://github.com/Juniors-Dev/Backend-Productivity-Graveyard/actions/workflows/ci.yml)
+
 ## ⚙️ Requirements
 
 - [Node.js](https://nodejs.org/) v18+
+- [pnpm](https://pnpm.io/) v10+ (`corepack enable` can activate the pinned version from `package.json`)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) (for PostgreSQL)
 
 ---
@@ -37,8 +39,10 @@ cd backend-productivity-graveyard
 ### 2. Install dependencies
 
 ```bash
-   npm install
+pnpm install
 ```
+
+This project uses pnpm with a 30-day minimum package release age (`minimumReleaseAge: 43200`) to reduce the risk of installing newly published compromised packages.
 
 ---
 
@@ -68,7 +72,7 @@ This will start a PostgreSQL database at localhost:5432.
 ### 5. Run the app (with Swagger auto-generation)
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Swagger will be generated if needed
@@ -81,13 +85,14 @@ Visit: http://localhost:3000/doc to view the Swagger API docs, or wherever your 
 
 ## 🧪 Available Scripts
 
-- `npm start` Start the app (also runs Swagger)
-- `npm run dev` Start with auto-reload + Swagger
-- `npm run swagger` Generate Swagger doc manually
-- `npm run prepare` Setup Husky pre-commit hooks
-- `npm run lint` Lint the codebase with ESLint
-- `npm run lint:fix` Lint and fix the codebase with ESLint
-- `npm run format` Format the codebase with Prettier
+- `pnpm start` Start the app (also runs Swagger)
+- `pnpm run dev` Start with auto-reload + Swagger
+- `pnpm run prepare` Setup Husky pre-commit hooks
+- `pnpm run lint` Lint the codebase with ESLint
+- `pnpm run lint:fix` Lint and fix the codebase with ESLint
+- `pnpm run format` Format the codebase with Prettier
+- `pnpm test` Run the Jest test suite
+- `pnpm run docs` Open the Swagger docs URL
 
 ---
 
@@ -115,16 +120,18 @@ Make sure to set a JWT_SECRET in your .env file.
   or CRLF as needed.
 
 ---
+
 ## File Naming Conventions
 
-- **Models:** Singular, PascalCase *(eg. User.js, Project.js)*
-- **Routes:** Plural, lowercase *(eg. users.js, projects.js)*
-- **Controllers:** Singular, camelCase    *(eg. userController.js, projectController.js)*
-- **Services:** Singular, PascalCase *(eg. UserService.js, ProjectService.js)*
-- **Middleware:** camelCase, action-named *(eg.authentication.js, validateSchema.js, asyncHandler.js)*
-- **Schema:** camelCase, singular *(eg. userSchema.js, projectSchema.js)*
+- **Models:** Singular, PascalCase _(eg. User.js, Project.js)_
+- **Routes:** Plural, lowercase _(eg. users.js, projects.js)_
+- **Controllers:** Singular, camelCase _(eg. userController.js, projectController.js)_
+- **Services:** Singular, PascalCase _(eg. UserService.js, ProjectService.js)_
+- **Middleware:** camelCase, action-named _(eg.authentication.js, validateSchema.js, asyncHandler.js)_
+- **Schema:** camelCase, singular _(eg. userSchema.js, projectSchema.js)_
 
 So our file structure is like this
+
 ```
 src/
 ├── models/
