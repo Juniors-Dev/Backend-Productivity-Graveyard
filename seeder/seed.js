@@ -78,7 +78,7 @@ async function projectsSeed(db) {
   await db.sequelize.transaction(async (t) => {
     const formattedProjects = projects.map((project) => ({
       ...project,
-      userId: usersByUsername.get(dummyUsers[project.userId - 1].username),
+      userId: usersByUsername.get(project.username),
     }));
 
     const createdProjects = await db.Project.bulkCreate(formattedProjects, {
@@ -114,8 +114,8 @@ async function moreSeed(db) {
       await db.Comment.create(
         {
           ...comment,
-          userId: usersByUsername.get(dummyUsers[comment.userId - 1].username),
-          projectId: projectsByName.get(projects[comment.projectId - 1].name),
+          userId: usersByUsername.get(comment.username),
+          projectId: projectsByName.get(comment.projectName),
         },
         { transaction: t }
       );
@@ -125,8 +125,8 @@ async function moreSeed(db) {
       await db.Upvote.create(
         {
           ...vote,
-          userId: usersByUsername.get(dummyUsers[vote.userId - 1].username),
-          projectId: projectsByName.get(projects[vote.projectId - 1].name),
+          userId: usersByUsername.get(vote.username),
+          projectId: projectsByName.get(vote.projectName),
         },
         { transaction: t }
       );
@@ -136,7 +136,7 @@ async function moreSeed(db) {
       await db.ResurrectionEvent.create(
         {
           ...event,
-          projectId: projectsByName.get(projects[event.projectId - 1].name),
+          projectId: projectsByName.get(event.projectName),
         },
         { transaction: t }
       );

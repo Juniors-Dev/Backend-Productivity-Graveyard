@@ -1,10 +1,10 @@
 [
   {
-    "userId": 2,
-    "projectId": 1
+    "username": "jake_the_junior",
+    "projectName": "Diet Tracker"
   },
   {
-    "userId": 1,
-    "projectId": 3
+    "username": "admin_user",
+    "projectName": "Book Reading List"
   }
 ]
