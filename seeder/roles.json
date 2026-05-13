@@ -1,5 +1,5 @@
 [
-  { "name": "admin", "permissionLevel": 3 },
   { "name": "user", "permissionLevel": 1 },
-  { "name": "moderator", "permissionLevel": 2 }
+  { "name": "moderator", "permissionLevel": 2 },
+  { "name": "admin", "permissionLevel": 3 }
 ]
