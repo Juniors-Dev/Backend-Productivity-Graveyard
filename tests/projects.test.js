@@ -8,6 +8,7 @@ const updateTests = require("./projects/update.test.js");
 const getTests = require("./projects/get.test.js");
 const deleteTests = require("./projects/delete.test.js");
 const projectTypesTests = require("./projects/projectTypes.test.js");
+const resurrectTests = require("./projects/resurrect.test.js");
 
 const createTestUser = (suffix = "", roleId) => ({
   firstName: "Crash",
@@ -23,12 +24,11 @@ const testProject = {
   name: "Productivity Graveyard",
   description: "A humorous app to memorialize abandoned dev projects.",
   causeOfDeath: "Dog Puked on the server",
-  status: "buried",
   startDate: "2024-10-01",
   endDate: "2025-01-15",
   eulogy: "Laid to rest after haunting VS Code for too long. Survived by hundreds of unused TODOs.",
   types: [2, 3],
-  tombstoneId: 1, // Assuming tombstoneId 1 exists
+  tombstoneId: 1,
 };
 
 const updateProject = {
@@ -75,4 +75,7 @@ describe("Projects API", () => {
 
   // ---------- Type Tests --------------
   projectTypesTests(config);
+
+  // ---------- Resurrect Tests --------------
+  resurrectTests(config);
 });
