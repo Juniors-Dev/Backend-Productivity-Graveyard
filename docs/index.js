@@ -1,11 +1,6 @@
 /**
  * @swagger
  * components:
- *   securitySchemes:
- *     bearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
  *   parameters:
  *     limitParam:
  *       name: limit
@@ -29,27 +24,26 @@
  *         default: 0
  *
  *   headers:
- *     RateLimitHeaders:
- *       RateLimit-Policy:
- *         description: The rate limit policy (limit and window size in seconds)
- *         schema:
- *           type: string
- *         example: "600;w=600"
- *       RateLimit-Limit:
- *         description: The number of allowed requests in the current period
- *         schema:
- *           type: integer
- *         example: 600
- *       RateLimit-Remaining:
- *         description: The number of remaining requests in the current period
- *         schema:
- *           type: integer
- *         example: 599
- *       RateLimit-Reset:
- *         description: Seconds remaining until the current rate limit window resets
- *         schema:
- *           type: integer
- *         example: 600
+ *     RateLimit-Policy:
+ *       description: The rate limit policy (limit and window size in seconds)
+ *       schema:
+ *         type: string
+ *       example: "600;w=600"
+ *     RateLimit-Limit:
+ *       description: The number of allowed requests in the current period
+ *       schema:
+ *         type: integer
+ *       example: 600
+ *     RateLimit-Remaining:
+ *       description: The number of remaining requests in the current period
+ *       schema:
+ *         type: integer
+ *       example: 599
+ *     RateLimit-Reset:
+ *       description: Seconds remaining until the current rate limit window resets
+ *       schema:
+ *         type: integer
+ *       example: 600
  *
  * #-------------------------------
  * # Reusable Error Responses

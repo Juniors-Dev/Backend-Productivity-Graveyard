@@ -265,7 +265,14 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  *             schema:
  *               $ref: '#/components/schemas/AuthRateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error
  *         content:
@@ -354,7 +361,14 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  *             schema:
  *               $ref: '#/components/schemas/AuthRateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error
  *         content:
@@ -422,7 +436,14 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  *             schema:
  *               $ref: '#/components/schemas/AuthRateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error
  *         content:
@@ -479,7 +500,14 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  *             schema:
  *               $ref: '#/components/schemas/AuthRateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error
  *         content:
@@ -536,7 +564,14 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  *             schema:
  *               $ref: '#/components/schemas/AuthRateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error
  *         content:
@@ -616,7 +651,14 @@ router.post("/reset-password", validateSchema(resetPasswordSchema), asyncHandler
  *             schema:
  *               $ref: '#/components/schemas/AuthRateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error
  *         content:

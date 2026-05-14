@@ -581,7 +581,14 @@ router.use("/", projectComments);
  *             schema:
  *               $ref: '#/components/schemas/RateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error.
  *         content:
@@ -611,7 +618,14 @@ router.use("/", projectComments);
  *             schema:
  *               $ref: '#/components/schemas/RateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error.
  *         content:
@@ -641,7 +655,14 @@ router.use("/", projectComments);
  *             schema:
  *               $ref: '#/components/schemas/RateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error.
  *         content:
@@ -693,7 +714,14 @@ router.use("/", projectComments);
  *             schema:
  *               $ref: '#/components/schemas/RateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error.
  *         content:
@@ -742,7 +770,14 @@ router.use("/", projectComments);
  *             schema:
  *               $ref: '#/components/schemas/RateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error.
  *         content:
@@ -811,7 +846,14 @@ router.use("/", projectComments);
  *             schema:
  *               $ref: '#/components/schemas/RateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error.
  *         content:
@@ -868,7 +910,14 @@ router.use("/", projectComments);
  *             schema:
  *               $ref: '#/components/schemas/RateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error.
  *         content:
@@ -946,7 +995,14 @@ router.use("/", projectComments);
  *             schema:
  *               $ref: '#/components/schemas/RateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error.
  *         content:
@@ -1018,7 +1074,14 @@ router.use("/", projectComments);
  *             schema:
  *               $ref: '#/components/schemas/RateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error.
  *         content:
