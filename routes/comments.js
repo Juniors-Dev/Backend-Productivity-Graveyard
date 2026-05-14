@@ -157,7 +157,14 @@ module.exports = router;
  *               message: "Too many requests, please try again later"
  *               errors: null
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error
  *         content:
@@ -263,7 +270,14 @@ module.exports = router;
  *             schema:
  *               $ref: '#/components/schemas/RateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error
  *         content:
@@ -328,7 +342,14 @@ module.exports = router;
  *             schema:
  *               $ref: '#/components/schemas/RateLimitResponse'
  *         headers:
- *           $ref: '#/components/headers/RateLimitHeaders'
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
  *       500:
  *         description: Internal server error
  *         content:
