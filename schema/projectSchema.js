@@ -50,7 +50,7 @@ const projectUpdateSchema = object()
         return !isNaN(startDate) ? schema.min(startDate, "End date must be after start date") : schema;
       }),
     tombstoneId: number("Tombstone ID must be a number").typeError("Tombstone ID must be a number").nullable(),
-    status: string().oneOf(["inactive", "active", "buried", "resurrected", "completed", "archived"]),
+    status: string().oneOf(["inactive", "active", "buried", "completed", "archived"]),
   })
   .test("datesDependency", "Both startDate and endDate must be provided together", (value) => {
     const { startDate, endDate } = value;
@@ -77,4 +77,12 @@ const typeIdSchema = object({
   typeId: number().required("Type ID is required"),
 }).noUnknown(true, "Unknown field in request body");
 
-module.exports = { projectSchema, projectUpdateSchema, typeIdSchema };
+const resurrectSchema = object({
+  reason: string()
+    .required("Reason is required")
+    .trim()
+    .min(1, "Reason can't be empty")
+    .max(255, "Reason must be under 255 characters"),
+}).noUnknown(true, "Unknown field in request body");
+
+module.exports = { projectSchema, projectUpdateSchema, typeIdSchema, resurrectSchema };

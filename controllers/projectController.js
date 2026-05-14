@@ -159,6 +159,19 @@ async function deleteProject(req, res) {
   );
 }
 
+async function resurrectProject(req, res) {
+  const { id } = req.params;
+  const { reason } = req.body;
+  const project = await projectService.resurrect(id, reason, req.user.id);
+  res.status(200).json(
+    successResponse({
+      message: "Project resurrected successfully",
+      data: project,
+      statusCode: 200,
+    })
+  );
+}
+
 module.exports = {
   getAll,
   getOneId,
@@ -169,4 +182,5 @@ module.exports = {
   addType,
   deleteProject,
   getAllTombstones,
+  resurrectProject,
 };

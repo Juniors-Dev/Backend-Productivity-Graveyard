@@ -10,6 +10,7 @@ const {
   addType,
   removeType,
   getAllTombstones,
+  resurrectProject,
 } = require("../controllers/projectController");
 const asyncHandler = require("../middleware/asyncHandler");
 const {
@@ -21,7 +22,14 @@ const {
   ownsEntity,
   isLoggedIn,
 } = require("../middleware");
-const { projectSchema, projectUpdateSchema, typeIdSchema, uuidSchema, projectQuerySchema } = require("../schema");
+const {
+  projectSchema,
+  projectUpdateSchema,
+  typeIdSchema,
+  uuidSchema,
+  projectQuerySchema,
+  resurrectSchema,
+} = require("../schema");
 const { ProjectService } = require("../services");
 const { db } = require("../models");
 const projectService = new ProjectService(db);
@@ -70,6 +78,16 @@ router.delete(
   asyncHandler(hasRole("user")),
   asyncHandler(ownsEntity(projectService)),
   asyncHandler(removeType)
+);
+
+router.put(
+  "/:id/resurrect",
+  authenticate,
+  validateParamSchema(uuidSchema),
+  validateSchema(resurrectSchema),
+  asyncHandler(hasRole("user")),
+  asyncHandler(ownsEntity(projectService)),
+  asyncHandler(resurrectProject)
 );
 
 router.use("/", projectComments);
@@ -265,6 +283,17 @@ router.use("/", projectComments);
  *         typeId:
  *           type: integer
  *           example: 1
+ *
+ *     ResurrectProjectBody:
+ *       type: object
+ *       required:
+ *         - reason
+ *       properties:
+ *         reason:
+ *           type: string
+ *           maxLength: 255
+ *           description: Why the project is being resurrected. Must be non-empty after trimming whitespace.
+ *           example: "Found a co-founder willing to restart this with me."
  *
  *     ProjectArrayResponse:
  *       type: object
@@ -1025,5 +1054,90 @@ router.use("/", projectComments);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ProjectServerErrorResponse'
+ */
+/**
+ * @swagger
+ * /projects/{id}/resurrect:
+ *   put:
+ *     summary: Resurrect a buried project
+ *     description: >
+ *       Brings a buried project back to life by setting its status to "resurrected"
+ *       and recording a ResurrectionEvent. Only the project owner can resurrect their project,
+ *       and the project must currently have a status of "buried".
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: UUID of the project to resurrect.
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ResurrectProjectBody'
+ *     responses:
+ *       200:
+ *         description: Project resurrected successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectSingleResponse'
+ *       400:
+ *         description: Validation error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectValidationErrorResponse'
+ *       401:
+ *         description: Unauthorized.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UnauthorizedResponse'
+ *       403:
+ *         description: Forbidden — user does not own the project.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ForbiddenResponse'
+ *       404:
+ *         description: Project not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectNotFoundResponse'
+ *       409:
+ *         description: Project is not currently buried.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectErrorResponse'
+ *       429:
+ *         description: Too many requests.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 module.exports = router;
