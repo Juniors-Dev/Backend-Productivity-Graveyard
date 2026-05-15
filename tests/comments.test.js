@@ -70,8 +70,15 @@ describe("Comments API", () => {
     it("creates a comment successfully", async () => {
       const res = await postComment(projectId, token1, { message: messages.valid });
       expect(res.statusCode).toBe(201);
-      expect(res.body.data.message).toBe(messages.valid);
       expect(res.body.success).toBe(true);
+      const data = res.body.data;
+      expect(data.message).toBe(messages.valid);
+      expect(data.projectId).toBe(projectId);
+      expect(data.parentId).toBeNull();
+      expect(data.threadId).toBe(data.id);
+      expect(data.isDeleted).toBe(false);
+      expect(data.User).toBeDefined();
+      expect(data.User.id).toBe(user1.id);
     });
 
     it("creates a reply to a comment", async () => {
@@ -81,7 +88,6 @@ describe("Comments API", () => {
       expect(reply.body.data.parentId).toBe(parent.body.data.id);
     });
 
-    // NEW: Thread functionality tests
     describe("Thread functionality", () => {
       it("creates thread structure correctly for root comment", async () => {
         const res = await postComment(projectId, token1, { message: "Root comment" });
@@ -116,6 +122,22 @@ describe("Comments API", () => {
         expect(reply1.body.data.threadId).toBe(parent.body.data.id);
         expect(reply2.body.data.threadId).toBe(parent.body.data.id);
         expect(reply1.body.data.threadId).toBe(reply2.body.data.threadId);
+      });
+
+      it("propagates threadId correctly for deeply nested replies", async () => {
+        const root = await postComment(projectId, token1, { message: "Root" });
+        const reply = await postComment(projectId, token2, {
+          message: "Reply to root",
+          parentId: root.body.data.id,
+        });
+        const nested = await postComment(projectId, token1, {
+          message: "Reply to reply",
+          parentId: reply.body.data.id,
+        });
+
+        expect(nested.statusCode).toBe(201);
+        expect(nested.body.data.threadId).toBe(root.body.data.id);
+        expect(nested.body.data.parentId).toBe(reply.body.data.id);
       });
     });
 
@@ -174,14 +196,15 @@ describe("Comments API", () => {
     });
 
     it("rejects non-existent projectId (valid UUID format)", async () => {
-      const fakeProjectId = "12345678-1234-1234-1234-123456789012";
+      const fakeProjectId = "00000000-0000-4000-8000-000000000000";
       const res = await request(app)
         .post(`/projects/${fakeProjectId}/comments`)
         .set("Authorization", `Bearer ${token1}`)
         .send({ message: messages.valid });
 
-      expect([400, 404, 500]).toContain(res.statusCode);
+      expect(res.statusCode).toBe(404);
       expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain("Project not found");
     });
 
     // Body validation
@@ -241,6 +264,23 @@ describe("Comments API", () => {
       expect(res.body.success).toBe(false);
       expect(res.body.message).toContain("Parent comment not found");
     });
+
+    it("rejects parentId belonging to a different project", async () => {
+      const otherProject = await db.Project.create(createTestProject(user2.id));
+      const otherComment = await postComment(otherProject.id, token2, { message: "Other project comment" });
+
+      const res = await postComment(projectId, token1, {
+        message: "Cross-project reply attempt",
+        parentId: otherComment.body.data.id,
+      });
+
+      await db.Comment.destroy({ where: { projectId: otherProject.id }, force: true });
+      await db.Project.destroy({ where: { id: otherProject.id }, force: true });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain("Parent comment belongs to a different project");
+    });
   });
 
   describe("GET /projects/:projectId/comments", () => {
@@ -252,22 +292,20 @@ describe("Comments API", () => {
       expect(res.body.meta).toBeDefined();
     });
 
-    it("includes reply count and preview in root comments", async () => {
+    it("includes reply count in root comments", async () => {
       const uniqueMessage = `Parent with replies ${Date.now()}`;
       const parent = await postComment(projectId, token1, { message: uniqueMessage });
       await postComment(projectId, token2, { message: "Reply 1", parentId: parent.body.data.id });
       await postComment(projectId, token1, { message: "Reply 2", parentId: parent.body.data.id });
       await postComment(projectId, token2, { message: "Reply 3", parentId: parent.body.data.id });
 
-      const res = await request(app).get(`/projects/${projectId}/comments`);
+      const res = await request(app).get(`/projects/${projectId}/comments?limit=100&offset=0`);
       expect(res.statusCode).toBe(200);
 
       const testComment = res.body.data.find((c) => c.message === uniqueMessage);
       expect(testComment).toBeDefined();
       expect(testComment.replyCount).toBe(3);
-      expect(testComment.replyPreview).toBeDefined();
-      expect(Array.isArray(testComment.replyPreview)).toBe(true);
-      expect(testComment.replyPreview.length).toBeLessThanOrEqual(2);
+      expect(testComment.replyPreview).toBeUndefined();
     });
 
     it("handles pagination parameters", async () => {
@@ -282,9 +320,27 @@ describe("Comments API", () => {
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
     });
+
+    it("replies do not appear in the root comments list", async () => {
+      const parent = await postComment(projectId, token1, { message: "Root only" });
+      const reply = await postComment(projectId, token2, {
+        message: "This should not appear at root level",
+        parentId: parent.body.data.id,
+      });
+
+      const res = await request(app).get(`/projects/${projectId}/comments?limit=100&offset=0`);
+      expect(res.statusCode).toBe(200);
+
+      const replyInRootList = res.body.data.find((c) => c.id === reply.body.data.id);
+      expect(replyInRootList).toBeUndefined();
+
+      const rootInList = res.body.data.find((c) => c.id === parent.body.data.id);
+      expect(rootInList).toBeDefined();
+      expect(rootInList.replyCount).toBe(1);
+    });
   });
 
-  describe("GET /comments/:id/replies", () => {
+  describe("GET /comments/:id/thread", () => {
     let parentCommentId;
 
     beforeEach(async () => {
@@ -296,29 +352,52 @@ describe("Comments API", () => {
     });
 
     it("retrieves replies for a comment successfully", async () => {
-      const res = await request(app).get(`/comments/${parentCommentId}/replies`);
+      const res = await request(app).get(`/comments/${parentCommentId}/thread`);
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.message).toBe("Replies retrieved successfully");
+      expect(res.body.message).toBe("Thread retrieved successfully");
       expect(Array.isArray(res.body.data)).toBe(true);
       expect(res.body.data.length).toBe(2);
       expect(res.body.meta).toBeDefined();
+
+      const reply = res.body.data[0];
+      expect(reply.threadId).toBe(parentCommentId);
+      expect(reply.parentId).toBe(parentCommentId);
+      expect(reply.isDeleted).toBe(false);
+      expect(reply.User).toBeDefined();
+      expect(reply.parent).toBeDefined();
+      expect(reply.parent.id).toBe(parentCommentId);
     });
 
     it("returns replies in chronological order", async () => {
-      const res = await request(app).get(`/comments/${parentCommentId}/replies`);
+      const res = await request(app).get(`/comments/${parentCommentId}/thread`);
       expect(res.statusCode).toBe(200);
 
       const replies = res.body.data;
       expect(replies[0].message).toBe("Reply A");
       expect(replies[1].message).toBe("Reply B");
+      expect(replies[0].id).toBeLessThan(replies[1].id);
+    });
 
-      // Check chronological order
-      expect(new Date(replies[0].createdAt).getTime()).toBeLessThan(new Date(replies[1].createdAt).getTime());
+    it("returns full thread when called with a non-root reply ID", async () => {
+      const root = await postComment(projectId, token1, { message: "Thread root" });
+      const rootId = root.body.data.id;
+      const reply = await postComment(projectId, token2, { message: "Depth-1 reply", parentId: rootId });
+      const replyId = reply.body.data.id;
+      const nested = await postComment(projectId, token1, { message: "Depth-2 reply", parentId: replyId });
+      const nestedId = nested.body.data.id;
+
+      const res = await request(app).get(`/comments/${replyId}/thread`);
+      expect(res.statusCode).toBe(200);
+
+      const ids = res.body.data.map((c) => c.id);
+      expect(ids).toContain(replyId);
+      expect(ids).toContain(nestedId);
+      expect(res.body.meta.total).toBe(2);
     });
 
     it("includes parent information in replies", async () => {
-      const res = await request(app).get(`/comments/${parentCommentId}/replies`);
+      const res = await request(app).get(`/comments/${parentCommentId}/thread`);
       expect(res.statusCode).toBe(200);
 
       const replies = res.body.data;
@@ -331,7 +410,7 @@ describe("Comments API", () => {
     });
 
     it("handles pagination for replies", async () => {
-      const res = await request(app).get(`/comments/${parentCommentId}/replies?limit=1&offset=0`);
+      const res = await request(app).get(`/comments/${parentCommentId}/thread?limit=1&offset=0`);
       expect(res.statusCode).toBe(200);
       expect(res.body.data.length).toBe(1);
       expect(res.body.meta.limit).toBe(1);
@@ -340,14 +419,14 @@ describe("Comments API", () => {
     });
 
     it("returns 404 for non-existent comment", async () => {
-      const res = await request(app).get("/comments/99999/replies");
+      const res = await request(app).get("/comments/99999/thread");
       expect(res.statusCode).toBe(404);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBe("Comment not found");
     });
 
     it("rejects invalid comment ID format", async () => {
-      const res = await request(app).get("/comments/not-a-number/replies");
+      const res = await request(app).get("/comments/not-a-number/thread");
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
     });
@@ -552,7 +631,7 @@ describe("Comments API", () => {
 
       await request(app).delete(`/comments/${commentId}`).set("Authorization", `Bearer ${token1}`);
 
-      const res = await request(app).get(`/projects/${projectId}/comments`);
+      const res = await request(app).get(`/projects/${projectId}/comments?limit=100&offset=0`);
       const deletedComment = res.body.data.find((c) => c.id === commentId);
 
       expect(deletedComment).toBeDefined();
@@ -563,15 +642,30 @@ describe("Comments API", () => {
     it("preserves comment structure after soft delete (for replies)", async () => {
       const parent = await postComment(projectId, token1, { message: "Parent comment" });
       const reply = await postComment(projectId, token2, { message: "Reply comment", parentId: parent.body.data.id });
+      const parentId = parent.body.data.id;
+      const replyId = reply.body.data.id;
 
-      await request(app).delete(`/comments/${parent.body.data.id}`).set("Authorization", `Bearer ${token1}`);
+      await request(app).delete(`/comments/${parentId}`).set("Authorization", `Bearer ${token1}`);
 
-      const parentInDb = await db.Comment.findByPk(parent.body.data.id);
+      const parentInDb = await db.Comment.findByPk(parentId);
       expect(parentInDb).not.toBeNull();
       expect(parentInDb.isDeleted).toBe(true);
+      expect(parentInDb.message).toBe("[deleted]");
 
-      const replyInDb = await db.Comment.findByPk(reply.body.data.id);
-      expect(replyInDb.parentId).toBe(parent.body.data.id);
+      // reply must still have correct parent and thread pointers
+      const replyInDb = await db.Comment.findByPk(replyId);
+      expect(replyInDb.parentId).toBe(parentId);
+      expect(replyInDb.threadId).toBe(parentId);
+      expect(replyInDb.isDeleted).toBe(false);
+
+      // reply must still be visible via the replies endpoint
+      const res = await request(app).get(`/comments/${parentId}/thread`);
+      expect(res.statusCode).toBe(200);
+      const replyInResponse = res.body.data.find((r) => r.id === replyId);
+      expect(replyInResponse).toBeDefined();
+      expect(replyInResponse.message).toBe("Reply comment");
+      // deleted parent should show [deleted] in the parent context of the reply
+      expect(replyInResponse.parent.message).toBe("[deleted]");
     });
   });
 });
