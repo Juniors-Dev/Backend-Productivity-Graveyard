@@ -10,18 +10,6 @@ async function createComment(req, res) {
   const { projectId } = req.params;
   const { id: userId } = req.user;
 
-  if (parentId) {
-    const parentComment = await commentService.getOneId(parentId);
-
-    if (!parentComment) {
-      throw createError({
-        message: "Parent comment not found",
-        statusCode: 404,
-        errors: { parentId },
-      });
-    }
-  }
-
   const newComment = await commentService.createComment({ projectId, userId, message, parentId });
 
   res.status(201).json(
