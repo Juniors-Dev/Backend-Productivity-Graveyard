@@ -24,6 +24,14 @@ class CommentService {
           });
         }
 
+        if (parentComment.projectId !== projectId) {
+          throw createError({
+            message: "Parent comment belongs to a different project",
+            statusCode: 400,
+            errors: { parentId },
+          });
+        }
+
         threadId = parentComment.threadId || parentComment.id;
       }
 
