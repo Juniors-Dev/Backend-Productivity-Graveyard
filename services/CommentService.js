@@ -5,9 +5,19 @@ class CommentService {
     this.client = db.sequelize;
     this.Comment = db.Comment;
     this.User = db.User;
+    this.Project = db.Project;
   }
 
   async createComment({ projectId, userId, message, parentId = null }) {
+    const project = await this.Project.findByPk(projectId);
+    if (!project) {
+      throw createError({
+        message: "Project not found",
+        statusCode: 404,
+        errors: { projectId },
+      });
+    }
+
     const transaction = await this.client.transaction();
 
     try {
