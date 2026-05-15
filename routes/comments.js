@@ -55,10 +55,15 @@ module.exports = router;
  *       Retrieves all replies in a comment thread with pagination.
  *       Shows replies in chronological order with parent comment information.
  *
- *       **Note:** Soft-deleted comments will show `[deleted]` as the message content while preserving thread structure.
- *
  *       The `parent` field shows which comment is being replied to, so you can display
  *       "Reply to @username" or show the original comment context.
+ *
+ *       **Deletion semantics:** Soft-deleted comments are returned with
+ *       `isDeleted: true` and `message: "[deleted]"`. Clients should branch on
+ *       the `isDeleted` boolean as the canonical deletion signal - the
+ *       `"[deleted]"` message text is a display convenience, not a sentinel.
+ *       The original message content is permanently overwritten on delete and
+ *       is not recoverable.
  *     tags: [Comments]
  *     parameters:
  *       - in: path

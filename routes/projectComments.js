@@ -150,7 +150,17 @@ module.exports = router;
  * /projects/{projectId}/comments:
  *   get:
  *     summary: Get comments for a project
- *     description: Retrieves a list of paginated comments for a specific project
+ *     description: |
+ *       Retrieves root comments for a project with pagination. Each root comment
+ *       includes a `replyCount`; replies themselves are loaded on demand via
+ *       `GET /comments/{id}/replies`.
+ *
+ *       **Deletion semantics:** Soft-deleted comments are returned with
+ *       `isDeleted: true` and `message: "[deleted]"`. Clients should branch on
+ *       the `isDeleted` boolean as the canonical deletion signal - the
+ *       `"[deleted]"` message text is a display convenience, not a sentinel.
+ *       The original message content is permanently overwritten on delete and
+ *       is not recoverable.
  *     tags: [Comments]
  *     parameters:
  *       - in: path
@@ -244,7 +254,9 @@ module.exports = router;
  *           example: 123
  *         message:
  *           type: string
- *           description: The comment message (shows "[deleted]" if comment is deleted)
+ *           description: |
+ *             The comment text. For deleted comments (isDeleted: true), this is
+ *             the literal string "[deleted]". Branch on isDeleted, not on message.
  *           example: "10/10 would clone"
  *         projectId:
  *           type: string
@@ -275,35 +287,8 @@ module.exports = router;
  *           $ref: '#/components/schemas/CommentUser'
  *         replyCount:
  *           type: integer
- *           description: Total number of replies in this thread (only for root comments)
+ *           description: Total number of replies in this thread. Load replies on demand via GET /comments/{id}/replies.
  *           example: 5
- *         replyPreview:
- *           type: array
- *           description: Preview of first 2 replies in this thread (only for root comments)
- *           maxItems: 2
- *           items:
- *             type: object
- *             properties:
- *               id:
- *                 type: integer
- *                 example: 124
- *               message:
- *                 type: string
- *                 example: "I agree!"
- *               parentId:
- *                 type: integer
- *                 example: 123
- *               threadId:
- *                 type: integer
- *                 example: 123
- *               createdAt:
- *                 type: string
- *                 format: date-time
- *               updatedAt:
- *                 type: string
- *                 format: date-time
- *               User:
- *                 $ref: '#/components/schemas/CommentUser'
  *
  *     CommentSuccessResponse:
  *       type: object
