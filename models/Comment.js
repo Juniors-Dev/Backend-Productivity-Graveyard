@@ -20,10 +20,6 @@ module.exports = (sequelize, Sequelize) => {
       message: {
         type: DataTypes.TEXT,
         allowNull: false,
-        get() {
-          const rawValue = this.getDataValue("message");
-          return this.getDataValue("isDeleted") ? "[deleted]" : rawValue;
-        },
       },
       parentId: {
         type: DataTypes.INTEGER,

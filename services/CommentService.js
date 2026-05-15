@@ -228,11 +228,14 @@ class CommentService {
     return updated[0] === 1 ? this.getOneWithDetails(commentId) : null;
   }
 
+  //message content is now permanently destroyed on delete
+  // Consider TODO: moderator/admin path (raw: true query) in a future branch.
   async softDelete(commentId) {
     const updated = await this.Comment.update(
       {
         isDeleted: true,
         userId: null,
+        message: "[deleted]",
       },
       {
         where: {
