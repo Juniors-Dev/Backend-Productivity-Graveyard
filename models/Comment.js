@@ -41,17 +41,13 @@ module.exports = (sequelize, Sequelize) => {
       timestamps: true,
       tableName: "Comments",
       indexes: [
+        { fields: ["parentId"] },
+        { fields: ["projectId", "parentId"] },
+        { fields: ["threadId"] },
         {
-          fields: ["projectId"],
-        },
-        {
-          fields: ["parentId"],
-        },
-        {
-          fields: ["projectId", "parentId"],
-        },
-        {
-          fields: ["threadId"],
+          fields: ["threadId", "createdAt"],
+          where: { parentId: { [Sequelize.Op.not]: null } },
+          name: "comments_thread_replies_idx",
         },
       ],
     }
