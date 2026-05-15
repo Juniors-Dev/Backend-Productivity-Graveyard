@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const createError = require("../utilities/createError");
 class CommentService {
   constructor(db) {
@@ -18,7 +19,6 @@ class CommentService {
         if (!parentComment) {
           throw createError({
             message: "Parent comment not found",
-            status: "not found",
             statusCode: 404,
             errors: { parentId },
           });
@@ -79,8 +79,8 @@ class CommentService {
 
     const allReplies = await this.Comment.findAll({
       where: {
-        threadId: { [this.client.Sequelize.Op.in]: rootCommentIds },
-        parentId: { [this.client.Sequelize.Op.not]: null },
+        threadId: { [Op.in]: rootCommentIds },
+        parentId: { [Op.not]: null },
       },
       include: [
         {
@@ -141,7 +141,7 @@ class CommentService {
     const { count, rows } = await this.Comment.findAndCountAll({
       where: {
         threadId,
-        parentId: { [this.client.Sequelize.Op.not]: null },
+        parentId: { [Op.not]: null },
       },
       include: [
         {
