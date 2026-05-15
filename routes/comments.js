@@ -331,7 +331,7 @@ module.exports = router;
  *               $ref: '#/components/schemas/NotFoundResponse'
  *             example:
  *               success: false
- *               status: "not found"
+ *               status: "fail"
  *               statusCode: 404
  *               message: "Comment not found"
  *               errors: { commentId: 123 }

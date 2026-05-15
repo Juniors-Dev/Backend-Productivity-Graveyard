@@ -78,7 +78,7 @@ module.exports = router;
  *                   avatarUrl: "https://example.com/avatar.jpg"
  *                 replies: []
  *       400:
- *         description: Bad request - validation error or cannot reply to reply
+ *         description: Bad request - validation error
  *         content:
  *           application/json:
  *             schema:
@@ -118,7 +118,7 @@ module.exports = router;
  *                 summary: Parent comment not found
  *                 value:
  *                   success: false
- *                   status: "not found"
+ *                   status: "fail"
  *                   statusCode: 404
  *                   message: "Parent comment not found"
  *                   errors: { parentId: 999 }
