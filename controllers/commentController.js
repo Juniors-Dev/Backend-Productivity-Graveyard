@@ -16,7 +16,6 @@ async function createComment(req, res) {
     if (!parentComment) {
       throw createError({
         message: "Parent comment not found",
-        status: "not found",
         statusCode: 404,
         errors: { parentId },
       });
@@ -84,7 +83,6 @@ async function updateComment(req, res) {
   if (!comment) {
     throw createError({
       message: "Comment not found",
-      status: "not found",
       statusCode: 404,
       errors: { commentId: id },
     });
@@ -121,7 +119,6 @@ async function deleteComment(req, res) {
   if (!deleted) {
     throw createError({
       message: "Comment not found",
-      status: "not found",
       statusCode: 404,
       errors: { commentId: id },
     });

@@ -83,27 +83,16 @@ module.exports = router;
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ValidationErrorResponse'
- *             examples:
- *               validationError:
- *                 summary: Validation error
- *                 value:
- *                   success: false
- *                   status: "bad request"
- *                   statusCode: 400
- *                   message: "Validation Error: message is required"
- *                   errors:
- *                     - field: "message"
- *                       message: "Comment is required"
- *                     - field: "message"
- *                       message: "Comment cannot be empty"
- *               replyToReply:
- *                 summary: Cannot reply to a reply
- *                 value:
- *                   success: false
- *                   status: "bad request"
- *                   statusCode: 400
- *                   message: "Cannot reply to a reply"
- *                   errors: null
+ *             example:
+ *               success: false
+ *               status: "bad request"
+ *               statusCode: 400
+ *               message: "Validation Error: message is required"
+ *               errors:
+ *                 - field: "message"
+ *                   message: "Comment is required"
+ *                 - field: "message"
+ *                   message: "Comment cannot be empty"
  *       401:
  *         description: Unauthorized - authentication required
  *         content:
