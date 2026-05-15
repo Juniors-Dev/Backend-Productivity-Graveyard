@@ -88,19 +88,6 @@ async function updateComment(req, res) {
     });
   }
 
-  /*NOTE: This check is currently unreachable because ownsEntity middleware
-   returns 403 for soft-deleted comments (can't find entity to verify ownership).
-   However, we keep this check as a safety measure in case the middleware behavior
-   changes or if this controller method is called directly in the future.
-  */
-  if (comment.isDeleted) {
-    throw createError({
-      message: "Cannot update a deleted comment",
-      statusCode: 400,
-      errors: { commentId: id },
-    });
-  }
-
   const updatedComment = await commentService.updateComment(id, message);
 
   res.status(200).json(
