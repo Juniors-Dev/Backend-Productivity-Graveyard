@@ -1,4 +1,4 @@
-const { Op } = require("sequelize");
+const { Op, fn, col } = require("sequelize");
 const createError = require("../utilities/createError");
 class CommentService {
   constructor(db) {
@@ -61,10 +61,7 @@ class CommentService {
 
   async getRootComments(projectId, { limit, offset }) {
     const { count, rows: rootComments } = await this.Comment.findAndCountAll({
-      where: {
-        projectId,
-        parentId: null,
-      },
+      where: { projectId, parentId: null },
       include: [
         {
           model: this.User,
@@ -78,60 +75,25 @@ class CommentService {
       offset,
     });
 
-    if (rootComments.length === 0) {
-      return { count: 0, rows: [] };
-    }
+    if (rootComments.length === 0) return { count: 0, rows: [] };
 
-    // Get all replies for these root comments in 1 query
-    const rootCommentIds = rootComments.map((c) => c.id);
+    const rootIds = rootComments.map((c) => c.id);
 
-    const allReplies = await this.Comment.findAll({
-      where: {
-        threadId: { [Op.in]: rootCommentIds },
-        parentId: { [Op.not]: null },
-      },
-      include: [
-        {
-          model: this.User,
-          as: "User",
-          attributes: ["id", "username", "avatarUrl"],
-          required: false,
-        },
-        {
-          model: this.Comment,
-          as: "parent",
-          attributes: ["id", "message"],
-          include: [
-            {
-              model: this.User,
-              as: "User",
-              attributes: ["username"],
-            },
-          ],
-          required: false,
-        },
-      ],
-      order: [["createdAt", "ASC"]],
+    const replyCounts = await this.Comment.findAll({
+      attributes: ["threadId", [fn("COUNT", col("id")), "count"]],
+      where: { threadId: { [Op.in]: rootIds }, parentId: { [Op.not]: null } },
+      group: ["threadId"],
+      raw: true,
     });
 
-    const repliesByThread = new Map();
-    allReplies.forEach((reply) => {
-      const threadId = reply.threadId || reply.parentId;
-      if (!repliesByThread.has(threadId)) {
-        repliesByThread.set(threadId, []);
-      }
-      repliesByThread.get(threadId).push(reply.toJSON());
-    });
-
-    const commentsWithReplies = rootComments.map((comment) => ({
-      ...comment.toJSON(),
-      replyCount: repliesByThread.get(comment.id)?.length || 0,
-      replyPreview: repliesByThread.get(comment.id)?.slice(0, 2) || [],
-    }));
+    const countByThread = new Map(replyCounts.map((r) => [r.threadId, parseInt(r.count, 10)]));
 
     return {
-      count: count,
-      rows: commentsWithReplies,
+      count,
+      rows: rootComments.map((c) => ({
+        ...c.toJSON(),
+        replyCount: countByThread.get(c.id) || 0,
+      })),
     };
   }
 
