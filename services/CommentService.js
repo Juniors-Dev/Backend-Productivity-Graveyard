@@ -107,7 +107,7 @@ class CommentService {
     };
   }
 
-  async getCommentReplies(commentId, { limit, offset }) {
+  async getCommentThread(commentId, { limit, offset }) {
     const comment = await this.Comment.findByPk(commentId);
     if (!comment) {
       throw createError({

@@ -42,15 +42,15 @@ async function getProjectComments(req, res) {
   );
 }
 
-async function getCommentReplies(req, res) {
+async function getCommentThread(req, res) {
   const { id } = req.params;
   const { limit, offset } = getLimitOffset(req);
 
-  const { count, rows } = await commentService.getCommentReplies(id, { limit, offset });
+  const { count, rows } = await commentService.getCommentThread(id, { limit, offset });
 
   res.status(200).json(
     successResponse({
-      message: "Replies retrieved successfully",
+      message: "Thread retrieved successfully",
       data: rows,
       meta: {
         total: count,
@@ -110,7 +110,7 @@ async function deleteComment(req, res) {
 module.exports = {
   createComment,
   getProjectComments,
-  getCommentReplies,
+  getCommentThread,
   updateComment,
   deleteComment,
 };

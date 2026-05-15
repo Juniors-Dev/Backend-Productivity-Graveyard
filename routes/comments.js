@@ -10,7 +10,7 @@ const {
 } = require("../middleware");
 const { updateCommentSchema } = require("../schema/commentSchema");
 const { commentIdSchema } = require("../schema/params");
-const { updateComment, deleteComment, getCommentReplies } = require("../controllers/commentController");
+const { updateComment, deleteComment, getCommentThread } = require("../controllers/commentController");
 const CommentService = require("../services/CommentService");
 const { db } = require("../models");
 const commentService = new CommentService(db);
@@ -25,7 +25,7 @@ if (process.env.NODE_ENV !== "test") {
   );
 }
 
-router.get("/:id/replies", validateParamSchema(commentIdSchema), asyncHandler(getCommentReplies));
+router.get("/:id/thread", validateParamSchema(commentIdSchema), asyncHandler(getCommentThread));
 
 router.put(
   "/:id",
@@ -48,19 +48,22 @@ module.exports = router;
 
 /**
  * @swagger
- * /comments/{id}/replies:
+ * /comments/{id}/thread:
  *   get:
- *     summary: Get replies for a comment
+ *     summary: Get all replies in a comment thread
  *     description: |
- *       Retrieves all replies in a comment thread with pagination.
- *       Shows replies in chronological order with parent comment information.
+ *       Returns the **full flat list** of every reply in the thread that contains
+ *       the given comment. The result is the same regardless of which comment in
+ *       the thread you call this with — root comment or any reply — because the
+ *       endpoint is scoped to the whole thread, not to the direct children of
+ *       the requested comment.
  *
- *       The `parent` field shows which comment is being replied to, so you can display
- *       "Reply to @username" or show the original comment context.
+ *       Replies are ordered chronologically (oldest first). Use the `parent`
+ *       field on each reply to reconstruct the nesting tree client-side.
  *
  *       **Deletion semantics:** Soft-deleted comments are returned with
  *       `isDeleted: true` and `message: "[deleted]"`. Clients should branch on
- *       the `isDeleted` boolean as the canonical deletion signal - the
+ *       the `isDeleted` boolean as the canonical deletion signal — the
  *       `"[deleted]"` message text is a display convenience, not a sentinel.
  *       The original message content is permanently overwritten on delete and
  *       is not recoverable.
@@ -72,8 +75,9 @@ module.exports = router;
  *         schema:
  *           type: integer
  *           minimum: 1
- *         description: ID of the comment whose replies you want to retrieve.
- *           Can be a root comment or any reply in the thread.
+ *         description: ID of any comment in the thread (root or reply). All
+ *           replies in the same thread are returned regardless of which node
+ *           you supply.
  *         example: 123
  *       - $ref: '#/components/parameters/limitParam'
  *       - $ref: '#/components/parameters/offsetParam'
