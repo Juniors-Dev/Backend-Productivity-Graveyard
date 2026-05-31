@@ -1,4 +1,4 @@
 [
-  { "projectId": 1, "reason": "Needed to start the diet again" },
-  { "projectId": 2, "reason": "Need to keep track of my workout again.. nagging wife.." }
+  { "projectName": "Diet Tracker", "reason": "Needed to start the diet again" },
+  { "projectName": "Workout Logger", "reason": "Need to keep track of my workout again.. nagging wife.." }
 ]

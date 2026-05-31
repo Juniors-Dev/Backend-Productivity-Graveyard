@@ -1,12 +1,12 @@
 [
   {
-    "userId": 2,
-    "projectId": 1,
+    "username": "jake_the_junior",
+    "projectName": "Diet Tracker",
     "message": "Would love have an app like this!"
   },
   {
-    "userId": 1,
-    "projectId": 3,
+    "username": "admin_user",
+    "projectName": "Book Reading List",
     "message": "You need to continue this. Such a great idea!"
   }
 ]

@@ -2,7 +2,7 @@
 require("dotenv").config();
 
 const { db, adminDb, ensureCrudUserPrivileges } = require("../models");
-const seed = require("../seeder/seed"); // adjust path
+const { seed } = require("../seeder/seed");
 
 async function initDb() {
   console.log("Beginning database initialization...");
