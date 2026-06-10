@@ -1,0 +1,345 @@
+const express = require("express");
+const router = express.Router({ mergeParams: true });
+const { asyncHandler, authenticate, validateSchema, validateParamSchema } = require("../middleware");
+const { createCommentSchema } = require("../schema/commentSchema");
+const { projectIdSchema } = require("../schema/params");
+const { createComment, getProjectComments } = require("../controllers/commentController");
+
+router.post(
+  "/:projectId/comments",
+  authenticate,
+  validateParamSchema(projectIdSchema),
+  validateSchema(createCommentSchema),
+  asyncHandler(createComment)
+);
+
+router.get("/:projectId/comments", validateParamSchema(projectIdSchema), asyncHandler(getProjectComments));
+
+module.exports = router;
+
+/**
+ * @swagger
+ * /projects/{projectId}/comments:
+ *   post:
+ *     summary: Create a comment on a project
+ *     description: Creates a new comment or reply to another comment on a project
+ *     tags: [Comments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Project ID
+ *         example: "987fcdeb-51a2-43d1-9c4f-123456789abc"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateCommentSchema'
+ *           examples:
+ *             topLevelComment:
+ *               summary: Top-level comment
+ *               value:
+ *                 message: "This project should be resurrected!"
+ *             replyComment:
+ *               summary: Reply to another comment
+ *               value:
+ *                 message: "I'd need to be resurrected first.."
+ *                 parentId: 123
+ *     responses:
+ *       201:
+ *         description: Comment created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CommentSuccessResponse'
+ *             example:
+ *               success: true
+ *               status: "success"
+ *               statusCode: 201
+ *               message: "Comment created successfully"
+ *               data:
+ *                 id: 123
+ *                 message: "This project should be resurrected!"
+ *                 projectId: "987fcdeb-51a2-43d1-9c4f-123456789abc"
+ *                 parentId: null
+ *                 threadId: 123
+ *                 isDeleted: false
+ *                 createdAt: "2025-06-14T20:19:55.354Z"
+ *                 updatedAt: "2025-06-14T20:19:55.354Z"
+ *                 User:
+ *                   id: "123e4567-e89b-12d3-a456-426614174000"
+ *                   username: "developer123"
+ *                   avatarUrl: "https://example.com/avatar.jpg"
+ *                 replies: []
+ *       400:
+ *         description: Bad request - validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *             example:
+ *               success: false
+ *               status: "bad request"
+ *               statusCode: 400
+ *               message: "Validation Error: message is required"
+ *               errors:
+ *                 - field: "message"
+ *                   message: "Comment is required"
+ *                 - field: "message"
+ *                   message: "Comment cannot be empty"
+ *       401:
+ *         description: Unauthorized - authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UnauthorizedResponse'
+ *       404:
+ *         description: Resource not found (project or parent comment)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundResponse'
+ *             examples:
+ *               projectNotFound:
+ *                 summary: Project not found
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 404
+ *                   message: "Project not found"
+ *                   errors: { projectId: "987fcdeb-51a2-43d1-9c4f-123456789abc" }
+ *               parentNotFound:
+ *                 summary: Parent comment not found
+ *                 value:
+ *                   success: false
+ *                   status: "fail"
+ *                   statusCode: 404
+ *                   message: "Parent comment not found"
+ *                   errors: { parentId: 999 }
+ *       429:
+ *         description: Too many requests - rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
+ */
+
+/**
+ * @swagger
+ * /projects/{projectId}/comments:
+ *   get:
+ *     summary: Get comments for a project
+ *     description: |
+ *       Retrieves root comments for a project with pagination. Each root comment
+ *       includes a `replyCount`; replies themselves are loaded on demand via
+ *       `GET /comments/{id}/replies`.
+ *
+ *       **Deletion semantics:** Soft-deleted comments are returned with
+ *       `isDeleted: true` and `message: "[deleted]"`. Clients should branch on
+ *       the `isDeleted` boolean as the canonical deletion signal - the
+ *       `"[deleted]"` message text is a display convenience, not a sentinel.
+ *       The original message content is permanently overwritten on delete and
+ *       is not recoverable.
+ *     tags: [Comments]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Project ID
+ *         example: "987fcdeb-51a2-43d1-9c4f-123456789abc"
+ *       - $ref: '#/components/parameters/limitParam'
+ *       - $ref: '#/components/parameters/offsetParam'
+ *     responses:
+ *       200:
+ *         description: Comments retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CommentListResponse'
+ *       400:
+ *         description: Invalid project ID format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *       429:
+ *         description: Too many requests - global rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *         headers:
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     CreateCommentSchema:
+ *       type: object
+ *       required:
+ *         - message
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: The comment message
+ *           example: "This project looks interesting!"
+ *           minLength: 1
+ *           maxLength: 2000
+ *         parentId:
+ *           type: integer
+ *           nullable: true
+ *           description: ID of parent comment (for replies)
+ *           example: null
+ *
+ *     CommentUser:
+ *       type: object
+ *       nullable: true
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           example: "123e4567-e89b-12d3-a456-426614174000"
+ *         username:
+ *           type: string
+ *           example: "oddbjarne123"
+ *         avatarUrl:
+ *           type: string
+ *           nullable: true
+ *           example: "https://example.com/avatar.jpg"
+ *
+ *     CommentResponse:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 123
+ *         message:
+ *           type: string
+ *           description: |
+ *             The comment text. For deleted comments (isDeleted: true), this is
+ *             the literal string "[deleted]". Branch on isDeleted, not on message.
+ *           example: "10/10 would clone"
+ *         projectId:
+ *           type: string
+ *           format: uuid
+ *           example: "987fcdeb-51a2-43d1-9c4f-123456789abc"
+ *         parentId:
+ *           type: integer
+ *           nullable: true
+ *           description: ID of parent comment (null for top-level comments)
+ *           example: null
+ *         threadId:
+ *           type: integer
+ *           nullable: true
+ *           description: ID of the root comment in this thread
+ *           example: 123
+ *         isDeleted:
+ *           type: boolean
+ *           example: false
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           example: "2025-05-22T14:30:00.000Z"
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           example: "2025-05-22T14:45:00.000Z"
+ *         User:
+ *           $ref: '#/components/schemas/CommentUser'
+ *         replyCount:
+ *           type: integer
+ *           description: Total number of replies in this thread. Load replies on demand via GET /comments/{id}/replies.
+ *           example: 5
+ *
+ *     CommentSuccessResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         statusCode:
+ *           type: integer
+ *           example: 201
+ *         message:
+ *           type: string
+ *           example: "Comment created successfully"
+ *         data:
+ *           $ref: '#/components/schemas/CommentResponse'
+ *
+ *     CommentListResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         statusCode:
+ *           type: integer
+ *           example: 200
+ *         message:
+ *           type: string
+ *           example: "Comments retrieved successfully"
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/CommentResponse'
+ *         meta:
+ *           type: object
+ *           properties:
+ *             total:
+ *               type: integer
+ *               example: 25
+ *             limit:
+ *               type: integer
+ *               example: 10
+ *             offset:
+ *               type: integer
+ *               example: 0
+ *             hasNext:
+ *               type: boolean
+ *               example: true
+ */

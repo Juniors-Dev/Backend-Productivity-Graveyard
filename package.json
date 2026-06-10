@@ -1,0 +1,68 @@
+{
+  "name": "backend-productivity-graveyard",
+  "version": "0.0.1",
+  "description": "Productivity graveyard backend application",
+  "main": "./bin/www",
+  "type": "commonjs",
+  "packageManager": "pnpm@10.28.1",
+  "scripts": {
+    "test": "jest --verbose --coverage --forceExit --testMatch='**/tests/*.test.js'",
+    "test:projects": "jest --verbose --forceExit tests/projects.test.js",
+    "test:users": "jest --verbose --forceExit tests/users.test.js",
+    "test:votes": "jest --verbose --forceExit tests/votes.test.js",
+    "test:comments": "jest --verbose --forceExit tests/comments.test.js",
+    "test:auth": "jest --verbose --forceExit tests/auth.test.js",
+    "test:tokens": "jest --verbose --forceExit tests/tokens.test.js",
+    "start": "node ./bin/www",
+    "dev": "node --watch ./bin/www",
+    "prepare": "husky install",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write .",
+    "docs": "open http://localhost:3000/doc"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
+  },
+  "author": "Junior.Dev",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^9.24.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-security": "^3.0.1",
+    "husky": "^8.0.0",
+    "jest": "^29.7.0",
+    "lint-staged": "^15.5.0",
+    "prettier": "^3.5.3",
+    "supertest": "^7.1.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "debug": "^4.4.0",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "express-slow-down": "^2.1.0",
+    "helmet": "^8.1.0",
+    "http-errors": "^2.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "nodemailer": "^8.0.3",
+    "pg": "^8.14.1",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "yup": "^1.6.1"
+  }
+}

@@ -1,0 +1,25 @@
+[
+  { "name": "USB Coffin", "imageUrl": "/images/usb_coffin.png" },
+  { "name": "Brain", "imageUrl": "/images/brain.png" },
+  { "name": "Browser Ducky", "imageUrl": "/images/browser_ducky.png" },
+  { "name": "Bug King", "imageUrl": "/images/bug_king.png" },
+  { "name": "Burning Deadline", "imageUrl": "/images/burning_deadline.png" },
+  { "name": "Carousel Ducky", "imageUrl": "/images/carasoel_ducky.png" },
+  { "name": "Cat Server", "imageUrl": "/images/cat_server.png" },
+  { "name": "Clock", "imageUrl": "/images/clock.png" },
+  { "name": "Creeper Monster", "imageUrl": "/images/creeper_monster.png" },
+  { "name": "Debug Ducky", "imageUrl": "/images/debug_ducky.png" },
+  { "name": "Dog Ate Keyboard", "imageUrl": "/images/dog_ate_keyboard.png" },
+  {
+    "name": "Dog Peeing on Server",
+    "imageUrl": "/images/dog_peeing_on_server.png"
+  },
+  { "name": "Ghost", "imageUrl": "/images/ghost.png" },
+  { "name": "Grim Reaper", "imageUrl": "/images/grimreaper.png" },
+  { "name": "Merge Ducky", "imageUrl": "/images/merge_ducky.png" },
+  { "name": "PR Ducky", "imageUrl": "/images/pr_ducky.png" },
+  { "name": "Resolver Ducky", "imageUrl": "/images/resolver_ducky.png" },
+  { "name": "Rocket", "imageUrl": "/images/rocket.png" },
+  { "name": "Skull", "imageUrl": "/images/skull.png" },
+  { "name": "All States", "imageUrl": "/images/all_states_ducky.png" }
+]
