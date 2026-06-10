@@ -21,6 +21,8 @@ jobs:
       NODE_ENV: test
       DATABASE_URL: postgres://admin:admin_password@localhost:5432/productivity_graveyard_dev
       JWT_SECRET: ${{ secrets.JWT_SECRET || 'test_secret' }}
+      RATE_LIMIT_MAX: 10000
+      RATE_LIMIT_WINDOW_MS: 1
     services:
       # Start PostgreSQL to match your docker-compose.yml config
       postgres:

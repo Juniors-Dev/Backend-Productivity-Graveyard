@@ -10,27 +10,6 @@ async function createComment(req, res) {
   const { projectId } = req.params;
   const { id: userId } = req.user;
 
-  if (parentId) {
-    const parentComment = await commentService.getOneId(parentId);
-
-    if (!parentComment) {
-      throw createError({
-        message: "Parent comment not found",
-        status: "not found",
-        statusCode: 404,
-        errors: { parentId },
-      });
-    }
-
-    if (parentComment.parentId !== null) {
-      throw createError({
-        message: "Cannot reply to a reply",
-        statusCode: 400,
-        errors: { parentId },
-      });
-    }
-  }
-
   const newComment = await commentService.createComment({ projectId, userId, message, parentId });
 
   res.status(201).json(
@@ -46,7 +25,7 @@ async function getProjectComments(req, res) {
   const { projectId } = req.params;
   const { limit, offset } = getLimitOffset(req);
 
-  const { count, rows } = await commentService.getProjectComments(projectId, { limit, offset });
+  const { count, rows } = await commentService.getRootComments(projectId, { limit, offset });
 
   res.status(200).json(
     successResponse({
@@ -63,6 +42,26 @@ async function getProjectComments(req, res) {
   );
 }
 
+async function getCommentThread(req, res) {
+  const { id } = req.params;
+  const { limit, offset } = getLimitOffset(req);
+
+  const { count, rows } = await commentService.getCommentThread(id, { limit, offset });
+
+  res.status(200).json(
+    successResponse({
+      message: "Thread retrieved successfully",
+      data: rows,
+      meta: {
+        total: count,
+        limit,
+        offset,
+        hasNext: offset + limit < count,
+      },
+    })
+  );
+}
+
 async function updateComment(req, res) {
   const { id } = req.params;
   const { message } = req.body;
@@ -72,16 +71,7 @@ async function updateComment(req, res) {
   if (!comment) {
     throw createError({
       message: "Comment not found",
-      status: "not found",
       statusCode: 404,
-      errors: { commentId: id },
-    });
-  }
-
-  if (comment.isDeleted) {
-    throw createError({
-      message: "Cannot update a deleted comment",
-      statusCode: 400,
       errors: { commentId: id },
     });
   }
@@ -104,7 +94,6 @@ async function deleteComment(req, res) {
   if (!deleted) {
     throw createError({
       message: "Comment not found",
-      status: "not found",
       statusCode: 404,
       errors: { commentId: id },
     });
@@ -121,6 +110,7 @@ async function deleteComment(req, res) {
 module.exports = {
   createComment,
   getProjectComments,
+  getCommentThread,
   updateComment,
   deleteComment,
 };

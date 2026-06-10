@@ -20,15 +20,16 @@ module.exports = (sequelize, Sequelize) => {
       message: {
         type: DataTypes.TEXT,
         allowNull: false,
-        get() {
-          const rawValue = this.getDataValue("message");
-          return this.getDataValue("isDeleted") ? "[deleted]" : rawValue;
-        },
       },
       parentId: {
         type: DataTypes.INTEGER,
         allowNull: true,
-        comment: "Self-reference to parent comment for threading (if this is a reply)",
+        comment: "Parent comment for replies (null for root comments)",
+      },
+      threadId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        comment: "Root comment ID for thread grouping",
       },
       isDeleted: {
         type: DataTypes.BOOLEAN,
@@ -40,14 +41,13 @@ module.exports = (sequelize, Sequelize) => {
       timestamps: true,
       tableName: "Comments",
       indexes: [
+        { fields: ["parentId"] },
+        { fields: ["projectId", "parentId"] },
+        { fields: ["threadId"] },
         {
-          fields: ["projectId"],
-        },
-        {
-          fields: ["parentId"],
-        },
-        {
-          fields: ["projectId", "parentId"],
+          fields: ["threadId", "createdAt"],
+          where: { parentId: { [Sequelize.Op.not]: null } },
+          name: "comments_thread_replies_idx",
         },
       ],
     }
@@ -67,11 +67,23 @@ module.exports = (sequelize, Sequelize) => {
       foreignKey: "parentId",
       as: "parent",
       constraints: true,
+      onDelete: "RESTRICT",
+      onUpdate: "CASCADE",
+    });
+    Comment.belongsTo(models.Comment, {
+      foreignKey: "threadId",
+      as: "thread",
+      onDelete: "RESTRICT",
+      onUpdate: "CASCADE",
     });
     Comment.hasMany(models.Comment, {
       foreignKey: "parentId",
       as: "replies",
       constraints: true,
+    });
+    Comment.hasMany(models.Comment, {
+      foreignKey: "threadId",
+      as: "threadReplies",
     });
   };
   return Comment;

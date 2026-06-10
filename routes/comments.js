@@ -1,12 +1,31 @@
 const express = require("express");
 const router = express.Router();
-const { asyncHandler, authenticate, validateSchema, validateParamSchema, ownsEntity } = require("../middleware");
+const {
+  asyncHandler,
+  authenticate,
+  validateSchema,
+  validateParamSchema,
+  ownsEntity,
+  createRateLimiter,
+} = require("../middleware");
 const { updateCommentSchema } = require("../schema/commentSchema");
 const { commentIdSchema } = require("../schema/params");
-const { updateComment, deleteComment } = require("../controllers/commentController");
+const { updateComment, deleteComment, getCommentThread } = require("../controllers/commentController");
 const CommentService = require("../services/CommentService");
 const { db } = require("../models");
 const commentService = new CommentService(db);
+
+if (process.env.NODE_ENV !== "test") {
+  router.use(
+    createRateLimiter({
+      max: parseInt(process.env.RATE_LIMIT_MAX) || 10,
+      windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 1 * 60 * 1000,
+      message: "Too many comments, please try again later",
+    })
+  );
+}
+
+router.get("/:id/thread", validateParamSchema(commentIdSchema), asyncHandler(getCommentThread));
 
 router.put(
   "/:id",
@@ -25,22 +44,150 @@ router.delete(
   asyncHandler(deleteComment)
 );
 
+module.exports = router;
+
 /**
  * @swagger
- * components:
- *   schemas:
- *     UpdateCommentSchema:
- *       type: object
- *       required:
- *         - message
- *       properties:
- *         message:
- *           type: string
- *           description: The updated comment message
- *           example: "This is my updated comment"
- *           minLength: 1
- *           maxLength: 2000
+ * /comments/{id}/thread:
+ *   get:
+ *     summary: Get all replies in a comment thread
+ *     description: |
+ *       Returns the **full flat list** of every reply in the thread that contains
+ *       the given comment. The result is the same regardless of which comment in
+ *       the thread you call this with — root comment or any reply — because the
+ *       endpoint is scoped to the whole thread, not to the direct children of
+ *       the requested comment.
+ *
+ *       Replies are ordered chronologically (oldest first). Use the `parent`
+ *       field on each reply to reconstruct the nesting tree client-side.
+ *
+ *       **Deletion semantics:** Soft-deleted comments are returned with
+ *       `isDeleted: true` and `message: "[deleted]"`. Clients should branch on
+ *       the `isDeleted` boolean as the canonical deletion signal — the
+ *       `"[deleted]"` message text is a display convenience, not a sentinel.
+ *       The original message content is permanently overwritten on delete and
+ *       is not recoverable.
+ *     tags: [Comments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: ID of any comment in the thread (root or reply). All
+ *           replies in the same thread are returned regardless of which node
+ *           you supply.
+ *         example: 123
+ *       - $ref: '#/components/parameters/limitParam'
+ *       - $ref: '#/components/parameters/offsetParam'
+ *     responses:
+ *       200:
+ *         description: Replies retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RepliesListResponse'
+ *             example:
+ *               success: true
+ *               status: "success"
+ *               statusCode: 200
+ *               message: "Replies retrieved successfully"
+ *               data:
+ *                 - id: 124
+ *                   message: "Great point!"
+ *                   parentId: 123
+ *                   threadId: 123
+ *                   isDeleted: false
+ *                   createdAt: "2025-06-14T15:30:00.000Z"
+ *                   updatedAt: "2025-06-14T15:30:00.000Z"
+ *                   User:
+ *                     id: "550e8400-e29b-41d4-a716-446655440000"
+ *                     username: "commenter123"
+ *                     avatarUrl: null
+ *                   parent:
+ *                     id: 123
+ *                     message: "Original comment"
+ *                     User:
+ *                       username: "original_poster"
+ *                 - id: 125
+ *                   message: "[deleted]"
+ *                   parentId: 123
+ *                   threadId: 123
+ *                   isDeleted: true
+ *                   createdAt: "2025-06-14T15:45:00.000Z"
+ *                   updatedAt: "2025-06-14T16:00:00.000Z"
+ *                   User: null
+ *                   parent:
+ *                     id: 123
+ *                     message: "Original comment"
+ *                     User:
+ *                       username: "original_poster"
+ *               meta:
+ *                 total: 15
+ *                 limit: 10
+ *                 offset: 0
+ *                 hasNext: true
+ *       400:
+ *         description: Invalid comment ID format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *             example:
+ *               success: false
+ *               status: "bad request"
+ *               statusCode: 400
+ *               message: "Validation Error: id must be a positive integer"
+ *               errors:
+ *                 - field: "id"
+ *                   message: "id must be a positive integer"
+ *       404:
+ *         description: Comment not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundResponse'
+ *             example:
+ *               success: false
+ *               status: "fail"
+ *               statusCode: 404
+ *               message: "Comment not found"
+ *       429:
+ *         description: Too many requests - rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitResponse'
+ *             example:
+ *               success: false
+ *               status: "error"
+ *               statusCode: 429
+ *               message: "Too many requests, please try again later"
+ *               errors: null
+ *         headers:
+ *           RateLimit-Policy:
+ *             $ref: '#/components/headers/RateLimit-Policy'
+ *           RateLimit-Limit:
+ *             $ref: '#/components/headers/RateLimit-Limit'
+ *           RateLimit-Remaining:
+ *             $ref: '#/components/headers/RateLimit-Remaining'
+ *           RateLimit-Reset:
+ *             $ref: '#/components/headers/RateLimit-Reset'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InternalErrorResponse'
+ *             example:
+ *               success: false
+ *               status: "error"
+ *               statusCode: 500
+ *               message: "Internal server error"
+ *               errors: null
  */
+
 /**
  * @swagger
  * /comments/{id}:
@@ -77,18 +224,36 @@ router.delete(
  *               status: "success"
  *               statusCode: 200
  *               message: "Comment updated successfully"
+ *               data:
+ *                 id: 123
+ *                 message: "This is my updated comment"
+ *                 projectId: "987fcdeb-51a2-43d1-9c4f-123456789abc"
+ *                 parentId: null
+ *                 threadId: 123
+ *                 isDeleted: false
+ *                 createdAt: "2025-06-14T20:19:55.354Z"
+ *                 updatedAt: "2025-06-14T20:25:10.123Z"
+ *                 User:
+ *                   id: "123e4567-e89b-12d3-a456-426614174000"
+ *                   username: "developer123"
+ *                   avatarUrl: "https://example.com/avatar.jpg"
+ *                 replies: []
  *       400:
- *         description: Cannot update a deleted comment
+ *         description: Bad request - validation error
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApplicationErrorResponse'
  *             example:
  *               success: false
- *               status: "fail"
+ *               status: "bad request"
  *               statusCode: 400
- *               message: "Cannot update a deleted comment"
- *               errors: { "commentId": 123 }
+ *               message: "Validation Error: message is required"
+ *               errors:
+ *                 - field: "message"
+ *                   message: "Comment is required"
+ *                 - field: "message"
+ *                   message: "Comment cannot be empty"
  *       401:
  *         description: Unauthorized - authentication required
  *         content:
@@ -96,7 +261,7 @@ router.delete(
  *             schema:
  *               $ref: '#/components/schemas/UnauthorizedResponse'
  *       403:
- *         description: Forbidden - user does not own this comment
+ *         description: Forbidden - you don't have permission to update this comment (comment may have been deleted)
  *         content:
  *           application/json:
  *             schema:
@@ -175,7 +340,7 @@ router.delete(
  *               $ref: '#/components/schemas/NotFoundResponse'
  *             example:
  *               success: false
- *               status: "not found"
+ *               status: "fail"
  *               statusCode: 404
  *               message: "Comment not found"
  *               errors: { commentId: 123 }
@@ -202,4 +367,97 @@ router.delete(
  *               $ref: '#/components/schemas/InternalErrorResponse'
  */
 
-module.exports = router;
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     UpdateCommentSchema:
+ *       type: object
+ *       required:
+ *         - message
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: The updated comment message
+ *           example: "This is my updated comment"
+ *           minLength: 1
+ *           maxLength: 2000
+ *
+ *     CommentParent:
+ *       type: object
+ *       nullable: true
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 123
+ *         message:
+ *           type: string
+ *           example: "Original comment being replied to"
+ *         User:
+ *           type: object
+ *           properties:
+ *             username:
+ *               type: string
+ *               example: "original_commenter"
+ *
+ *     RepliesListResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         status:
+ *           type: string
+ *           example: "success"
+ *         statusCode:
+ *           type: integer
+ *           example: 200
+ *         message:
+ *           type: string
+ *           example: "Replies retrieved successfully"
+ *         data:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *                 example: 124
+ *               message:
+ *                 type: string
+ *                 example: "Great point!"
+ *               parentId:
+ *                 type: integer
+ *                 example: 123
+ *               threadId:
+ *                 type: integer
+ *                 example: 123
+ *               isDeleted:
+ *                 type: boolean
+ *                 example: false
+ *               createdAt:
+ *                 type: string
+ *                 format: date-time
+ *               updatedAt:
+ *                 type: string
+ *                 format: date-time
+ *               User:
+ *                 $ref: '#/components/schemas/CommentUser'
+ *               parent:
+ *                 $ref: '#/components/schemas/CommentParent'
+ *         meta:
+ *           type: object
+ *           properties:
+ *             total:
+ *               type: integer
+ *               example: 15
+ *             limit:
+ *               type: integer
+ *               example: 10
+ *             offset:
+ *               type: integer
+ *               example: 0
+ *             hasNext:
+ *               type: boolean
+ *               example: true
+ */
