@@ -2,7 +2,7 @@ const createError = require("../utilities/createError");
 
 const validateSchema = (schema) => async (req, res, next) => {
   try {
-    req.body = await schema.validate(req.body, { abortEarly: false });
+    req.body = await schema.validate(req.body, { abortEarly: false, stripUnknown: false });
     next();
   } catch (error) {
     if (error.name === "ValidationError") {

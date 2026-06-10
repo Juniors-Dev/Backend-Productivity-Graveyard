@@ -7,6 +7,7 @@ class ProjectService {
     this.Type = db.Type;
     this.User = db.User;
     this.Tombstone = db.Tombstone;
+    this.ResurrectionEvent = db.ResurrectionEvent;
   }
 
   async getAll(limit = 100, offset = 0, options = {}) {
@@ -242,6 +243,27 @@ class ProjectService {
       throw createError({ message: "Project not found", statusCode: 404 });
     }
     return this.Project.destroy({ where: { id } });
+  }
+
+  async resurrect(id, reason, currentUserId) {
+    await this.client.transaction(async (t) => {
+      const [affectedRows] = await this.Project.update(
+        { status: "resurrected" },
+        { where: { id, status: "buried" }, transaction: t }
+      );
+
+      if (affectedRows === 0) {
+        throw createError({
+          message: "Only buried projects can be resurrected",
+          statusCode: 409,
+          status: "fail",
+        });
+      }
+
+      await this.ResurrectionEvent.create({ projectId: id, reason }, { transaction: t });
+    });
+
+    return this.getOneId(id, currentUserId);
   }
 }
 

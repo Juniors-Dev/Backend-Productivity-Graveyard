@@ -202,8 +202,7 @@ function updateTests({ app, db, testProject, updateProject, createTestUser, badT
         expect.arrayContaining([
           expect.objectContaining({
             field: "status",
-            message:
-              "status must be one of the following values: inactive, active, buried, resurrected, completed, archived",
+            message: "status must be one of the following values: inactive, active, buried, completed, archived",
           }),
         ])
       );
